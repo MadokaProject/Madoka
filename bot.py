@@ -35,29 +35,28 @@ async def friend_message_listener(app: GraiaMiraiApplication, friend: Friend):
 @bcc.receiver("GroupMessage")
 async def group_message_listener(message: MessageChain, group: Group, member: Member, app: GraiaMiraiApplication):
     if member.id != admin_qq:
-        table_record_name = str(group.id) + 'record'    # 聊天记录数据库名
-        curr_time = datetime.datetime.now() # 获取当前时间
-        time_str = datetime.datetime.strftime(curr_time,'%Y-%m-%d %H:%M:%S')    # 转换为str
+        table_record_name = str(group.id) + 'record'  # 聊天记录数据库名
+        curr_time = datetime.datetime.now()  # 获取当前时间
+        time_str = datetime.datetime.strftime(curr_time, '%Y-%m-%d %H:%M:%S')  # 转换为str
         content_record = ''
-        try:    # 获取文字类型的聊天记录
+        try:  # 获取文字类型的聊天记录
             content_record = message.get(Plain)[0].dict()['text']
-        except: # 获取图片类型的聊天记录
+        except:  # 获取图片类型的聊天记录
             content_record = message.get(Image)[0].dict()['url']
         # 存入数据库
         if mysql.find_table(table_record_name):  # 若数据表已存在
             mysql.insert_record(table_record_name, str(member.id), time_str, content_record)
-        else:   # 若数据表不存在
+        else:  # 若数据表不存在
             mysql.create_record(table_record_name)  # 先创建数据表
             mysql.insert_record(table_record_name, str(member.id), time_str, content_record)
 
     # 检测是否刷屏
     if member.id != admin_qq:
         if brushscreen.brushscreen(table_record_name, str(member.id), content_record, time_str):
-            await app.mute(group,member,1)
+            await app.mute(group, member, 1)
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id), Plain(" 请勿刷屏")
             ]))
-
 
     # print(message.has(At))
     target = message.get(At)
@@ -88,10 +87,10 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
     #             return
 
     table_name_home = str(group.id) + 'group'
-    if str(message.get(Plain)[0].dict()['text']).strip() == '.help':    # 内置指令放这
-        if mysql.find_table(table_name_home):   # 若数据表存在
+    if str(message.get(Plain)[0].dict()['text']).strip() == '.help':  # 内置指令放这
+        if mysql.find_table(table_name_home):  # 若数据表存在
             menu_list = mysql.find(table_name_home)
-            menu = '=====帮助菜单=====\n'   # 初始化帮助菜单
+            menu = '=====帮助菜单=====\n'  # 初始化帮助菜单
             for i in menu_list:
                 menu = menu + i[1] + '\n'
             menu += '================='
@@ -104,7 +103,8 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
                 Plain("本群暂未添加指令")
             ]))
         return
-    elif str(message.get(Plain)[0].dict()['text']).strip() == '.wyy' or str(message.get(Plain)[0].dict()['text']).strip() == '.网易云':
+    elif str(message.get(Plain)[0].dict()['text']).strip() == '.wyy' or str(
+            message.get(Plain)[0].dict()['text']).strip() == '.网易云':
         req = requests.get('https://api.66mz8.com/api/music.163.php?format=json')
         ans = req.json()
         await app.sendGroupMessage(group, MessageChain.create([
@@ -122,10 +122,11 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
                     target = 0
                     if mysql.find_table(table_name_home):  # 若数据表已存在
                         target = mysql.insert(table_name_home, Custom_message[2], Custom_message[3], Custom_message[4])
-                    else:   # 若数据表不存在
+                    else:  # 若数据表不存在
                         target_create = mysql.create(table_name_home)  # 先创建数据表
                         if target_create == 1:
-                            target = mysql.insert(table_name_home, Custom_message[2], Custom_message[3], Custom_message[4])
+                            target = mysql.insert(table_name_home, Custom_message[2], Custom_message[3],
+                                                  Custom_message[4])
                         elif target_create == 0:
                             target = 0
                     if target == 1:
@@ -155,10 +156,10 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
         return
     print(mysql.find_table(table_name_home))
     if mysql.find_table(table_name_home):  # 若数据表存在
-        Reply = mysql.find(table_name_home)    # 返回表内容
+        Reply = mysql.find(table_name_home)  # 返回表内容
         print(Reply)
         for i in Reply:
-            if str(message.get(Plain)[0].dict()['text']).strip() == i[1]:   # 指令对比
+            if str(message.get(Plain)[0].dict()['text']).strip() == i[1]:  # 指令对比
                 if i[2] == 'text':
                     await app.sendGroupMessage(group, MessageChain.create([
                         Plain(i[3])
@@ -169,6 +170,6 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
                         Image.fromNetworkAddress(i[3])
                     ]))
                     return
-    
+
 
 app.launch_blocking()
