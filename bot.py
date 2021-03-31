@@ -53,7 +53,7 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
     # 检测是否刷屏
     if member.id != admin_qq:
         if brushscreen.brushscreen(table_record_name, str(member.id), content_record, time_str):
-            await app.mute(group, member, 1)
+            await app.mute(group, member, 5 * 60)
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id), Plain(" 请勿刷屏")
             ]))
@@ -87,6 +87,8 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
     #             return
 
     table_name_home = str(group.id) + 'group'
+    Custom_message = message.get(Plain)
+    Custom_message = Custom_message[0].dict()['text'].split(' ')
     if str(message.get(Plain)[0].dict()['text']).strip() == '.help':  # 内置指令放这
         if mysql.find_table(table_name_home):  # 若数据表存在
             menu_list = mysql.find(table_name_home)
@@ -113,8 +115,37 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             Plain('评论：%s' % ans['comments'])
         ]))
         return
-    Custom_message = message.get(Plain)
-    Custom_message = Custom_message[0].dict()['text'].split(' ')
+    elif Custom_message[0] == '.ban':   # 禁言
+        if member.id == admin_qq:
+            target = message.get(At)
+            if target:  # 如若有at人
+                target = target[0].dict()['target']
+                print(target)
+                print(int(Custom_message[1]) * 60)
+                await app.mute(group, target, int(Custom_message[1]) * 60)
+            else:
+                await app.sendGroupMessage(group, MessageChain.create([
+                    Plain("缺少参数")
+                ]))
+        else:
+            await app.sendGroupMessage(group, MessageChain.create([
+                Plain("你不是管理员哦，你无权操作此命令！")
+            ]))
+    elif str(message.get(Plain)[0].dict()['text']).strip() == '.unban': # 取消禁言
+        if member.id == admin_qq:
+            target = message.get(At)
+            if target:  # 如若有at人
+                target = target[0].dict()['target']
+                await app.unmute(group, target)
+            else:
+                await app.sendGroupMessage(group, MessageChain.create([
+                    Plain("缺少参数")
+                ]))
+        else:
+            await app.sendGroupMessage(group, MessageChain.create([
+                Plain("你不是管理员哦，你无权操作此命令！")
+            ]))
+        return
     if Custom_message[0] == '.message' and Custom_message[1] == 'add':
         if member.id == admin_qq:
             try:
