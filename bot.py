@@ -52,10 +52,16 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
 
     # 检测是否刷屏
     if member.id != admin_qq:
-        if brushscreen.brushscreen(table_record_name, str(member.id), content_record, time_str):
+        target_brushscreen = brushscreen.brushscreen(table_record_name, str(member.id), content_record, time_str)
+        if target_brushscreen == 1:
             await app.mute(group, member, 5 * 60)
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id), Plain(" 请勿刷屏")
+            ]))
+        elif target_brushscreen == 2:
+            await app.mute(group, member, 2 * 60)
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id), Plain(" 请勿发送重复消息")
             ]))
 
     # print(message.has(At))
