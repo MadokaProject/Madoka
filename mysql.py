@@ -117,3 +117,55 @@ def insert(name, instruction, type_insert, reply):  # 添加内容
             return 1  # 指令添加成功
     else:
         return 0
+
+
+def github_create(repo):
+    if find_table(repo) == 0:
+        # 创建数据库对象
+        db = conn.cursor()
+        sql = "CREATE TABLE %s(\
+        id int not null auto_increment primary key comment '序号',\
+        branch char(10) not null COMMENT '分支',\
+        sha char(40) not null COMMENT '记录'\
+        )ENGINE=InnoDB;" % repo
+        db.execute(sql)
+        db.close()
+        if find_table(repo) == 1:
+            return 1  # 数据表创建成功
+        else:
+            return 0  # 数据表创建失败
+    else:
+        return -1  # 数据表已存在
+
+
+def github_find(repo):  # github仓库检测
+    # 创建数据库对象
+    db = conn.cursor()
+    # 写入SQL语句
+    sql = "select * from %s " % repo
+    # 执行sql命令
+    db.execute(sql)
+    # 获取一个查询
+    # result = db.fetchone()
+    # 获取全部的查询内容
+    result = db.fetchall()
+    # 关闭链接
+    db.close()
+    return result
+
+
+def github_update(repo, branch, sha):  # github数据表更新
+    db = conn.cursor()
+    sql = "update %s set sha = %s where branch = %s" % (repo, sha, branch)
+    db.execute(sql)
+    conn.commit()
+    db.close()
+
+
+def github_insert(repo, branch, sha):  # 插入内容
+    # 创建数据库对象
+    db = conn.cursor()
+    sql = "insert into %s(branch,sha) values('%s','%s');" % (repo, branch, sha)
+    db.execute(sql)
+    conn.commit()
+    db.close()
