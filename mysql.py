@@ -56,7 +56,6 @@ def insert_record(name, qq, datetime, content):  # 添加内容
     # 创建数据库对象
     db = conn.cursor()
     sql = "insert into %s(qq,datetime,content) values('%s','%s','%s');" % (name, qq, datetime, content)
-    print(sql)
     db.execute(sql)
     conn.commit()
     db.close()
@@ -101,7 +100,7 @@ def find_table(table_name):  # 查找数据表
         return 0
 
 
-def insert(name, instruction, type, reply):  # 添加内容
+def insert(name, instruction, type_insert, reply):  # 添加内容
     target = find(name)
     if target:
         for i in find(name):
@@ -109,13 +108,11 @@ def insert(name, instruction, type, reply):  # 添加内容
                 return -1  # 要添加指令已存在
     # 创建数据库对象
     db = conn.cursor()
-    sql = "insert into %s(instruction,type,reply) values('%s','%s','%s');" % (name, instruction, type, reply)
-    print(sql)
+    sql = "insert into %s(instruction,type,reply) values('%s','%s','%s');" % (name, instruction, type_insert, reply)
     db.execute(sql)
     conn.commit()
     db.close()
     for i in find(name):
-        print(i[1])
         if i[1] == instruction:
             return 1  # 指令添加成功
     else:
