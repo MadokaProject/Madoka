@@ -1,3 +1,4 @@
 config.py
 .idea/*
 __pycache__/*
+venv/*

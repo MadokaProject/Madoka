@@ -34,12 +34,12 @@ async def friend_message_listener(app: GraiaMiraiApplication, friend: Friend):
 
 @bcc.receiver("GroupMessage")
 async def group_message_listener(message: MessageChain, group: Group, member: Member, app: GraiaMiraiApplication):
-    if member.id != admin_qq:   # 消息记录及刷屏检测模块
+    if member.id != admin_qq:  # 消息记录及刷屏检测模块
         table_record_name = str(group.id) + 'record'  # 聊天记录数据库名
         curr_time = datetime.datetime.now()  # 获取当前时间
         time_str = datetime.datetime.strftime(curr_time, '%Y-%m-%d %H:%M:%S')  # 转换为str
-        content_record = '' # 消息内容
-        type_record = ''    # 消息类型
+        content_record = ''  # 消息内容
+        type_record = ''  # 消息类型
         try:  # 获取文字类型的聊天记录
             content_record = message.get(Plain)[0].dict()['text']
             type_record = 'text'
@@ -65,7 +65,8 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id), Plain(" 请勿发送重复消息")
             ]))
-        elif (type_record == 'text' and len(content_record) > 150) or len(message.get(Image)) > 5:   # 文本单消息长度大于150禁言或图片单消息大于5张禁言
+        elif (type_record == 'text' and len(content_record) > 150) or len(
+                message.get(Image)) > 5:  # 文本单消息长度大于150禁言或图片单消息大于5张禁言
             await app.mute(group, member, 2 * 60)
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id), Plain(" 请勿发送超长消息")
@@ -115,7 +116,7 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             Plain('评论：%s' % ans['comments'])
         ]))
         return
-    elif Custom_message[0] == '.ban':   # 禁言
+    elif Custom_message[0] == '.ban':  # 禁言
         if member.id == admin_qq:
             target = message.get(At)
             if target:  # 如若有at人
@@ -129,7 +130,7 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             await app.sendGroupMessage(group, MessageChain.create([
                 Plain("你不是管理员哦，你无权操作此命令！")
             ]))
-    elif str(message.get(Plain)[0].dict()['text']).strip() == '.unban': # 取消禁言
+    elif str(message.get(Plain)[0].dict()['text']).strip() == '.unban':  # 取消禁言
         if member.id == admin_qq:
             target = message.get(At)
             if target:  # 如若有at人
