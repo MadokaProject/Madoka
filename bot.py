@@ -3,13 +3,16 @@ import mysql
 import requests
 import datetime
 import brushscreen
-from config import *
+
 from graia.broadcast import Broadcast
 from graia.application import GraiaMiraiApplication, Session
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, At
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
+
+from config import *
+from app.extend.github import github_listener
 
 loop = asyncio.get_event_loop()
 
@@ -200,4 +203,5 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
                     return
 
 
+loop.create_task(github_listener(app))
 app.launch_blocking()
