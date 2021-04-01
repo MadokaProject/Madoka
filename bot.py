@@ -34,15 +34,18 @@ async def friend_message_listener(app: GraiaMiraiApplication, friend: Friend):
 
 @bcc.receiver("GroupMessage")
 async def group_message_listener(message: MessageChain, group: Group, member: Member, app: GraiaMiraiApplication):
-    if member.id != admin_qq:
+    if member.id != admin_qq:   # 消息记录及刷屏检测模块
         table_record_name = str(group.id) + 'record'  # 聊天记录数据库名
         curr_time = datetime.datetime.now()  # 获取当前时间
         time_str = datetime.datetime.strftime(curr_time, '%Y-%m-%d %H:%M:%S')  # 转换为str
-        content_record = ''
+        content_record = '' # 消息内容
+        type_record = ''    # 消息类型
         try:  # 获取文字类型的聊天记录
             content_record = message.get(Plain)[0].dict()['text']
+            type_record = 'text'
         except:  # 获取图片类型的聊天记录
             content_record = message.get(Image)[0].dict()['url']
+            type_record = 'image'
         # 存入数据库
         if mysql.find_table(table_record_name):  # 若数据表已存在
             mysql.insert_record(table_record_name, str(member.id), time_str, content_record)
@@ -50,9 +53,8 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             mysql.create_record(table_record_name)  # 先创建数据表
             mysql.insert_record(table_record_name, str(member.id), time_str, content_record)
 
-    # 检测是否刷屏
-    if member.id != admin_qq:
-        target_brushscreen = brushscreen.brushscreen(table_record_name, str(member.id), content_record, time_str)
+        # 检测是否刷屏
+        target_brushscreen = brushscreen.brushscreen(table_record_name, str(member.id))
         if target_brushscreen == 1:
             await app.mute(group, member, 5 * 60)
             await app.sendGroupMessage(group, MessageChain.create([
@@ -62,6 +64,11 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             await app.mute(group, member, 2 * 60)
             await app.sendGroupMessage(group, MessageChain.create([
                 At(member.id), Plain(" 请勿发送重复消息")
+            ]))
+        elif (type_record == 'text' and len(content_record) > 150) or len(message.get(Image)) > 5:   # 文本单消息长度大于150禁言或图片单消息大于5张禁言
+            await app.mute(group, member, 2 * 60)
+            await app.sendGroupMessage(group, MessageChain.create([
+                At(member.id), Plain(" 请勿发送超长消息")
             ]))
 
     # print(message.has(At))
@@ -79,18 +86,6 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
                     Plain("爪巴")
                 ]))
             return
-    # for i in ReplyKey:
-    #     if str(message.get(Plain)[0].dict()['text']).strip() == i[0]:
-    #         if i[1] == 'text':
-    #             await app.sendGroupMessage(group, MessageChain.create([
-    #                 Plain(i[2])
-    #             ]))
-    #             return
-    #         elif i[1] == 'image':
-    #             await app.sendGroupMessage(group, MessageChain.create([
-    #                 Image.fromNetworkAddress(i[2])
-    #             ]))
-    #             return
 
     table_name_home = str(group.id) + 'group'
     Custom_message = message.get(Plain)
@@ -102,7 +97,6 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             for i in menu_list:
                 menu = menu + i[1] + '\n'
             menu += '================='
-            print(menu)
             await app.sendGroupMessage(group, MessageChain.create([
                 Plain(menu)
             ]))
@@ -126,8 +120,6 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
             target = message.get(At)
             if target:  # 如若有at人
                 target = target[0].dict()['target']
-                print(target)
-                print(int(Custom_message[1]) * 60)
                 await app.mute(group, target, int(Custom_message[1]) * 60)
             else:
                 await app.sendGroupMessage(group, MessageChain.create([
@@ -191,10 +183,8 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
                 Plain("抱歉，您不是管理员，您不能使用该指令")
             ]))
         return
-    print(mysql.find_table(table_name_home))
     if mysql.find_table(table_name_home):  # 若数据表存在
         Reply = mysql.find(table_name_home)  # 返回表内容
-        print(Reply)
         for i in Reply:
             if str(message.get(Plain)[0].dict()['text']).strip() == i[1]:  # 指令对比
                 if i[2] == 'text':

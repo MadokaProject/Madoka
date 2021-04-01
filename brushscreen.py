@@ -2,7 +2,7 @@ import mysql
 import datetime
 
 
-def brushscreen(record_table, qq, message, now_time):
+def brushscreen(record_table, qq):
     Message_history = mysql.record_find(record_table, qq)
     time1 = datetime.datetime.strptime(Message_history[0][2], '%Y-%m-%d %H:%M:%S')
     time2 = datetime.datetime.strptime(Message_history[2][2], '%Y-%m-%d %H:%M:%S')
