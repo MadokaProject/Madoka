@@ -40,10 +40,6 @@ class Controller:
         elif hasattr(self, 'group'):
             if self.group.id not in ACTIVE_GROUP:
                 return
-            if mysql.find_table(str(self.group.id) + 'record') == 0:
-                mysql.create_record(str(self.group.id) + 'record')
-            nowtime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')  # 转换为str
-            mysql.insert_record(str(self.group.id) + 'record', self.member.id, nowtime, msg)
             if self.member.id not in ADMIN_USER:
                 content_record = ''  # 消息内容
                 type_record = ''  # 消息类型
@@ -51,7 +47,17 @@ class Controller:
                     content_record = self.message.get(Plain)[0].dict()['text']
                     type_record = 'text'
                 except:
-                    pass
+                    content_record = self.message.get(Image)[0].dict()['url']
+                    type_record = 'image'
+                if mysql.find_table(str(self.group.id) + 'record') == 0:
+                    mysql.create_record(str(self.group.id) + 'record')
+                nowtime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')  # 转换为str
+                if type_record == 'text':
+                    mysql.insert_record(str(self.group.id) + 'record', self.member.id, nowtime, msg)
+                elif type_record == 'image':
+                    mysql.insert_record(str(self.group.id) + 'record', self.member.id, nowtime, content_record)
+
+                # 检测是否刷屏
                 target_brushscreen = brushscreen(str(self.group.id) + 'record', self.member.id)
                 if target_brushscreen == 1:
                     await self.app.mute(self.group, self.member.id, 5 * 60)
@@ -67,7 +73,7 @@ class Controller:
                     ])
                     await self._do_send(resp)
                     return
-                elif (type_record == 'text' and len(content_record) > 150) or len(self.message.get(Image)) > 5:
+                elif (type_record == 'text' and len(msg) > 150) or (type_record == 'image' and len(self.message.get(Image)) > 5):
                     await self.app.mute(self.group, self.member.id, 2 * 60)
                     resp = MessageChain.create([
                         At(self.member.id), Plain(' 请勿发送超长消息！')
