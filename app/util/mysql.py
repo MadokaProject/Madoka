@@ -1,12 +1,12 @@
 import pymysql
-from config import *
+from app.core.config import *
 
 # 建立数据库连接
 conn = pymysql.connect(
     host='127.0.0.1',
     port=3306,
     user='root',
-    password=mysql_password,
+    password=MYSQL_PWD,
     db='qqbot',
     charset='utf8'
 )

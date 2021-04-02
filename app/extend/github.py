@@ -1,6 +1,6 @@
 import asyncio
 import requests
-import mysql
+from app.util import mysql
 
 from graia.application import enter_context, MessageChain
 from graia.application.message.elements.internal import Plain
