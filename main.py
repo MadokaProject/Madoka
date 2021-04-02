@@ -17,9 +17,9 @@ bcc = Broadcast(loop=loop)
 app = GraiaMiraiApplication(
     broadcast=bcc,
     connect_info=Session(
-        host=host,  # 填入 httpapi 服务运行的地址
-        authKey=authKey,  # 填入 authKey
-        account=qq,  # 你的机器人的 qq 号
+        host=HOST,  # 填入 httpapi 服务运行的地址
+        authKey=AUTHKEY,  # 填入 authKey
+        account=QQ,  # 你的机器人的 qq 号
         websocket=True  # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
     )
 )

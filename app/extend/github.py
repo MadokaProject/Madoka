@@ -6,16 +6,16 @@ from graia.application import enter_context, MessageChain
 from graia.application.message.elements.internal import Plain
 
 from datetime import datetime, timedelta
+from app.core.config import *
 
 
 async def github_listener(app):
     while True:
-        await asyncio.sleep(30 * 60)  # 每半小时执行一次
+        await asyncio.sleep(REPO_TIME * 60)  # 间隔时间
         app.logger.info('github_listener is running...')
 
-        repo = ['volantis', 'stellar']  # 仓库名
-        repo_api = ['https://api.github.com/repos/volantis-x/hexo-theme-volantis/branches',
-                    'https://api.github.com/repos/xaoxuu/hexo-theme-stellar/branches']  # 仓库api
+        repo = REPO_NAME  # 仓库名
+        repo_api = REPO_API  # 仓库api
         for repo_num in range(len(repo)):
             if mysql.find_table(repo[repo_num]) == 0:  # 若数据表不存在
                 mysql.github_create(repo[repo_num])  # 创建数据表
