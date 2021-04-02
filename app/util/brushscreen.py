@@ -1,5 +1,6 @@
-import mysql
 import datetime
+
+from app.util import mysql
 
 
 def brushscreen(record_table, qq):
