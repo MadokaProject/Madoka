@@ -2,4 +2,4 @@
 
 # conda deactivate
 # conda activate qq-bot
-python bot.py
+python main.py

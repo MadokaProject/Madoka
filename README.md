@@ -27,5 +27,5 @@ sh run.sh
 #### Windows
 
 ``` cmd
-python bot.py
+python main.py
 ```
