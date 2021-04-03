@@ -49,7 +49,7 @@ class Translate(Plugin):
                 }
                 response = doHttpPost(params, url)
                 self.resp = MessageChain.create([
-                    At(self.member.id), Plain(' “' + response['source_text'] + '“的翻译结果为：' + response['target_text'])
+                    Plain('"' + response['source_text'] + '" 的翻译结果为：' + response['target_text'])
                 ])
             else:
                 self.args_error()
