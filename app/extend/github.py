@@ -25,7 +25,7 @@ async def github_listener(app):
                 for i in commit:
                     if i[1] == branch['name']:  # 若数据表已存在对应branch
                         if i[2] == branch['commit']['sha']:  # sha值相同，不做处理
-                            pass
+                            return
                         else:  # sha值不一致，更新数据表信息，发送群消息通知
                             mysql.github_update(repo[repo_num], branch['name'], branch['commit']['sha'])  # 更新数据表
                             commit_info = requests.get(branch['commit']['url']).json()
@@ -39,7 +39,7 @@ async def github_listener(app):
                                     Plain("\ntime: " + commit_time),
                                     Plain("\nurl: " + commit_info['html_url'])
                                 ]))
-                        break
+                            return
                 else:  # 若数据表中无对应branch，插入信息至数据表，发送群消息
                     mysql.github_insert(repo[repo_num], branch['name'], branch['commit']['sha'])
                     commit_info = requests.get(branch['commit']['url']).json()
