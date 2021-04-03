@@ -156,7 +156,7 @@ def github_find(repo):  # github仓库检测
 
 def github_update(repo, branch, sha):  # github数据表更新
     db = conn.cursor()
-    sql = "update %s set sha = %s where branch = %s" % (repo, sha, branch)
+    sql = "update %s set sha = '%s' where branch = '%s'" % (repo, sha, branch)
     db.execute(sql)
     conn.commit()
     db.close()
