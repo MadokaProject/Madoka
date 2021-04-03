@@ -1,8 +1,4 @@
 app/core/config.py
 .idea/*
-__pycache__/*
-app/core/__pycache__/*
-app/extend/__pycache__/*
-app/plugin/__pycache__/*
-app/util/__pycache__/*
+**/__pycache__/
 venv/*

@@ -11,6 +11,7 @@ from app.plugin import *
 from app.util.tools import isstartswith
 from app.util import mysql
 from app.util.brushscreen import brushscreen
+from app.api.sign import doHttpPost
 
 
 class Controller:
@@ -82,6 +83,14 @@ class Controller:
                     return
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
+            target = self.message.get(At)[0].dict()['target']
+            if str(target) == QQ:
+                message = str(self.message.get(Plain)[0].dict()['text']).strip()
+                if message:
+                    resp = MessageChain.create([
+                        At(self.member.id), Plain(doHttpPost(message))
+                    ])
+                    await self._do_send(resp)
             return
 
         # 指令规范化
