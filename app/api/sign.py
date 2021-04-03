@@ -47,19 +47,20 @@ def getReqSign(params, appkey):  # params: 关联数组 appkey: 字符串
     return sign
 
 
-def doHttpPost(question):
+def doHttpPost(param, url):
     params = {
         'app_id': '2169319723',
-        'session': '1332925715',
-        'question': question.encode('utf-8'),
         'time_stamp': int(time.time()),
         'nonce_str': nonce_str(),
     }
 
+    params.update(param)
     appkey = '4TQfIcw6oa8WoikE'
     params['sign'] = getReqSign(params, appkey)
 
     # 请求
-    url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat'
     response = requests.post(url, data=params)
-    return response.json()['data']['answer']
+    if response.json()['ret'] == 0:
+        return response.json()['data']
+    else:
+        return response.json()['msg']

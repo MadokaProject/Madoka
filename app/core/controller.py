@@ -59,38 +59,51 @@ class Controller:
                     mysql.insert_record(str(self.group.id) + 'record', self.member.id, nowtime, content_record)
 
                 # 检测是否刷屏
-                target_brushscreen = brushscreen(str(self.group.id) + 'record', self.member.id)
-                if target_brushscreen == 1:
-                    await self.app.mute(self.group, self.member.id, 5 * 60)
-                    resp = MessageChain.create([
-                        At(self.member.id), Plain(' 请勿刷屏！')
-                    ])
-                    await self._do_send(resp)
-                    return
-                elif target_brushscreen == 2:
-                    await self.app.mute(self.group, self.member.id, 2 * 60)
-                    resp = MessageChain.create([
-                        At(self.member.id), Plain(' 请勿发送重复消息！')
-                    ])
-                    await self._do_send(resp)
-                    return
-                elif (type_record == 'text' and len(msg) > 150) or (type_record == 'image' and len(self.message.get(Image)) > 5):
-                    await self.app.mute(self.group, self.member.id, 2 * 60)
-                    resp = MessageChain.create([
-                        At(self.member.id), Plain(' 请勿发送超长消息！')
-                    ])
-                    await self._do_send(resp)
-                    return
+                try:
+                    target_brushscreen = brushscreen(str(self.group.id) + 'record', self.member.id)
+                    if target_brushscreen == 1:
+                        await self.app.mute(self.group, self.member.id, 5 * 60)
+                        resp = MessageChain.create([
+                            At(self.member.id), Plain(' 请勿刷屏！')
+                        ])
+                        await self._do_send(resp)
+                        return
+                    elif target_brushscreen == 2:
+                        await self.app.mute(self.group, self.member.id, 2 * 60)
+                        resp = MessageChain.create([
+                            At(self.member.id), Plain(' 请勿发送重复消息！')
+                        ])
+                        await self._do_send(resp)
+                        return
+                    elif (type_record == 'text' and len(msg) > 150) or (
+                            type_record == 'image' and len(self.message.get(Image)) > 5):
+                        await self.app.mute(self.group, self.member.id, 2 * 60)
+                        resp = MessageChain.create([
+                            At(self.member.id), Plain(' 请勿发送超长消息！')
+                        ])
+                        await self._do_send(resp)
+                        return
+                except Exception as e:
+                    print(e)
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
-            target = self.message.get(At)[0].dict()['target']
-            if str(target) == QQ:
-                message = str(self.message.get(Plain)[0].dict()['text']).strip()
-                if message:
-                    resp = MessageChain.create([
-                        At(self.member.id), Plain(doHttpPost(message))
-                    ])
-                    await self._do_send(resp)
+            try:
+                if self.message.get(At):
+                    target = self.message.get(At)[0].dict()['target']
+                    if str(target) == QQ:
+                        message = str(self.message.get(Plain)[0].dict()['text']).strip()
+                        if message:
+                            url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat'
+                            params = {
+                                'session': str(self.member.id),
+                                'question': message.encode('utf-8'),
+                            }
+                            resp = MessageChain.create([
+                                At(self.member.id), Plain(' ' + doHttpPost(params, url)['answer'])
+                            ])
+                            await self._do_send(resp)
+            except Exception as e:
+                print(e)
             return
 
         # 指令规范化

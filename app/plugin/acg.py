@@ -1,6 +1,3 @@
-import asyncio
-
-import requests
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Image
 
@@ -12,7 +9,6 @@ class ACG(Plugin):
     entry = ['.acg']
     brief_help = '\r\n▶动漫图：acg'
     full_help = \
-        '.acg\t所有人可用\r\n' \
         '.acg 买家秀\r\n' \
         '.acg setu'
 
