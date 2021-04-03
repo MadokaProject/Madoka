@@ -125,7 +125,7 @@ def github_create(repo):
         db = conn.cursor()
         sql = "CREATE TABLE %s(\
         id int not null auto_increment primary key comment '序号',\
-        branch char(10) not null COMMENT '分支',\
+        branch varchar(50) not null COMMENT '分支',\
         sha char(40) not null COMMENT '记录'\
         )ENGINE=InnoDB;" % repo
         db.execute(sql)

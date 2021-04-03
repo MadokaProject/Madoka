@@ -21,25 +21,23 @@ async def github_listener(app):
                 mysql.github_create(repo[repo_num])  # 创建数据表
             branches = requests.get(repo_api[repo_num]).json()  # 获取该仓库的全部branch json
             commit = mysql.github_find(repo[repo_num])  # 查找该仓库全部已有提交信息
+            b = [i[1] for i in commit]
             for branch in branches:  # 挨个分支进行检测
-                for i in commit:
-                    if i[1] == branch['name']:  # 若数据表已存在对应branch
-                        if i[2] == branch['commit']['sha']:  # sha值相同，不做处理
-                            return
-                        else:  # sha值不一致，更新数据表信息，发送群消息通知
-                            mysql.github_update(repo[repo_num], branch['name'], branch['commit']['sha'])  # 更新数据表
-                            commit_info = requests.get(branch['commit']['url']).json()
-                            commit_time = datetime.strftime(
-                                datetime.strptime(commit_info['commit']['author']['date'],
-                                                  "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8), '%Y-%m-%d %H:%M:%S')
-                            with enter_context(app=app):
-                                await app.sendGroupMessage(1146399464, MessageChain.create([
-                                    Plain("commit: " + commit_info['commit']['message']),
-                                    Plain("\nname: " + commit_info['commit']['author']['name']),
-                                    Plain("\ntime: " + commit_time),
-                                    Plain("\nurl: " + commit_info['html_url'])
-                                ]))
-                            return
+                if branch['name'] in b:  # 若branch已存在
+                    if commit[b.index(branch['name'])][2] != branch['commit']['sha']:  # sha值不一致，更新数据表信息，发送群消息通知
+                        mysql.github_update(repo[repo_num], branch['name'], branch['commit']['sha'])  # 更新数据表
+                        commit_info = requests.get(branch['commit']['url']).json()
+                        commit_time = datetime.strftime(
+                            datetime.strptime(commit_info['commit']['author']['date'],
+                                              "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8), '%Y-%m-%d %H:%M:%S')
+                        with enter_context(app=app):
+                            await app.sendGroupMessage(1146399464, MessageChain.create([
+                                Plain(branch['name']),
+                                Plain("\r\ncommit: " + commit_info['commit']['message']),
+                                Plain("\r\nname: " + commit_info['commit']['author']['name']),
+                                Plain("\r\ntime: " + commit_time),
+                                Plain("\r\nurl: " + commit_info['html_url'])
+                            ]))
                 else:  # 若数据表中无对应branch，插入信息至数据表，发送群消息
                     mysql.github_insert(repo[repo_num], branch['name'], branch['commit']['sha'])
                     commit_info = requests.get(branch['commit']['url']).json()
@@ -48,8 +46,9 @@ async def github_listener(app):
                             hours=8), '%Y-%m-%d %H:%M:%S')
                     with enter_context(app=app):
                         await app.sendGroupMessage(1146399464, MessageChain.create([
-                            Plain("commit: " + commit_info['commit']['message']),
-                            Plain("\nname: " + commit_info['commit']['author']['name']),
-                            Plain("\ntime: " + commit_time),
-                            Plain("\nurl: " + commit_info['html_url'])
+                            Plain(branch['name']),
+                            Plain("\r\ncommit: " + commit_info['commit']['message']),
+                            Plain("\r\nname: " + commit_info['commit']['author']['name']),
+                            Plain("\r\ntime: " + commit_time),
+                            Plain("\r\nurl: " + commit_info['html_url'])
                         ]))
