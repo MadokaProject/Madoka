@@ -36,21 +36,23 @@ class Translate(Plugin):
             return
         try:
             if isstartswith(self.msg[0], 'lc'):
-                # resp = '\r\n'.join(f'{i}:{form[i][1]}' for i in form)
                 self.resp = MessageChain.create([Plain(
                     '缩写 --> 语言\r\n' + '\r\n'.join(f'{i} --> ' + form[i][1][:-2] + '文' for i in form.keys())
                 )])
             elif self.msg[0] in form.keys() and self.msg[1] in form[self.msg[0]][0]:
                 url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_texttranslate'
                 params = {
-                    'text': self.msg[2],
+                    'text': ' '.join(f'{i}' for i in self.msg[2:]),
                     'source': self.msg[0],
                     'target': self.msg[1]
                 }
                 response = doHttpPost(params, url)
-                self.resp = MessageChain.create([
-                    Plain('"' + response['source_text'] + '" 的翻译结果为：' + response['target_text'])
-                ])
+                if response['ret'] == 0:
+                    self.resp = MessageChain.create([
+                        Plain('"' + response['data']['source_text'] + '" 的翻译结果为：' + response['data']['target_text'])
+                    ])
+                else:
+                    self.unkown_error()
             else:
                 self.args_error()
                 return
