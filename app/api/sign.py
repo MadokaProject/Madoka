@@ -3,6 +3,7 @@ import string
 import time
 from hashlib import md5
 from urllib.parse import urlencode
+from app.core.config import *
 
 import requests
 
@@ -49,13 +50,13 @@ def getReqSign(params, appkey):  # params: 关联数组 appkey: 字符串
 
 def doHttpPost(param, url):
     params = {
-        'app_id': '2169319723',
+        'app_id': AI_APP_ID,
         'time_stamp': int(time.time()),
         'nonce_str': nonce_str(),
     }
 
     params.update(param)
-    appkey = '4TQfIcw6oa8WoikE'
+    appkey = AI_APP_KEY
     params['sign'] = getReqSign(params, appkey)
 
     # 请求

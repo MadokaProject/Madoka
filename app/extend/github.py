@@ -14,6 +14,7 @@ async def github_listener(app):
         await asyncio.sleep(REPO_TIME * 60)  # 间隔时间
         app.logger.info('github_listener is running...')
 
+        group = REPO_GROUP
         repo = REPO_NAME  # 仓库名
         repo_api = REPO_API  # 仓库api
         for repo_num in range(len(repo)):
@@ -26,29 +27,23 @@ async def github_listener(app):
                 if branch['name'] in b:  # 若branch已存在
                     if commit[b.index(branch['name'])][2] != branch['commit']['sha']:  # sha值不一致，更新数据表信息，发送群消息通知
                         mysql.github_update(repo[repo_num], branch['name'], branch['commit']['sha'])  # 更新数据表
-                        commit_info = requests.get(branch['commit']['url']).json()
-                        commit_time = datetime.strftime(
-                            datetime.strptime(commit_info['commit']['author']['date'],
-                                              "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8), '%Y-%m-%d %H:%M:%S')
-                        with enter_context(app=app):
-                            await app.sendGroupMessage(1146399464, MessageChain.create([
-                                Plain(branch['name']),
-                                Plain("\r\ncommit: " + commit_info['commit']['message']),
-                                Plain("\r\nname: " + commit_info['commit']['author']['name']),
-                                Plain("\r\ntime: " + commit_time),
-                                Plain("\r\nurl: " + commit_info['html_url'])
-                            ]))
+                        await message_push(app, group, branch)  # 推送消息
                 else:  # 若数据表中无对应branch，插入信息至数据表，发送群消息
                     mysql.github_insert(repo[repo_num], branch['name'], branch['commit']['sha'])
-                    commit_info = requests.get(branch['commit']['url']).json()
-                    commit_time = datetime.strftime(
-                        datetime.strptime(commit_info['commit']['author']['date'], "%Y-%m-%dT%H:%M:%SZ") + timedelta(
-                            hours=8), '%Y-%m-%d %H:%M:%S')
-                    with enter_context(app=app):
-                        await app.sendGroupMessage(1146399464, MessageChain.create([
-                            Plain(branch['name']),
-                            Plain("\r\ncommit: " + commit_info['commit']['message']),
-                            Plain("\r\nname: " + commit_info['commit']['author']['name']),
-                            Plain("\r\ntime: " + commit_time),
-                            Plain("\r\nurl: " + commit_info['html_url'])
-                        ]))
+                    await message_push(app, group, branch)
+
+
+async def message_push(app, groups, branch):
+    commit_info = requests.get(branch['commit']['url']).json()
+    commit_time = datetime.strftime(
+        datetime.strptime(commit_info['commit']['author']['date'],
+                          "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8), '%Y-%m-%d %H:%M:%S')
+    with enter_context(app=app):
+        for group in groups:
+            await app.sendGroupMessage(group, MessageChain.create([
+                Plain(branch['name']),
+                Plain("\r\ncommit: " + commit_info['commit']['message']),
+                Plain("\r\nname: " + commit_info['commit']['author']['name']),
+                Plain("\r\ntime: " + commit_time),
+                Plain("\r\nurl: " + commit_info['html_url'])
+            ]))
