@@ -13,6 +13,10 @@ MYSQL_USER = 'root'  # 数据库用户名(str)
 MYSQL_PWD = '123456'  # 数据库密码(str)
 MYSQL_DB = 'qqbot'  # 数据库名(str)
 
+# 腾讯AI应用配置
+AI_APP_ID = ''  # 腾讯AI appid(str)
+AI_APP_KEY = ''  # 腾讯AI appkey(str)
+
 # 变量配置
 ADMIN_USER = [123456]  # 管理员(int)
 ACTIVE_USER = [123456]  # 监听好友(int)

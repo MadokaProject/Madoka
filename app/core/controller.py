@@ -11,7 +11,7 @@ from app.plugin import *
 from app.util.tools import isstartswith
 from app.util import mysql
 from app.util.brushscreen import brushscreen
-from app.api.sign import doHttpPost
+from app.plugin.chat import Chat
 
 
 class Controller:
@@ -87,34 +87,7 @@ class Controller:
                     print(e)
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
-            try:
-                message = str(self.message.get(Plain)[0].dict()['text']).strip()
-                url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat'
-                try:
-                    if self.friend.id:  # 好友聊天
-                        if message:
-                            params = {
-                                'session': str(self.friend.id),
-                                'question': message.encode('utf-8'),
-                            }
-                            resp = MessageChain.create([
-                                Plain(' ' + doHttpPost(params, url)['answer'])
-                            ])
-                            await self._do_send(resp)
-                except:
-                    if self.message.get(At):  # 群聊聊天
-                        if str(self.message.get(At)[0].dict()['target']) == QQ:
-                            if message:
-                                params = {
-                                    'session': str(self.member.id),
-                                    'question': message.encode('utf-8'),
-                                }
-                                resp = MessageChain.create([
-                                    At(self.member.id), Plain(' ' + doHttpPost(params, url)['answer'])
-                                ])
-                                await self._do_send(resp)
-            except Exception as e:
-                print(e)
+            await Chat(self)
             return
 
         # 指令规范化

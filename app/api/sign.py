@@ -61,7 +61,4 @@ def doHttpPost(param, url):
 
     # 请求
     response = requests.post(url, data=params)
-    if response.json()['ret'] == 0:
-        return response.json()['data']
-    else:
-        return response.json()['msg']
+    return response.json()
