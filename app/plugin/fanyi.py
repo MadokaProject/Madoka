@@ -26,7 +26,7 @@ form = {
 
 class Translate(Plugin):
     entry = ['.fy', '.翻译']
-    brief_help = '\r\n▶翻译：fy'
+    brief_help = '\r\n▶翻译: fy'
     full_help = '\r\n'.join(f'.fy {i} [' + ', '.join(form[i][0]) + '] [文本] \t' + form[i][1] for i in form.keys()) \
                 + '\r\n.fy lc\t查看语言缩写'
 

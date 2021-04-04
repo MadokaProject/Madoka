@@ -10,7 +10,7 @@ from app.util.tools import isstartswith
 
 class Admin(Plugin):
     entry = ['.admin']
-    brief_help = '\r\n▶管理：admin'
+    brief_help = '\r\n▶管理: admin'
     full_help = \
         '.admin\t仅限管理可用！\r\n' \
         '.admin ban [time] [qq]\t禁言用户\r\n' \
