@@ -4,6 +4,7 @@ import time
 from hashlib import md5
 from urllib.parse import urlencode
 from app.core.config import *
+from retrying import retry
 
 import requests
 
@@ -48,6 +49,7 @@ def getReqSign(params, appkey):  # params: 关联数组 appkey: 字符串
     return sign
 
 
+@retry(stop_max_attempt_number=5, wait_fixed=1000)
 def doHttpPost(param, url):
     params = {
         'app_id': AI_APP_ID,
@@ -61,4 +63,7 @@ def doHttpPost(param, url):
 
     # 请求
     response = requests.post(url, data=params)
-    return response.json()
+    if response.json()['ret'] == 0:
+        return response.json()
+    else:
+        raise Exception
