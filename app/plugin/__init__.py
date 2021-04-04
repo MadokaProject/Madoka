@@ -3,5 +3,6 @@ __all__ = [
     'netease',
     'admin',
     'acg',
-    'fanyi'
+    'fanyi',
+    'ImageRecognize'
 ]

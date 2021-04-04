@@ -7,7 +7,7 @@ from app.util.tools import isstartswith
 
 class ACG(Plugin):
     entry = ['.acg']
-    brief_help = '\r\n▶动漫图：acg'
+    brief_help = '\r\n▶动漫图: acg'
     full_help = \
         '.acg 买家秀\r\n' \
         '.acg setu'

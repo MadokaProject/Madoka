@@ -9,7 +9,7 @@ from app.plugin.base import Plugin
 
 class NetEase(Plugin):
     entry = ['.wyy', '.网易云']
-    brief_help = '\r\n▶网易云热评：wyy'
+    brief_help = '\r\n▶网易云热评: wyy'
     full_help = '网易云热评，加上任意参数为网抑云热评！'
 
     async def process(self):
