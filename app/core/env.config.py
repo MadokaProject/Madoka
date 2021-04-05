@@ -17,11 +17,6 @@ MYSQL_DB = 'qqbot'  # 数据库名(str)
 AI_APP_ID = ''  # 腾讯AI appid(str)
 AI_APP_KEY = ''  # 腾讯AI appkey(str)
 
-# 变量配置
-ADMIN_USER = [123456]  # 管理员(int)
-ACTIVE_USER = [123456]  # 监听好友(int)
-ACTIVE_GROUP = {123456: '*', 1234567: '*'}  # 监听群聊：前者为群号，后者为指令权限许可范围（ - 、* 、[qid]）(keys.int,values.str)
-
 # github仓库监听配置
 REPO_GROUP = []  # 消息推送群聊(int)
 REPO_TIME = 15  # 监听时间间隔(int)
