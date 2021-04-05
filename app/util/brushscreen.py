@@ -1,17 +1,19 @@
-import datetime
-
-from app.util import mysql
+from app.util.dao import MysqlDao
 
 
-def brushscreen(record_table, qq):
-    Message_history = mysql.record_find(record_table, qq)
-    time1 = datetime.datetime.strptime(Message_history[0][2], '%Y-%m-%d %H:%M:%S')
-    time2 = datetime.datetime.strptime(Message_history[2][2], '%Y-%m-%d %H:%M:%S')
-    time = (time2 - time1).seconds
-    if time < 5:  # 刷屏禁言
-        return 1
-    elif Message_history[0][3] == Message_history[1][3] == Message_history[2][3] \
-            and Message_history[0][3].strip() != '' and time < 30:  # 30秒内重复消息禁言
-        return 2
-    else:
-        return 0
+def brushscreen(group_id, member_id):
+    with MysqlDao() as db:
+        res = db.query('SELECT * FROM msg where uid=%s and qid=%s', [group_id, member_id])
+        if len(res) > 2:
+            time = (res[2][3] - res[0][3]).seconds
+            if time < 5:  # 刷屏禁言
+                return 1
+            elif res[0][4] == res[1][4] == res[2][4] \
+                    and res[0][4].strip() != '' and time < 30:  # 30秒内重复消息禁言
+                return 2
+            else:
+                return 0
+
+
+if __name__ == '__main__':
+    print(brushscreen(1042210644, 1332925715))

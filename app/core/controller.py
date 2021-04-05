@@ -1,5 +1,3 @@
-import datetime
-
 from graia.application import GraiaMiraiApplication
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
@@ -8,10 +6,10 @@ from graia.application.message.elements.internal import Plain, Image, At
 
 from app.core.config import *
 from app.plugin import *
-from app.util.tools import isstartswith
-from app.util import mysql
-from app.util.brushscreen import brushscreen
 from app.plugin.chat import Chat
+from app.util.brushscreen import brushscreen
+from app.util.msg import *
+from app.util.tools import isstartswith
 
 
 class Controller:
@@ -50,17 +48,12 @@ class Controller:
                 except:
                     content_record = self.message.get(Image)[0].dict()['url']
                     type_record = 'image'
-                if mysql.find_table(str(self.group.id) + 'record') == 0:
-                    mysql.create_record(str(self.group.id) + 'record')
-                nowtime = datetime.datetime.strftime(datetime.datetime.now(), '%Y-%m-%d %H:%M:%S')  # 转换为str
-                if type_record == 'text':
-                    mysql.insert_record(str(self.group.id) + 'record', self.member.id, nowtime, msg)
-                elif type_record == 'image':
-                    mysql.insert_record(str(self.group.id) + 'record', self.member.id, nowtime, content_record)
+                content_record = msg if type_record == 'text' else content_record
+                save(self.group.id, self.member.id, content_record)
 
                 # 检测是否刷屏
                 try:
-                    target_brushscreen = brushscreen(str(self.group.id) + 'record', self.member.id)
+                    target_brushscreen = brushscreen(self.group.id, self.member.id)
                     if target_brushscreen == 1:
                         await self.app.mute(self.group, self.member.id, 5 * 60)
                         resp = MessageChain.create([

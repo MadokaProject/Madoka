@@ -1,12 +1,12 @@
 import asyncio
-import requests
-from app.util import mysql
+from datetime import datetime, timedelta
 
+import requests
 from graia.application import enter_context, MessageChain
 from graia.application.message.elements.internal import Plain
 
-from datetime import datetime, timedelta
 from app.core.config import *
+from app.util.dao import MysqlDao
 
 
 async def github_listener(app):
@@ -18,19 +18,23 @@ async def github_listener(app):
         repo = REPO_NAME  # 仓库名
         repo_api = REPO_API  # 仓库api
         for repo_num in range(len(repo)):
-            if mysql.find_table(repo[repo_num]) == 0:  # 若数据表不存在
-                mysql.github_create(repo[repo_num])  # 创建数据表
             branches = requests.get(repo_api[repo_num]).json()  # 获取该仓库的全部branch json
-            commit = mysql.github_find(repo[repo_num])  # 查找该仓库全部已有提交信息
-            b = [i[1] for i in commit]
             for branch in branches:  # 挨个分支进行检测
-                if branch['name'] in b:  # 若branch已存在
-                    if commit[b.index(branch['name'])][2] != branch['commit']['sha']:  # sha值不一致，更新数据表信息，发送群消息通知
-                        mysql.github_update(repo[repo_num], branch['name'], branch['commit']['sha'])  # 更新数据表
-                        await message_push(app, group, branch)  # 推送消息
-                else:  # 若数据表中无对应branch，插入信息至数据表，发送群消息
-                    mysql.github_insert(repo[repo_num], branch['name'], branch['commit']['sha'])
-                    await message_push(app, group, branch)
+                with MysqlDao() as db:
+                    res = db.query('SELECT * FROM github where repo=%s and branch=%s', [repo[repo_num], branch['name']])
+                    if res:
+                        if res[0][3] != branch['commit']['sha']:  # sha不一致
+                            db.update(
+                                'update github set sha = %s where repo=%s branch=%s',
+                                [[branch['commit']['sha']], repo[repo_num], branch['name']]
+                            )
+                            await message_push(app, group, branch)
+                    else:
+                        db.update(
+                            'INSERT INTO github(repo, branch, sha) VALUES(%s, %s, %s)',
+                            [repo[repo_num], branch['name'], branch['commit']['sha']]
+                        )
+                        await message_push(app, group, branch)
 
 
 async def message_push(app, groups, branch):
