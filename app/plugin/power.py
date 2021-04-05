@@ -11,7 +11,7 @@ from app.util.tools import isstartswith, restart
 
 class Admin(Plugin):
     entry = ['.power', '.电源', '.p']
-    brief_help = '\r\n▶\t电源：p'
+    brief_help = '\r\n▶电源：p'
     full_help = \
         '.电源/.p\t仅限管理员使用！\r\n' \
         '.电源/.p k\t关闭机器人\r\n' \
