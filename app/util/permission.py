@@ -1,4 +1,4 @@
-from app.core.config import *
+from app.core.settings import *
 
 
 def check_permit(qid, qtype, cmd):

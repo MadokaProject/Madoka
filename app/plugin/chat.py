@@ -5,6 +5,7 @@ from graia.application.message.elements.internal import Plain, At
 
 from app.api.sign import doHttpPost
 from app.core.config import *
+from app.core.settings import *
 
 no_answer = [
     '我好像忘了什么...',
