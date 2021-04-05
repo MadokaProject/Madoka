@@ -25,7 +25,7 @@ async def github_listener(app):
                     if res:
                         if res[0][3] != branch['commit']['sha']:  # sha不一致
                             db.update(
-                                'update github set sha = %s where repo=%s branch=%s',
+                                'update github set sha = %s where repo=%s and branch=%s',
                                 [[branch['commit']['sha']], repo[repo_num], branch['name']]
                             )
                             await message_push(app, group, branch)

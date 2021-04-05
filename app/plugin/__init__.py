@@ -1,7 +1,8 @@
 __all__ = [
     'base',
-    'netease',
+    'sys',
     'admin',
+    'netease',
     'acg',
     'fanyi',
     'ImageRecognize'

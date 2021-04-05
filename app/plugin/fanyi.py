@@ -1,5 +1,5 @@
 from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain, At
+from graia.application.message.elements.internal import Plain
 
 from app.api.sign import doHttpPost
 from app.plugin.base import Plugin

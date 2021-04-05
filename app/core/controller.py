@@ -4,7 +4,7 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, At
 
-from app.core.config import *
+from app.core.settings import *
 from app.plugin import *
 from app.plugin.chat import Chat
 from app.util.brushscreen import brushscreen
@@ -40,8 +40,6 @@ class Controller:
             if self.group.id not in ACTIVE_GROUP:
                 return
             if self.member.id not in ADMIN_USER:
-                content_record = ''  # 消息内容
-                type_record = ''  # 消息类型
                 try:
                     content_record = self.message.get(Plain)[0].dict()['text']
                     type_record = 'text'
