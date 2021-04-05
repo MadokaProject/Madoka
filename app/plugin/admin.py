@@ -13,8 +13,11 @@ class Admin(Plugin):
     brief_help = '\r\n▶管理: admin'
     full_help = \
         '.admin\t仅限管理可用！\r\n' \
-        '.admin ban [time] [qq]\t禁言用户\r\n' \
-        '.admin unban [qq]\t解除禁言'
+        '.admin t [qid]\t踢人\r\n' \
+        '.admin ban [time] [qq]\t禁言\r\n' \
+        '.admin aban\t全员禁言\r\n' \
+        '.admin unban [qq]\t解除禁言\r\n' \
+        '.admin unaban\t全员解除禁言'
     hidden = True
 
     @permission_required(level='ADMIN')
@@ -23,7 +26,13 @@ class Admin(Plugin):
             self.print_help()
             return
         try:
-            if isstartswith(self.msg[0], 'ban'):
+            if isstartswith(self.msg[0], 't'):
+                assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
+                await self.app.kick(self.group, int(self.msg[1][1:]))
+                self.resp = MessageChain.create([
+                    Plain('飞机票快递成功！')
+                ])
+            elif isstartswith(self.msg[0], 'ban'):
                 assert len(self.msg) == 3 and self.msg[1].isdigit()
                 await self.app.mute(self.group, int(self.msg[2][1:]), int(self.msg[1]) * 60)
                 self.resp = MessageChain.create([
@@ -34,6 +43,16 @@ class Admin(Plugin):
                 await self.app.unmute(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('解除禁言成功！')
+                ])
+            elif isstartswith(self.msg[0], 'aban'):
+                await self.app.muteAll(self.group.id)
+                self.resp = MessageChain.create([
+                    Plain('全员禁言成功！')
+                ])
+            elif isstartswith(self.msg[0], 'unaban'):
+                await self.app.unmuteAll(self.group.id)
+                self.resp = MessageChain.create([
+                    Plain('全员解除禁言成功！')
                 ])
             else:
                 self.args_error()
