@@ -35,6 +35,9 @@ class Sys(Plugin):
                 self.resp = MessageChain.create([
                     Plain('添加成功')
                 ])
+                ACTIVE_USER.update({
+                    int(self.msg[1]): '*',
+                })
             elif isstartswith(self.msg[0], 'du'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 if int(self.msg[1]) not in ACTIVE_USER:
@@ -51,12 +54,16 @@ class Sys(Plugin):
                         self.resp = MessageChain.create([
                             Plain('移除成功！')
                         ])
+                        ACTIVE_USER.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ag'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 BotGroup(self.msg[1])
                 self.resp = MessageChain.create([
                     Plain('添加成功')
                 ])
+                ACTIVE_GROUP.update({
+                    int(self.msg[1]): '*'
+                })
             elif isstartswith(self.msg[0], 'dg'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 if int(self.msg[1]) not in ACTIVE_GROUP:
@@ -73,6 +80,23 @@ class Sys(Plugin):
                         self.resp = MessageChain.create([
                             Plain('移除成功！')
                         ])
+                        ACTIVE_GROUP.pop(int(self.msg[1]))
+            elif isstartswith(self.msg[0], 'ul'):
+                with MysqlDao() as db:
+                    res = db.query(
+                        "SELECT uid FROM friend_listener WHERE active=1"
+                    )
+                self.resp = MessageChain.create([Plain(
+                    ''.join([f'{qq}\r\n' for (qq,) in res])
+                )])
+            elif isstartswith(self.msg[0], 'gl'):
+                with MysqlDao() as db:
+                    res = db.query(
+                        "SELECT uid FROM group_listener"
+                    )
+                self.resp = MessageChain.create([Plain(
+                    ''.join([f'{group_id}\r\n' for (group_id,) in res])
+                )])
             else:
                 self.args_error()
                 return
