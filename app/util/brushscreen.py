@@ -3,7 +3,7 @@ from app.util.dao import MysqlDao
 
 def brushscreen(group_id, member_id):
     with MysqlDao() as db:
-        res = db.query('SELECT * FROM msg where uid=%s and qid=%s', [group_id, member_id])
+        res = db.query('SELECT * FROM msg where uid=%s and qid=%s', [group_id, member_id])[-3:]
         if len(res) > 2:
             time = (res[2][3] - res[0][3]).seconds
             if time < 5:  # 刷屏禁言
