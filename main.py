@@ -1,6 +1,6 @@
 import asyncio
 
-from graia.application import GraiaMiraiApplication, Session
+from graia.application.entry import *
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
@@ -41,6 +41,20 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
 async def group_join_listener(group: Group, member: Member, app: GraiaMiraiApplication):
     event = Join(group, member, app)
     await event.process_event()
+
+
+@bcc.receiver("MemberJoinRequestEvent")
+async def group_join_request_listener(app: GraiaMiraiApplication, event: MemberJoinRequestEvent):
+    await event.accept()
+    await app.sendFriendMessage(1332925715, MessageChain.create([
+        Plain('有一新成员申请加入群聊（' + event.groupName + '）\r\n昵称: ' + event.nickname + '\r\nQQ: ' + str(
+            event.supplicant) + '\r\n申请群聊: ' + str(event.groupId) + '\r\n附加消息: ' + event.message + '\r\n已自动帮您同意')
+    ]))
+
+
+# @bcc.receiver("NewFriendRequestEvent")
+# async def friend_request_listener(app: GraiaMiraiApplication, event: NewFriendRequestEvent):
+#     await event.accept()
 
 
 loop.create_task(github_listener(app))
