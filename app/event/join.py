@@ -6,7 +6,6 @@ from graia.application.message.elements.internal import Plain, Image, At
 
 class Join:
     def __init__(self, *args):
-        """存储消息"""
         for arg in args:
             if isinstance(arg, Group):
                 self.group = arg  # 加入群聊
