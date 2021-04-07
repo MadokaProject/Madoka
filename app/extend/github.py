@@ -1,4 +1,3 @@
-import asyncio
 from datetime import datetime, timedelta
 
 import requests
@@ -10,31 +9,32 @@ from app.util.dao import MysqlDao
 
 
 async def github_listener(app):
-    while True:
-        await asyncio.sleep(REPO_TIME * 60)  # 间隔时间
-        app.logger.info('github_listener is running...')
+    app.logger.info('github_listener is running...')
 
-        group = REPO_GROUP
-        repo = REPO_NAME  # 仓库名
-        repo_api = REPO_API  # 仓库api
-        for repo_num in range(len(repo)):
-            branches = requests.get(repo_api[repo_num]).json()  # 获取该仓库的全部branch json
-            for branch in branches:  # 挨个分支进行检测
-                with MysqlDao() as db:
-                    res = db.query('SELECT * FROM github where repo=%s and branch=%s', [repo[repo_num], branch['name']])
-                    if res:
-                        if res[0][3] != branch['commit']['sha']:  # sha不一致
-                            db.update(
-                                'update github set sha = %s where repo=%s and branch=%s',
-                                [[branch['commit']['sha']], repo[repo_num], branch['name']]
-                            )
-                            await message_push(app, group, branch)
-                    else:
+    group = REPO_GROUP
+    repo = REPO_NAME  # 仓库名
+    repo_api = REPO_API  # 仓库api
+    for repo_num in range(len(repo)):
+        branches = requests.get(repo_api[repo_num]).json()  # 获取该仓库的全部branch json
+        for branch in branches:  # 挨个分支进行检测
+            with MysqlDao() as db:
+                res = db.query(
+                    'SELECT * FROM github where repo=%s and branch=%s',
+                    [repo[repo_num], branch['name']]
+                )
+                if res:
+                    if res[0][3] != branch['commit']['sha']:  # sha不一致
                         db.update(
-                            'INSERT INTO github(repo, branch, sha) VALUES(%s, %s, %s)',
-                            [repo[repo_num], branch['name'], branch['commit']['sha']]
+                            'update github set sha = %s where repo=%s and branch=%s',
+                            [[branch['commit']['sha']], repo[repo_num], branch['name']]
                         )
                         await message_push(app, group, branch)
+                else:
+                    db.update(
+                        'INSERT INTO github(repo, branch, sha) VALUES(%s, %s, %s)',
+                        [repo[repo_num], branch['name'], branch['commit']['sha']]
+                    )
+                    await message_push(app, group, branch)
 
 
 async def message_push(app, groups, branch):
