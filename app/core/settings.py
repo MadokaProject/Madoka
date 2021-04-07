@@ -21,3 +21,11 @@ with MysqlDao() as db:
     res = db.query('SELECT uid FROM friend_listener WHERE admin=1')
 for (qid,) in res:
     ADMIN_USER.append(int(qid))
+
+REPO = {}
+with MysqlDao() as db:
+    res = db.query('SELECT repo, api FROM github_config')
+for (repo, api) in res:
+    REPO.update({
+        str(repo): str(api)
+    })

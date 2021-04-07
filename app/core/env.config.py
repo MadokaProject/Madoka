@@ -17,8 +17,6 @@ MYSQL_DB = 'qqbot'  # 数据库名(str)
 AI_APP_ID = ''  # 腾讯AI appid(str)
 AI_APP_KEY = ''  # 腾讯AI appkey(str)
 
-# github仓库监听配置
+# github仓库监听配置(监听仓库请通过指令配置)
 REPO_GROUP = []  # 消息推送群聊(int)
 REPO_TIME = '*/10  * * * *'  # 监听时间间隔(cron表达式)
-REPO_NAME = []  # 仓库名(str)
-REPO_API = []  # 仓库api（个数须与REPO_NAME对应）(str)
