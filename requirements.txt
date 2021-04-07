@@ -6,6 +6,7 @@ chardet==4.0.0
 croniter==0.3.37
 graia-application-mirai==0.17.3
 graia-broadcast==0.8.7
+graia-scheduler==0.0.3
 idna==2.10
 iterwrapper==0.1.4
 multidict==5.1.0
