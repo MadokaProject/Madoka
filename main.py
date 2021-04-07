@@ -5,11 +5,14 @@ from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 from graia.broadcast import Broadcast
+from graia.scheduler import GraiaScheduler
+from graia.scheduler.timers import crontabify
 
 from app.core.config import *
 from app.core.controller import Controller
 from app.event.join import Join
 from app.extend.github import github_listener
+from app.extend.GroupTimingMessage import TimingMessage
 
 loop = asyncio.get_event_loop()
 
@@ -22,6 +25,9 @@ app = GraiaMiraiApplication(
         account=QQ,  # 你的机器人的 qq 号
         websocket=True  # Graia 已经可以根据所配置的消息接收的方式来保证消息接收部分的正常运作.
     )
+)
+scheduler = GraiaScheduler(
+    loop, bcc
 )
 
 
@@ -43,5 +49,15 @@ async def group_join_listener(group: Group, member: Member, app: GraiaMiraiAppli
     await event.process_event()
 
 
-loop.create_task(github_listener(app))
+@scheduler.schedule(crontabify("0 0 * * * "))
+async def group_timing_message():
+    await TimingMessage(app)
+
+
+@scheduler.schedule(crontabify(REPO_TIME))
+async def github_commit_listener():
+    await github_listener(app)
+
+
 app.launch_blocking()
+loop.run_forever()
