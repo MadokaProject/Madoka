@@ -5,6 +5,7 @@ from graia.application import enter_context, MessageChain
 from graia.application.message.elements.internal import Plain
 
 from app.core.config import *
+from app.core.settings import *
 from app.util.dao import MysqlDao
 
 
@@ -12,8 +13,10 @@ async def github_listener(app):
     app.logger.info('github_listener is running...')
 
     group = REPO_GROUP
-    repo = REPO_NAME  # 仓库名
-    repo_api = REPO_API  # 仓库api
+    repo = [i for i in REPO.keys()]
+    repo_api = [i for i in REPO.values()]
+    if not repo or not repo_api:
+        return
     for repo_num in range(len(repo)):
         branches = requests.get(repo_api[repo_num]).json()  # 获取该仓库的全部branch json
         for branch in branches:  # 挨个分支进行检测
