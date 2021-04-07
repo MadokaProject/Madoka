@@ -19,7 +19,7 @@ class ACG(Plugin):
         try:
             if isstartswith(self.msg[0], '买家秀'):
                 self.resp = MessageChain.create([
-                    Image.fromNetworkAddress("https://api.66mz8.com/api/rand.tbimg.php?format=jpg").asFlash()
+                    Image.fromNetworkAddress("https://api.66mz8.com/api/rand.tbimg.php?format=jpg")
                 ])
             elif isstartswith(self.msg[0], 'setu'):
                 self.resp = MessageChain.create([
