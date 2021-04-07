@@ -28,16 +28,16 @@ async def github_listener(app):
                             'update github set sha = %s where repo=%s and branch=%s',
                             [[branch['commit']['sha']], repo[repo_num], branch['name']]
                         )
-                        await message_push(app, group, branch)
+                        await message_push(app, group, repo[repo_num], branch)
                 else:
                     db.update(
                         'INSERT INTO github(repo, branch, sha) VALUES(%s, %s, %s)',
                         [repo[repo_num], branch['name'], branch['commit']['sha']]
                     )
-                    await message_push(app, group, branch)
+                    await message_push(app, group, repo[repo_num], branch)
 
 
-async def message_push(app, groups, branch):
+async def message_push(app, groups, repo, branch):
     commit_info = requests.get(branch['commit']['url']).json()
     commit_time = datetime.strftime(
         datetime.strptime(commit_info['commit']['author']['date'],
@@ -45,9 +45,9 @@ async def message_push(app, groups, branch):
     with enter_context(app=app):
         for group in groups:
             await app.sendGroupMessage(group, MessageChain.create([
-                Plain(branch['name']),
-                Plain("\r\ncommit: " + commit_info['commit']['message']),
-                Plain("\r\nname: " + commit_info['commit']['author']['name']),
-                Plain("\r\ntime: " + commit_time),
-                Plain("\r\nurl: " + commit_info['html_url'])
+                Plain('Recent Commits to ' + repo + ':' + branch['name']),
+                Plain("\r\nCommit: " + commit_info['commit']['message']),
+                Plain("\r\nAuthor: " + commit_info['commit']['author']['name']),
+                Plain("\r\nUpdated: " + commit_time),
+                Plain("\r\nLink: " + commit_info['html_url'])
             ]))
