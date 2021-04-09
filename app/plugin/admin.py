@@ -13,7 +13,7 @@ class Admin(Plugin):
     brief_help = '\r\n▶管理: admin'
     full_help = \
         '.admin\t仅限管理可用！\r\n' \
-        '.admin t [qid]\t踢人\r\n' \
+        '.admin kick [qid]\t踢人\r\n' \
         '.admin revoke [id]\t撤回消息' \
         '.admin ban [time] [qq]\t禁言\r\n' \
         '.admin aban\t全员禁言\r\n' \
@@ -34,7 +34,7 @@ class Admin(Plugin):
                 self.resp = MessageChain.create([
                     Plain('消息撤回成功！')
                 ])
-            elif isstartswith(self.msg[0], 't'):
+            elif isstartswith(self.msg[0], 'kick'):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
                 await self.app.kick(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
