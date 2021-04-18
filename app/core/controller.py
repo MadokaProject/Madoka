@@ -34,7 +34,7 @@ class Controller:
 
         # 判断是否在权限允许列表
         if hasattr(self, 'friend'):
-            if self.friend.id not in ACTIVE_USER:
+            if self.friend.id not in ACTIVE_USER and self.message.asDisplay().split()[0] != '.wyy':
                 return
         elif hasattr(self, 'group'):
             if self.group.id not in ACTIVE_GROUP:
