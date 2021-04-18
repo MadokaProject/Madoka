@@ -14,7 +14,8 @@ class GithubListener(Plugin):
     full_help = \
         '.github add [repo_name] [repo_api]\t添加监听仓库\r\n' \
         '.github modify [repo_name] [name|api] [value]\t修改监听仓库配置\r\n' \
-        '.github remove [repo_name]\t删除监听仓库'
+        '.github remove [repo_name]\t删除监听仓库\r\n' \
+        '.github list\t列出所有监听仓库'
     hidden = True
 
     @permission_required(level='ADMIN')
@@ -99,7 +100,7 @@ class GithubListener(Plugin):
                         "SELECT repo, api FROM github_config"
                     )
                 self.resp = MessageChain.create([Plain(
-                    ''.join([f'{repo}: {repo_api}\r\n' for (repo, repo_api) in res])
+                    '\r\n'.join([f'{repo}: {repo_api}' for (repo, repo_api) in res])
                 )])
             else:
                 self.args_error()
