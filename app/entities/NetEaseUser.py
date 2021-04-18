@@ -22,5 +22,3 @@ class NetEaseUser:
                 )
                 if not res:
                     raise Exception()
-            else:
-                return 302

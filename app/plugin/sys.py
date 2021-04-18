@@ -87,7 +87,7 @@ class Sys(Plugin):
                         "SELECT uid FROM friend_listener WHERE active=1"
                     )
                 self.resp = MessageChain.create([Plain(
-                    ''.join([f'{qq}\r\n' for (qq,) in res])
+                    '\r\n'.join([f'{qq}' for (qq,) in res])
                 )])
             elif isstartswith(self.msg[0], 'gl'):
                 with MysqlDao() as db:
@@ -95,7 +95,7 @@ class Sys(Plugin):
                         "SELECT uid FROM group_listener"
                     )
                 self.resp = MessageChain.create([Plain(
-                    ''.join([f'{group_id}\r\n' for (group_id,) in res])
+                    '\r\n'.join([f'{group_id}' for (group_id,) in res])
                 )])
             else:
                 self.args_error()

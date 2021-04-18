@@ -69,11 +69,11 @@ async def NetEase_process_event(app, qid, phone, pwd):
     object = json.loads(res.text)
     if object['code'] == 200:
         await app.sendFriendMessage(qid, MessageChain.create([
-            Plain("登录成功！")
+            Plain(phone + "：登录成功！")
         ]))
     else:
         await app.sendFriendMessage(qid, MessageChain.create([
-            Plain("登录失败！请检查密码是否正确！" + str(object['code']))
+            Plain(phone + "：登录失败！请检查密码是否正确！" + str(object['code']))
         ]))
         return object['code']
 
@@ -81,16 +81,16 @@ async def NetEase_process_event(app, qid, phone, pwd):
     object = json.loads(res.text)
     if object['code'] != 200 and object['code'] != -2:
         await app.sendFriendMessage(qid, MessageChain.create([
-            Plain("签到时发生错误：" + object['msg'])
+            Plain(phone + "：签到时发生错误：" + object['msg'])
         ]))
     else:
         if object['code'] == 200:
             await app.sendFriendMessage(qid, MessageChain.create([
-                Plain("签到成功，经验+" + str(object['point']))
+                Plain(phone + "：签到成功，经验+" + str(object['point']))
             ]))
         else:
             await app.sendFriendMessage(qid, MessageChain.create([
-                Plain("重复签到")
+                Plain(phone + "：重复签到")
             ]))
 
     res = s.post(url=url3,
@@ -135,12 +135,12 @@ async def NetEase_process_event(app, qid, phone, pwd):
     object = json.loads(res.text, strict=False)
     if object['code'] == 200:
         await app.sendFriendMessage(qid, MessageChain.create([
-            Plain("刷单成功！共" + str(count) + "首")
+            Plain(phone + "：刷单成功！共" + str(count) + "首")
         ]))
         return
     else:
         await app.sendFriendMessage(qid, MessageChain.create([
-            Plain("发生错误：" + str(object['code']) + object['message'])
+            Plain(phone + "：发生错误：" + str(object['code']) + object['message'])
         ]))
         return object['code']
 
@@ -148,10 +148,10 @@ async def NetEase_process_event(app, qid, phone, pwd):
 async def NetEase_action(app):
     with MysqlDao() as db:
         NetEase = db.query(
-            'SELECT * FROM netease'
+            'SELECT qid, phone, pwd FROM netease'
         )
-        for (_id, qid, phone, pwd) in NetEase:
+        for (qid, phone, pwd) in NetEase:
             await app.sendFriendMessage(qid, MessageChain.create([
-                Plain("正在进行账号" + phone + "的自动签到任务")
+                Plain("正在进行账号" + phone + "的自动签到任务\r\n下次运行时间为：8:00")
             ]))
             await NetEase_process_event(app, qid, phone, pwd)
