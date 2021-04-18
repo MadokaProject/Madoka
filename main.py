@@ -11,8 +11,9 @@ from graia.scheduler.timers import crontabify
 from app.core.config import *
 from app.core.controller import Controller
 from app.event.join import Join
-from app.extend.github import github_listener
 from app.extend.GroupTimingMessage import TimingMessage
+from app.extend.NetEaseCloudMusicAction import NetEase_action
+from app.extend.github import github_listener
 
 loop = asyncio.get_event_loop()
 
@@ -57,6 +58,11 @@ async def group_timing_message():
 @scheduler.schedule(crontabify(REPO_TIME))
 async def github_commit_listener():
     await github_listener(app)
+
+
+@scheduler.schedule(crontabify("0 8 * * *"))
+async def NetEase_actions():
+    await NetEase_action(app)
 
 
 app.launch_blocking()

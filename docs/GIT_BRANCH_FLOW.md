@@ -16,6 +16,7 @@
 | bugfix | 不稳定 | release | merge，pull request |
 
 开发流程：
+
 1. 开发时，应该按照规定创建feature分支（feature/迭代/姓名/功能名，feature/1.0/Colsrch/Group_management）
 2. 本地开发并调试后，通过pull request合并到dev分支
 3. 管理员CR通过合并到dev进行测试
@@ -37,14 +38,15 @@
 - 无论是pull request到dev还是releases，都需要更新一下releases到feature分支，再进行提交。
 - pull request后，需要自己看看pull request后的代码是否存在冲突问题，不要提了就不管了。
 - 从feature分支pull request到dev分支时需要注意以下问题:
-	- 代码必须保证本地可以运行并通过自测
+    - 代码必须保证本地可以运行并通过自测
     - dev分支作为联合调试环境,不会将dev代码同步到releases,所以提交pull request时注意不要勾选合并后删除分支.
     - pull request后留意CR结果,CR不通过, 将会关闭pull request,根据整改意见整改后,再次提交pull request.
     - pull request中必须说清楚修改的内容,例如:
-    	- bugfix: 修改首页xxx情况下xxx问题
+        - bugfix: 修改首页xxx情况下xxx问题
         - feat: 在xxx模块新增xxx特性
         - 如果pull request涉及多处修改,必须在pull request描述清楚每一个修改点的内容,CR也会检查pull request是否描述清楚问题.
-- 通过dev进行测试没有问题后, 从feature分支pull request到releases分支.releases要求与dev分支规则一致,pull request与dev理论上应该一致,合并会采用扁平合并,将会合并本次pull request中的所有内容进行一次commit
-	- 合并releases的pull request，一般情况下都需要在dev有提交记录
-	- 如果没有特殊情况，可以选择合并后删除feature分支
+- 通过dev进行测试没有问题后, 从feature分支pull request到releases分支.releases要求与dev分支规则一致,pull request与dev理论上应该一致,合并会采用扁平合并,将会合并本次pull
+  request中的所有内容进行一次commit
+    - 合并releases的pull request，一般情况下都需要在dev有提交记录
+    - 如果没有特殊情况，可以选择合并后删除feature分支
     - releases分支将会作为上线前统一测试环境，当releases测试出现问题需要进行bugfix时，理论上需要重新合并dev重新走流程。

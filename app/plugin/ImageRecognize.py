@@ -1,14 +1,14 @@
+import base64
 import random
 import string
-import base64
-import requests
 
+import requests
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, Image
 
+from app.api.sign import doHttpPost
 from app.plugin.base import Plugin
 from app.util.tools import isstartswith
-from app.api.sign import doHttpPost
 
 
 class ImageRecognize(Plugin):

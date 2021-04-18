@@ -1,9 +1,9 @@
 import asyncio
 
-from app.core.settings import *
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
+from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
 from app.plugin.base import Plugin

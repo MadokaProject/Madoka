@@ -1,6 +1,6 @@
 from graia.application import GraiaMiraiApplication
-from graia.application.message.chain import MessageChain
 from graia.application.group import Group, Member
+from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, At
 
 

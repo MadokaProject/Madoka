@@ -3,19 +3,11 @@ import string
 import time
 from hashlib import md5
 from urllib.parse import urlencode
-from app.core.config import *
-from retrying import retry
 
 import requests
+from retrying import retry
 
-"""
-// getReqSign ：根据 接口请求参数 和 应用密钥 计算 请求签名
-// 参数说明
-//   - $params：接口请求参数（特别注意：不同的接口，参数对一般不一样，请以具体接口要求为准）
-//   - $appkey：应用密钥
-// 返回数据
-//   - 签名结果
-"""
+from app.core.config import *
 
 
 # 对字典按键排序
@@ -35,6 +27,14 @@ def nonce_str():
 
 
 def getReqSign(params, appkey):  # params: 关联数组 appkey: 字符串
+    """
+    // getReqSign ：根据 接口请求参数 和 应用密钥 计算 请求签名
+    // 参数说明
+    //   - $params：接口请求参数（特别注意：不同的接口，参数对一般不一样，请以具体接口要求为准）
+    //   - $appkey：应用密钥
+    // 返回数据
+    //   - 签名结果
+    """
     #  1. 字典升序排序
     params = dict(sort_by_key(params))
 
