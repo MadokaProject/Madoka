@@ -3,6 +3,7 @@ __all__ = [
     'sys',
     'power',
     'admin',
+    'GroupJoin',
     'GithubListener',
     'netease',
     'acg',
