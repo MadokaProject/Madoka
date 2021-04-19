@@ -50,6 +50,15 @@ async def group_join_listener(group: Group, member: Member, app: GraiaMiraiAppli
     await event.process_event()
 
 
+@bcc.receiver("NewFriendRequestEvent")
+async def friend_request_listener(app: GraiaMiraiApplication, event: NewFriendRequestEvent):
+    await event.accept()
+    await app.sendFriendMessage(1332925715, MessageChain.create([
+        Plain('有人申请加我为好友\r\n昵称: ' + event.nickname + '\r\nQQ: ' + str(
+            event.supplicant) + '\r\n来自群聊: ' + str(event.sourceGroup) + '\r\n附加消息: ' + event.message + '\r\n已自动同意')
+    ]))
+
+
 @scheduler.schedule(crontabify("0 0 * * * "))
 async def group_timing_message():
     await TimingMessage(app)
