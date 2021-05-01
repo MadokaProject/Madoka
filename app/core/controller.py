@@ -7,6 +7,7 @@ from graia.application.message.elements.internal import Plain, Image, At
 from app.core.settings import *
 from app.plugin import *
 from app.plugin.chat import Chat
+from app.plugin.reply import Reply
 from app.util.brushscreen import brushscreen
 from app.util.msg import *
 from app.util.tools import isstartswith
@@ -78,6 +79,7 @@ class Controller:
                     print(e)
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
+            await Reply(self)
             await Chat(self)
             return
 
