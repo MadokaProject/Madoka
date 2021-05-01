@@ -14,7 +14,7 @@ class Admin(Plugin):
     full_help = \
         '.admin\t仅限管理可用！\r\n' \
         '.admin kick [qid]\t踢人\r\n' \
-        '.admin revoke [id]\t撤回消息' \
+        '.admin revoke [id]\t撤回消息\r\n' \
         '.admin ban [time] [qq]\t禁言\r\n' \
         '.admin aban\t全员禁言\r\n' \
         '.admin unban [qq]\t解除禁言\r\n' \
