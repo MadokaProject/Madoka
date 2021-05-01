@@ -4,7 +4,7 @@ from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
 from app.plugin.base import Plugin
-from app.util.dao import *
+from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith
 
