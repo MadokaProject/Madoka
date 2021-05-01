@@ -46,7 +46,7 @@ class Reply(Plugin):
                             Plain('添加失败！该关键词已存在')
                         ])
             elif isstartswith(self.msg[0], 'modify'):
-                assert len(self.msg) = = 3
+                assert len(self.msg) == 3
                 with MysqlDao() as db:
                     res = db.query(
                         'SELECT * FROM group_reply WHERE uid=%s and keyword=%s',
