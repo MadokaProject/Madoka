@@ -20,7 +20,7 @@ class Join:
         with MysqlDao() as db:
             res = db.query(
                 'SELECT text, active FROM group_join WHERE uid=%s',
-                [self.group]
+                [self.group.id]
             )
             if res:
                 for (text, active) in res:
