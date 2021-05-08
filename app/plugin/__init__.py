@@ -9,5 +9,6 @@ __all__ = [
     'netease',
     'acg',
     'fanyi',
-    'ImageRecognize'
+    'ImageRecognize',
+    'qq'
 ]
