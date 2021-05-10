@@ -10,5 +10,6 @@ __all__ = [
     'acg',
     'fanyi',
     'ImageRecognize',
-    'qq'
+    'qq',
+    'zhanzhangTools'
 ]
