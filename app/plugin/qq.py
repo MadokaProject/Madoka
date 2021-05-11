@@ -25,9 +25,15 @@ class QQ(Plugin):
                     'qq': str(self.member.id)
                 }
                 response = (await getHttpGet(url, param)).split('\n')
-                self.resp = MessageChain.create([
-                    Plain('\n'.join(f'{response[i]}' for i in range(2, 6))), At(self.member.id)
-                ])
+                try:
+                    if self.friend.id:
+                        self.resp = MessageChain.create([
+                            Plain('\n'.join(f'{response[i]}' for i in range(2, 6)))
+                        ])
+                except:
+                    self.resp = MessageChain.create([
+                        Plain('\n'.join(f'{response[i]}' for i in range(2, 6))), At(self.member.id)
+                    ])
             elif isstartswith(self.msg[0], '气泡'):
                 assert len(self.msg) == 3
                 url = 'http://tianyi.gjwa.cn/api/diyble.php'
@@ -36,9 +42,15 @@ class QQ(Plugin):
                     'msg': self.msg[2]
                 }
                 response = await getHttpGet(url, param)
-                self.resp = MessageChain.create([
-                    At(self.member.id), Plain(' ' + response)
-                ])
+                try:
+                    if self.friend.id:
+                        self.resp = MessageChain.create([
+                            Plain(response)
+                        ])
+                except:
+                    self.resp = MessageChain.create([
+                        At(self.member.id), Plain(' ' + response)
+                    ])
             elif isstartswith(self.msg[0], '头像'):
                 assert len(self.msg) == 2
                 url = 'http://tianyi.gjwa.cn/api/touxiang.php'
@@ -46,15 +58,27 @@ class QQ(Plugin):
                     'msg': self.msg[1]
                 }
                 response = (await getHttpGet(url, param)).split('\n')[2:-2]
-                if self.msg[1] == '3':
-                    self.resp = MessageChain.create([
-                        At(self.member.id), Image.fromNetworkAddress(response[0][5:-1]),
-                        Image.fromNetworkAddress(response[1][5:-1])
-                    ])
-                else:
-                    self.resp = MessageChain.create([
-                        At(self.member.id), Image.fromNetworkAddress(response[0][5:-1])
-                    ])
+                try:
+                    if self.friend.id:
+                        if self.msg[1] == '3':
+                            self.resp = MessageChain.create([
+                                Image.fromNetworkAddress(response[0][5:-1]),
+                                Image.fromNetworkAddress(response[1][5:-1])
+                            ])
+                        else:
+                            self.resp = MessageChain.create([
+                                Image.fromNetworkAddress(response[0][5:-1])
+                            ])
+                except:
+                    if self.msg[1] == '3':
+                        self.resp = MessageChain.create([
+                            At(self.member.id), Image.fromNetworkAddress(response[0][5:-1]),
+                            Image.fromNetworkAddress(response[1][5:-1])
+                        ])
+                    else:
+                        self.resp = MessageChain.create([
+                            At(self.member.id), Image.fromNetworkAddress(response[0][5:-1])
+                        ])
             else:
                 self.args_error()
                 return
