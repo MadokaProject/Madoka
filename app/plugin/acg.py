@@ -1,6 +1,7 @@
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Image
 
+from app.api.tianyi import getHttp
 from app.plugin.base import Plugin
 from app.util.tools import isstartswith
 
@@ -10,7 +11,8 @@ class ACG(Plugin):
     brief_help = '\r\n▶动漫图: acg'
     full_help = \
         '.acg 买家秀\r\n' \
-        '.acg setu'
+        '.acg setu\r\n' \
+        '.acg tui'
 
     async def process(self):
         if not self.msg:
@@ -19,11 +21,17 @@ class ACG(Plugin):
         try:
             if isstartswith(self.msg[0], '买家秀'):
                 self.resp = MessageChain.create([
-                    Image.fromNetworkAddress("https://api.66mz8.com/api/rand.tbimg.php?format=jpg")
+                    Image.fromNetworkAddress("https://api.sumt.cn/api/rand.tbimg.php")
                 ])
             elif isstartswith(self.msg[0], 'setu'):
                 self.resp = MessageChain.create([
                     Image.fromNetworkAddress("https://api.cyfan.top/acg")
+                ])
+            elif isstartswith(self.msg[0], 'tui'):
+                url = 'http://tianyi.gjwa.cn/api/tu.php'
+                response = await getHttp(url)
+                self.resp = MessageChain.create([
+                    Image.fromNetworkAddress(response)
                 ])
             else:
                 self.args_error()

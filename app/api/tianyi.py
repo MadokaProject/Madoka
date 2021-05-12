@@ -1,4 +1,3 @@
-import requests
 import aiohttp
 from retrying import retry
 
@@ -16,7 +15,14 @@ header = [
 @retry(stop_max_attempt_number=5, wait_fixed=5000)
 async def getHttpGet(url, params):
     async with aiohttp.request("GET", url, params=params) as r:
-        response = await r.text(encoding="utf-8")    # 或者直接await r.read()不编码，直接读取，适合于图像等无法编码文件
+        response = await r.text(encoding="utf-8")  # 或者直接await r.read()不编码，直接读取，适合于图像等无法编码文件
+        return response
+
+
+@retry(stop_max_attempt_number=5, wait_fixed=5000)
+async def getHttp(url):
+    async with aiohttp.request("GET", url) as r:
+        response = await r.text(encoding='utf-8')
         return response
 
 
@@ -26,4 +32,3 @@ if __name__ == '__main__':
         'qq': '3189402257'
     }
     response = getHttpGet(url, param)
-
