@@ -1,3 +1,5 @@
+import ast
+
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, At
 
@@ -13,7 +15,8 @@ class WebMasterTools(Plugin):
         '.web ping [域名]\r\n' \
         '.web 网站测速 [域名]\r\n' \
         '.web 域名查询 [域名]\r\n' \
-        '.web 状态查询 [域名]'
+        '.web 状态查询 [域名]\r\n' \
+        '.web 百度收录 [域名]'
 
     async def process(self):
         if not self.msg:
@@ -80,6 +83,15 @@ class WebMasterTools(Plugin):
                     self.resp = MessageChain.create([
                         At(self.member.id), Plain('\n'.join(f' {i}' for i in response))
                     ])
+            elif isstartswith(self.msg[0], '百度收录'):
+                url = 'http://tianyi.gjwa.cn/api/shouqu.php'
+                param = {
+                    'domain': self.msg[1]
+                }
+                response = ast.literal_eval(await getHttpGet(url, param))
+                self.resp = MessageChain.create([
+                    Plain('域名：' + response['domain'] + '\n百度收录量：' + response['data'])
+                ])
             else:
                 self.args_error()
                 return
