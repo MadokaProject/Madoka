@@ -67,7 +67,7 @@ class Controller:
                         ])
                         await self._do_send(resp)
                         return
-                    elif (type_record == 'text' and len(msg) > 150) or (
+                    elif (type_record == 'text' and len(msg) > 500) or (
                             type_record == 'image' and len(self.message.get(Image)) > 5):
                         await self.app.mute(self.group, self.member.id, 2 * 60)
                         resp = MessageChain.create([
