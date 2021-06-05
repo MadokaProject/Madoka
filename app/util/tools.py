@@ -27,3 +27,7 @@ def isstartswith(prefix: str, args) -> bool:
 def restart(*args):
     python = sys.executable
     os.execl(python, python, *[sys.argv[0], *args])
+
+
+def app_path():
+    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

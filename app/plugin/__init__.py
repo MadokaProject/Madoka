@@ -11,5 +11,6 @@ __all__ = [
     'fanyi',
     'ImageRecognize',
     'qq',
-    'zhanzhangTools'
+    'zhanzhangTools',
+    'mcinfo'
 ]
