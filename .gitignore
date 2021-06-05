@@ -2,3 +2,4 @@ app/core/config.py
 .idea/*
 **/__pycache__/
 venv/*
+app/tmp/*

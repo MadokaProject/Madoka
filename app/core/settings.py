@@ -1,6 +1,9 @@
 from app.util.dao import MysqlDao
 
 ACTIVE_GROUP = {}
+ID_TO_GROUP = {
+    1: 771414803
+}
 with MysqlDao() as db:
     res = db.query('SELECT uid, permission FROM group_listener')
 for (gid, permit) in res:
@@ -29,3 +32,11 @@ for (repo, api) in res:
     REPO.update({
         str(repo): str(api)
     })
+
+LISTEN_MC_SERVER = []
+with MysqlDao() as db:
+    res = db.query('SELECT ip,port,report,delay FROM mc_server WHERE listen=1')
+for (ip, port, report, delay) in res:
+    LISTEN_MC_SERVER.append(
+        [[ip, int(port)], [i for i in str(report).split(',')], delay]
+    )

@@ -14,6 +14,7 @@ from app.event.join import Join
 from app.extend.GroupTimingMessage import TimingMessage
 from app.extend.NetEaseCloudMusicAction import NetEase_action
 from app.extend.github import github_listener
+from app.extend.schedule import custom_schedule
 
 loop = asyncio.get_event_loop()
 
@@ -73,6 +74,8 @@ async def github_commit_listener():
 async def NetEase_actions():
     await NetEase_action(app)
 
+
+asyncio.run(custom_schedule(loop, bcc, app))
 
 app.launch_blocking()
 loop.run_forever()
