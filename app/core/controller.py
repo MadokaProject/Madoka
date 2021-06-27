@@ -2,14 +2,13 @@ from graia.application import GraiaMiraiApplication
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image, At
+from graia.application.message.elements.internal import Plain
 
 from app.core.settings import *
+from app.event.reply import Reply, Repeat
+from app.event.save import MsgProcess
 from app.plugin import *
 from app.plugin.chat import Chat
-from app.plugin.reply import Reply
-from app.util.brushscreen import brushscreen
-from app.util.msg import *
 from app.util.tools import isstartswith
 
 
@@ -41,45 +40,11 @@ class Controller:
             if self.group.id not in ACTIVE_GROUP:
                 return
             if self.member.id not in ADMIN_USER:
-                try:
-                    content_record = self.message.get(Plain)[0].dict()['text']
-                    type_record = 'text'
-                except:
-                    content_record = self.message.get(Image)[0].dict()['url']
-                    type_record = 'image'
-                content_record = msg if type_record == 'text' else content_record
-                save(self.group.id, self.member.id, content_record)
-
-                # 检测是否刷屏
-                try:
-                    target_brushscreen = brushscreen(self.group.id, self.member.id)
-                    if target_brushscreen == 1:
-                        await self.app.mute(self.group, self.member.id, 5 * 60)
-                        resp = MessageChain.create([
-                            At(self.member.id), Plain(' 请勿刷屏！')
-                        ])
-                        await self._do_send(resp)
-                        return
-                    elif target_brushscreen == 2:
-                        await self.app.mute(self.group, self.member.id, 2 * 60)
-                        resp = MessageChain.create([
-                            At(self.member.id), Plain(' 请勿发送重复消息！')
-                        ])
-                        await self._do_send(resp)
-                        return
-                    elif (type_record == 'text' and len(msg) > 500) or (
-                            type_record == 'image' and len(self.message.get(Image)) > 5):
-                        await self.app.mute(self.group, self.member.id, 2 * 60)
-                        resp = MessageChain.create([
-                            At(self.member.id), Plain(' 请勿发送超长消息！')
-                        ])
-                        await self._do_send(resp)
-                        return
-                except Exception as e:
-                    print(e)
+                await MsgProcess(self, msg)
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
             await Reply(self)
+            await Repeat(self)
             await Chat(self)
             return
 
