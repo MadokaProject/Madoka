@@ -17,6 +17,7 @@ class WebMasterTools(Plugin):
         '.web 域名查询 [域名]\r\n' \
         '.web 状态查询 [域名]\r\n' \
         '.web 百度收录 [域名]'
+    enable = False
 
     async def process(self):
         if not self.msg:
