@@ -2,7 +2,7 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, At
 
 from app.util.brushscreen import brushscreen
-from app.util.msg import *
+from app.util.msg import save
 
 
 async def MsgProcess(self, msg):
