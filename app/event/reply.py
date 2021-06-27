@@ -40,11 +40,3 @@ async def Repeat(self):
                 Image.fromNetworkAddress(res[0][0]) if re.match(regex, res[0][0]) else Plain(res[0][0])
             ])
             await self._do_send(resp)
-
-
-if __name__ == '__main__':
-    if re.match(regex,
-                "http://gchat.qpic.cn/gchatpic_new/2627257869/1079235756-2438246460-DC608F995E41008C76A3BDDC744754F2/0?term=2"):
-        print('True')
-    else:
-        print('False')
