@@ -15,6 +15,7 @@ from app.extend.GroupTimingMessage import TimingMessage
 from app.extend.NetEaseCloudMusicAction import NetEase_action
 from app.extend.github import github_listener
 from app.extend.schedule import custom_schedule
+from auto_sql import auto_create_sql
 
 loop = asyncio.get_event_loop()
 
@@ -31,6 +32,8 @@ app = GraiaMiraiApplication(
 scheduler = GraiaScheduler(
     loop, bcc
 )
+
+auto_create_sql()  # 初始化数据库
 
 
 @bcc.receiver("FriendMessage")
