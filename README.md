@@ -1,4 +1,8 @@
-# QQ-bot
+# PyIBot
+
+一个基于 Graia 和 Mirai 的快速、可配置、可自定义插件的 QQ 机器人
+
+> PyIBot 是一个非盈利的开源项目，仅供交流学习使用。请勿用于商业或非法用途，因使用而与腾讯公司产生的一切纠纷均与原作者无关。
 
 ## Build Setup
 
@@ -17,23 +21,39 @@ $ sh run.sh
 
 ## 部署流程
 
+推荐使用官方启动器 [mirai-console-loader](https://github.com/iTXTech/mirai-console-loader) (mcl) 自行启动 [mirai](https://github.com/mamoe/mirai) 与 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
+
 ### 运行前配置
 
-本应用与数据库相关联，使用前需要先运行 `qq-bot_mysql`，并补全 `app/core/env.config.py` → `app/core/config.py` 文件
+本应用与数据库相关联，使用前请创建一个数据库如 `qqbot` ，并补全 `app/core/env.config.py` → `app/core/config.py` 文件
 
-> 请注意您需要拥有 MySQL 数据库服务，否则无法正常使用本应用
+> 请注意你需要拥有 MySQL 数据库服务，否则无法正常使用本应用
 
 ### 克隆项目
 
 ``` bash
-git clone https://e.coding.net/jxsfgz/qq-bot/python.git QQ-bot
+git clone https://github.com/PyIBot/Application.git PyIBot
 ```
 
 ### 安装依赖
 
+建议使用 Virtualenv 或 Conda 等虚拟环境工具
+
 ``` bash
 pip install -r requirements.txt
 ```
+
+### 安装插件
+
+推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键安装，手动安装如下：
+
+前往 [Plugins](https://github.com/PyIBot/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录，并在该目录的 `__init__.py` 文件中添加对应插件文件名。
+
+> 你可自行在该目录编写其他插件，同时欢迎你将你的插件 PR 到此插件库
+
+### 升级插件
+
+推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级，手动升级请重新下载覆盖原文件。
 
 ### 运行
 
@@ -48,6 +68,11 @@ sh run.sh
 ``` cmd
 python main.py
 ```
+
+## 升级
+
+- 推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级。
+- 手动升级：git pull 拉取。
 
 ## 项目版本管理
 
@@ -77,6 +102,17 @@ python main.py
 ├───requirements.txt            用于描述应用的依赖关系
 ├───README.md                   项目说明文件
 ```
+
+## 说明
+
+请勿将其用于商业或非法用途。
+
+## 相关项目
+
+- [Application](https://github.com/PyIBot/Application.git): PyIBot 主体
+- [Plugins](https://github.com/PyIBot/Plugins.git): PyIBot 的官方插件库（你也可以提交 PR 来丰富此插件库）
+- [Web](https://github.com/PyIBot/Web.git): 机器人 Web 控制系统(计划中)
+- [Loader](https://github.com/PyIBot/Loader.git): 懒人工具(或许有？)
 
 ## 依赖
 
