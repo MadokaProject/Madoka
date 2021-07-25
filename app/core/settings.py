@@ -1,9 +1,6 @@
 from app.util.dao import MysqlDao
 
 ACTIVE_GROUP = {}
-ID_TO_GROUP = {
-    1: 771414803
-}
 with MysqlDao() as db:
     res = db.query('SELECT uid, permission FROM group_listener')
 for (gid, permit) in res:
