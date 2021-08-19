@@ -11,7 +11,6 @@ from graia.scheduler.timers import crontabify
 from app.core.config import *
 from app.core.controller import Controller
 from app.event.join import Join
-from app.extend.GroupTimingMessage import TimingMessage
 from app.extend.NetEaseCloudMusicAction import NetEase_action
 from app.extend.github import github_listener
 from app.extend.schedule import custom_schedule
@@ -61,11 +60,6 @@ async def friend_request_listener(app: GraiaMiraiApplication, event: NewFriendRe
         Plain('有人申请加我为好友\r\n昵称: ' + event.nickname + '\r\nQQ: ' + str(
             event.supplicant) + '\r\n来自群聊: ' + str(event.sourceGroup) + '\r\n附加消息: ' + event.message + '\r\n已自动同意')
     ]))
-
-
-@scheduler.schedule(crontabify("0 0 * * * "))
-async def group_timing_message():
-    await TimingMessage(app)
 
 
 @scheduler.schedule(crontabify(REPO_TIME))
