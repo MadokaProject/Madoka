@@ -62,6 +62,14 @@ def auto_create_sql():
                     listen int not null, \
                     delay int not null comment '超时时间')"
             )
+            db.update(
+                "create table if not exists config ( \
+                    name varchar(30) not null comment '配置名', \
+                    uid char(10) not null comment '群组', \
+                    value varchar(500) not null comment '参数', \
+                    primary key (name, uid))"
+            )
             print('初始化数据库成功！')
+            return True
     except Exception as e:
         print('初始化数据库失败：' + str(e))

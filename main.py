@@ -32,7 +32,8 @@ scheduler = GraiaScheduler(
     loop, bcc
 )
 
-auto_create_sql()  # 初始化数据库
+if not auto_create_sql():  # 初始化数据库
+    exit('初始化数据库失败')
 
 
 @bcc.receiver("FriendMessage")
