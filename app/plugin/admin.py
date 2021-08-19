@@ -3,7 +3,9 @@ import asyncio
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, Source
 
+from app.core.settings import *
 from app.plugin.base import Plugin
+from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith
 
@@ -13,12 +15,16 @@ class Admin(Plugin):
     brief_help = '\r\n▶管理: admin'
     full_help = \
         '.admin\t仅限管理可用！\r\n' \
-        '.admin kick [qid]\t踢人\r\n' \
+        '.admin status [0 / 1]\t群管开关\r\n' \
+        '.admin kick [@qq]\t踢人\r\n' \
         '.admin revoke [id]\t撤回消息\r\n' \
-        '.admin ban [time] [qq]\t禁言\r\n' \
+        '.admin ban [time(m)] [@qq]\t禁言\r\n' \
         '.admin aban\t全员禁言\r\n' \
-        '.admin unban [qq]\t解除禁言\r\n' \
-        '.admin unaban\t全员解除禁言'
+        '.admin unban [@qq]\t解除禁言\r\n' \
+        '.admin unaban\t解除全员禁言\r\n' \
+        '.admin 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
+        '.admin 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
+        '.admin 超长消息 [文本长度] [图片数量] [禁言时间(m)] [回复消息]\t检测单消息超出[文本长度]或[图片数量]'
     hidden = True
 
     @permission_required(level='ADMIN')
@@ -62,6 +68,92 @@ class Admin(Plugin):
                 self.resp = MessageChain.create([
                     Plain('全员解除禁言成功！')
                 ])
+            elif isstartswith(self.msg[0], 'status'):
+                assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
+                with MysqlDao() as db:
+                    if db.update(
+                        'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
+                        ['status', self.group.id, self.msg[1]]
+                    ):
+                        if not CONFIG.__contains__(str(self.group.id)):
+                            CONFIG.update({str(self.group.id): {}})
+                        CONFIG[str(self.group.id)].update({
+                            'status': self.msg[1]
+                        })
+                        self.resp = MessageChain.create([
+                            Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')
+                        ])
+            elif isstartswith(self.msg[0], '刷屏检测'):
+                assert len(self.msg) == 4 and self.msg[1].isdigit() and self.msg[2].isdigit()
+                with MysqlDao() as db:
+                    if db.update(
+                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
+                            ['mute', self.group.id, json.dumps({
+                                'time': int(self.msg[1]),
+                                'mute': int(self.msg[2]) * 60,
+                                'message': self.msg[3]
+                            })]
+                    ):
+                        if not CONFIG.__contains__(str(self.group.id)):
+                            CONFIG.update({str(self.group.id): {}})
+                        CONFIG[str(self.group.id)].update({
+                            'mute': {
+                                'time': int(self.msg[1]),
+                                'mute': int(self.msg[2]) * 60,
+                                'message': self.msg[3]
+                            }
+                        })
+                        self.resp = MessageChain.create([
+                            Plain('设置成功！')
+                        ])
+            elif isstartswith(self.msg[0], '重复消息'):
+                assert len(self.msg) == 4 and self.msg[1].isdigit() and self.msg[2].isdigit()
+                with MysqlDao() as db:
+                    if db.update(
+                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
+                            ['duplicate', self.group.id, json.dumps({
+                                'time': int(self.msg[1]),
+                                'mute': int(self.msg[2]) * 60,
+                                'message': self.msg[3]
+                            })]
+                    ):
+                        if not CONFIG.__contains__(str(self.group.id)):
+                            CONFIG.update({str(self.group.id): {}})
+                        CONFIG[str(self.group.id)].update({
+                            'duplicate': {
+                                'time': int(self.msg[1]),
+                                'mute': int(self.msg[2]) * 60,
+                                'message': self.msg[3]
+                            }
+                        })
+                        self.resp = MessageChain.create([
+                            Plain('设置成功！')
+                        ])
+            elif isstartswith(self.msg[0], '超长消息'):
+                assert len(self.msg) == 5 and self.msg[1].isdigit() and self.msg[2].isdigit() and self.msg[3].isdigit()
+                with MysqlDao() as db:
+                    if db.update(
+                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
+                            ['over-length', self.group.id, json.dumps({
+                                'text': int(self.msg[1]),
+                                'image': int(self.msg[2]),
+                                'mute': int(self.msg[3]) * 60,
+                                'message': self.msg[4]
+                            })]
+                    ):
+                        if not CONFIG.__contains__(str(self.group.id)):
+                            CONFIG.update({str(self.group.id): {}})
+                        CONFIG[str(self.group.id)].update({
+                            'over-length': {
+                                'text': int(self.msg[1]),
+                                'image': int(self.msg[2]),
+                                'mute': int(self.msg[3]) * 60,
+                                'message': self.msg[4]
+                            }
+                        })
+                        self.resp = MessageChain.create([
+                            Plain('设置成功！')
+                        ])
             else:
                 self.args_error()
                 return
