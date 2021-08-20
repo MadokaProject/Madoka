@@ -31,3 +31,15 @@ def restart(*args):
 
 def app_path():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+
+
+def message_source(self) -> bool:
+    """判断消息来源
+
+    :return: bool 群消息：True, 好友消息：False
+    """
+    try:
+        if self.friend.id:
+            return False
+    except:
+        return True
