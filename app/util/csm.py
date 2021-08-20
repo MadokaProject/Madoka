@@ -8,7 +8,7 @@ from app.util.dao import MysqlDao
 # crowd system manage 群管
 async def csm(self, msg, type_record):
     if CONFIG.__contains__(str(self.group.id)) and CONFIG[str(self.group.id)].__contains__('status') and \
-            CONFIG[str(self.group.id)]['status'] == '1':  # 默认关闭，需自行开启(.admin status)
+            CONFIG[str(self.group.id)]['status']:  # 默认关闭，需自行开启(.admin status)
         if await spam(self, msg, type_record):  # 刷屏检测(优先)
             return True
 

@@ -13,10 +13,6 @@ MYSQL_USER = 'root'  # 数据库用户名(str)
 MYSQL_PWD = '123456'  # 数据库密码(str)
 MYSQL_DB = 'qqbot'  # 数据库名(str)
 
-# 腾讯AI应用配置（由于腾讯AI业务改变，该功能无法使用）[待移除]
-AI_APP_ID = ''  # 腾讯AI appid(str)
-AI_APP_KEY = ''  # 腾讯AI appkey(str)
-
 # github仓库监听配置(监听仓库请通过指令配置)
 REPO_GROUP = []  # 消息推送群聊(int)
 REPO_TIME = '*/10  * * * *'  # 监听时间间隔(cron表达式)
