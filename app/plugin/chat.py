@@ -3,9 +3,10 @@ import random
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, At
 
-from app.api.sign import doHttpPost
+from app.api.doHttp import doHttpRequest
 from app.core.config import *
 from app.core.settings import *
+from app.util.tools import message_source
 
 no_answer = [
     '我好像忘了什么...',
@@ -32,40 +33,40 @@ no_answer = [
 ]
 
 
-# 由于腾讯AI收费，该智能聊天功能暂时无法使用，请等待开发其他版本
 async def Chat(self):
     try:
         message = str(self.message.get(Plain)[0].dict()['text']).strip()
-        url = 'https://api.ai.qq.com/fcgi-bin/nlp/nlp_textchat'
-        try:
-            if self.friend.id:  # 好友聊天
-                if message:
-                    params = {
-                        'session': str(self.friend.id),
-                        'question': message.encode('utf-8'),
-                    }
-                    response = doHttpPost(params, url)
-                    if response['ret'] == 0:
-                        resp = MessageChain.create([
-                            Plain(' ' + response['data']['answer'])
-                        ])
-                    else:
-                        resp = MessageChain.create([
-                            Plain(random.choice(no_answer))
-                        ])
-                    await self._do_send(resp)
-        except:
+        url = 'http://api.qingyunke.com/api.php'
+        if not message_source(self):  # 好友聊天
+            if message:
+                params = {
+                    'key': 'free',
+                    'appid': 0,
+                    'msg': message,
+                }
+                response = json.loads(await doHttpRequest(url, 'GET', params))
+                if response['result'] == 0:
+                    resp = MessageChain.create([
+                        Plain(str(response['content']).replace('{br}', '\r\n'))
+                    ])
+                else:
+                    resp = MessageChain.create([
+                        Plain(random.choice(no_answer))
+                    ])
+                await self._do_send(resp)
+        else:
             if self.message.get(At):  # 群聊聊天
                 if str(self.message.get(At)[0].dict()['target']) == QQ:
                     if message:
                         params = {
-                            'session': str(self.member.id),
-                            'question': message.encode('utf-8'),
+                            'key': 'free',
+                            'appid': 0,
+                            'msg': message,
                         }
-                        response = doHttpPost(params, url)
-                        if response['ret'] == 0:
+                        response = json.loads(await doHttpRequest(url, 'GET', params))
+                        if response['result'] == 0:
                             resp = MessageChain.create([
-                                At(self.member.id), Plain(' ' + response['data']['answer'])
+                                At(self.member.id), Plain(' ' + str(response['content']).replace('{br}', '\r\n'))
                             ])
                         else:
                             resp = MessageChain.create([
@@ -73,7 +74,7 @@ async def Chat(self):
                             ])
                         await self._do_send(resp)
                     else:
-                        if self.member.id == ADMIN_USER:
+                        if self.member.id in ADMIN_USER:
                             resp = MessageChain.create([
                                 At(self.member.id), Plain(' 管理员您好')
                             ])

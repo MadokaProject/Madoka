@@ -5,7 +5,7 @@ from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image
 
 from app.core.settings import *
-from app.event.reply import Reply, Repeat
+from app.event.reply import ReplyS
 from app.plugin import *
 from app.plugin.chat import Chat
 from app.util.csm import csm
@@ -53,8 +53,7 @@ class Controller:
                     return
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
-            await Reply(self)
-            await Repeat(self)
+            await ReplyS(self)
             await Chat(self)
             return
 
