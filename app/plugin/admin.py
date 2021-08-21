@@ -72,8 +72,8 @@ class Admin(Plugin):
                 assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
                 with MysqlDao() as db:
                     if db.update(
-                        'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
-                        ['status', self.group.id, self.msg[1]]
+                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
+                            ['status', self.group.id, self.msg[1]]
                     ):
                         if not CONFIG.__contains__(str(self.group.id)):
                             CONFIG.update({str(self.group.id): {}})
