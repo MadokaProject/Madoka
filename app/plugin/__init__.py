@@ -3,14 +3,10 @@ __all__ = [
     'sys',
     'power',
     'admin',
+    'friendEvent',
     'replyKeyword',
     'GroupJoin',
     'GithubListener',
-    'netease',
-    'acg',
-    'fanyi',
-    'ImageRecognize',
-    'qq',
-    'zhanzhangTools',
-    'mcinfo'
+    'mcinfo',
+
 ]
