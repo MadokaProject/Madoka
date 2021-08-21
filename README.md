@@ -21,7 +21,8 @@ $ sh run.sh
 
 ## 部署流程
 
-推荐使用官方启动器 [mirai-console-loader](https://github.com/iTXTech/mirai-console-loader) (mcl) 自行启动 [mirai](https://github.com/mamoe/mirai) 与 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
+推荐使用官方启动器 [mirai-console-loader](https://github.com/iTXTech/mirai-console-loader) (mcl)
+自行启动 [mirai](https://github.com/mamoe/mirai) 与 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
 
 ### 运行前配置
 
