@@ -1,5 +1,5 @@
 __all__ = {
-    'csm',
+    'brushscreen',
     'dao',
     'tools'
 }

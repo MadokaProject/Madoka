@@ -2,14 +2,13 @@ from graia.application import GraiaMiraiApplication
 from graia.application.friend import Friend
 from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image
+from graia.application.message.elements.internal import Plain
 
 from app.core.settings import *
-from app.event.reply import ReplyS
+from app.event.reply import Reply, Repeat
+from app.event.save import MsgProcess
 from app.plugin import *
 from app.plugin.chat import Chat
-from app.util.csm import csm
-from app.util.msg import save
 from app.util.tools import isstartswith
 
 
@@ -41,19 +40,11 @@ class Controller:
             if self.group.id not in ACTIVE_GROUP:
                 return
             if self.member.id not in ADMIN_USER:
-                try:
-                    content_record = self.message.get(Plain)[0].dict()['text']
-                    type_record = 'text'
-                except:
-                    content_record = self.message.get(Image)[0].dict()['url']
-                    type_record = 'image'
-                content_record = msg if type_record == 'text' else content_record
-                save(self.group.id, self.member.id, content_record)
-                if await csm(self, msg, type_record):
-                    return
+                await MsgProcess(self, msg)
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
-            await ReplyS(self)
+            await Reply(self)
+            await Repeat(self)
             await Chat(self)
             return
 
