@@ -3,14 +3,16 @@ from graia.application.message.elements.internal import Plain, Image, At
 
 from app.core.settings import *
 from app.util.dao import MysqlDao
+from app.util.tools import check_bot_permit
 
 
 # crowd system manage 群管
 async def csm(self, msg, type_record):
-    if CONFIG.__contains__(str(self.group.id)) and CONFIG[str(self.group.id)].__contains__('status') and \
-            CONFIG[str(self.group.id)]['status']:  # 默认关闭，需自行开启(.admin status)
-        if await spam(self, msg, type_record):  # 刷屏检测(优先)
-            return True
+    if not check_bot_permit(self):
+        if CONFIG.__contains__(str(self.group.id)) and CONFIG[str(self.group.id)].__contains__('status') and \
+                CONFIG[str(self.group.id)]['status']:  # 默认关闭，需自行开启(.admin status)
+            if await spam(self, msg, type_record):  # 刷屏检测(优先)
+                return True
 
 
 # 刷屏检测
