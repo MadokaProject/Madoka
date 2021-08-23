@@ -118,3 +118,13 @@ class Plugin:
             return self.resp
         else:
             return None
+
+
+class Schedule:
+    """计划任务继承此父类，并重写下面一个参数。该类方便插件开发者设置计划任务
+    :param cron: cron 表达式
+    """
+    cron = False
+
+    async def process(self):
+        """子类必须重写此方法，此方法用于执行计划任务"""
