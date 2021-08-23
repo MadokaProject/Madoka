@@ -8,6 +8,7 @@ from app.core.settings import LISTEN_MC_SERVER
 from app.extend.NetEaseCloudMusicAction import NetEase_action
 from app.extend.github import github_listener
 from app.extend.mc import mc_listener
+from app.plugin import *
 from app.util.tools import app_path
 
 
@@ -28,3 +29,11 @@ async def custom_schedule(loop, bcc, bot):
     @sche.schedule(timers.crontabify(REPO_TIME))
     async def github_commit_listener():
         await github_listener(bot)
+
+    """计划任务获取接口，该接口用于方便插件开发者设置计划任务"""
+    for tasker in base.Schedule.__subclasses__():
+        obj = tasker()
+        if obj.cron:
+            @sche.schedule(timers.crontabify(obj.cron))
+            async def Tasker():
+                await obj.process()
