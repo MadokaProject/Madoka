@@ -131,3 +131,14 @@ class Schedule:
 
     async def process(self):
         """子类必须重写此方法，此方法用于执行计划任务"""
+        raise NotImplementedError
+
+
+class initDB:
+    """初始化数据表继承此父类，并重写下面一个参数。该类方便插件开发者创建所需数据表
+    （注意：数据表命名格式：Plugin_<插件名>_<表名>，如: Plugin_base_demo）
+    """
+
+    async def process(self):
+        """子类必须重写此方法，此方法用于创建所需数据表"""
+        raise NotImplementedError

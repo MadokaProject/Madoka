@@ -12,7 +12,7 @@ from app.core.controller import Controller
 from app.event.friendRequest import FriendRequest
 from app.event.join import Join
 from app.extend.schedule import custom_schedule
-from auto_sql import auto_create_sql
+from initDB import initDB
 
 loop = asyncio.get_event_loop()
 
@@ -30,7 +30,7 @@ scheduler = GraiaScheduler(
     loop, bcc
 )
 
-if not auto_create_sql():  # 初始化数据库
+if not asyncio.run(initDB()):  # 初始化数据库
     exit('初始化数据库失败')
 
 

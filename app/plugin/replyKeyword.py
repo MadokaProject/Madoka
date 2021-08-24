@@ -3,15 +3,15 @@ import asyncio
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
-from app.plugin.base import Plugin
+from app.plugin.base import Plugin, initDB
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
-from app.util.tools import isstartswith
+from app.util.tools import isstartswith, message_source
 
 
 class Reply(Plugin):
     entry = ['.reply']
-    brief_help = '\r\n▶自定义回复: reply'
+    brief_help = '\r\n▶群自定义回复: reply'
     full_help = \
         '.reply add [keyword] [text]\t添加自定义回复\r\n' \
         '.reply modify [keyword] [text]\t修改自定义回复\r\n' \
@@ -25,6 +25,11 @@ class Reply(Plugin):
             self.print_help()
             return
         try:
+            if not message_source(self):
+                self.resp = MessageChain.create([
+                    Plain('请在群聊内使用该命令!')
+                ])
+                return
             if isstartswith(self.msg[0], 'add'):
                 assert len(self.msg) == 3
                 with MysqlDao() as db:
@@ -106,6 +111,19 @@ class Reply(Plugin):
         except Exception as e:
             print(e)
             self.unkown_error()
+
+
+class DB(initDB):
+
+    async def process(self):
+        with MysqlDao() as _db:
+            _db.update(
+                "create table if not exists group_reply( \
+                    id int auto_increment comment '序号' primary key, \
+                    uid char(12) not null comment '群号', \
+                    keyword varchar(50) not null comment '关键词', \
+                    text varchar(100) not null comment '回复消息')"
+            )
 
 
 if __name__ == '__main__':
