@@ -126,5 +126,8 @@ class Schedule:
     """
     cron = False
 
+    def __init__(self, app):
+        self.app: GraiaMiraiApplication = app
+
     async def process(self):
         """子类必须重写此方法，此方法用于执行计划任务"""
