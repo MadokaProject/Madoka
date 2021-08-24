@@ -1,7 +1,7 @@
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
 
-from app.plugin.base import Plugin
+from app.plugin.base import Plugin, initDB
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith
@@ -11,11 +11,11 @@ class GroupJoin(Plugin):
     entry = ['.join']
     brief_help = '\r\n▶入群欢迎: join'
     full_help = \
-        '.join set [uid] [text]\t设置入群欢迎消息\r\n' \
-        '.join view [uid]\t查看入群欢迎消息\r\n' \
-        '.join enable [uid]\t开启入群欢迎\r\n' \
-        '.join disable [uid]\t关闭入群欢迎\r\n' \
-        '.join drop [uid]\t删除入群欢迎\r\n' \
+        '.join set [群号] [文本]\t设置入群欢迎消息\r\n' \
+        '.join view [群号]\t查看入群欢迎消息\r\n' \
+        '.join enable [群号]\t开启入群欢迎\r\n' \
+        '.join disable [群号]\t关闭入群欢迎\r\n' \
+        '.join drop [群号]\t删除入群欢迎\r\n' \
         '.join list\t查看已配置入群欢迎的群组'
     hidden = True
 
@@ -93,3 +93,16 @@ class GroupJoin(Plugin):
         except Exception as e:
             print(e)
             self.unkown_error()
+
+
+class DB(initDB):
+
+    async def process(self):
+        with MysqlDao() as _db:
+            _db.update(
+                "create table if not exists group_join( \
+                    id int auto_increment comment '序号' primary key, \
+                    uid char(12) not null comment '群号', \
+                    text varchar(200) not null comment '欢迎消息', \
+                    active int not null comment '开关')"
+            )

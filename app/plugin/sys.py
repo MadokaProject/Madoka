@@ -6,7 +6,7 @@ from graia.application.message.elements.internal import Plain
 from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
-from app.plugin.base import Plugin
+from app.plugin.base import Plugin, initDB
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith
@@ -106,6 +106,26 @@ class Sys(Plugin):
         except Exception as e:
             print(e)
             self.unkown_error()
+
+
+class DB(initDB):
+
+    async def process(self):
+        with MysqlDao() as _db:
+            _db.update(
+                "create table if not exists friend_listener( \
+                    id int auto_increment comment '序号' primary key, \
+                    uid char(12) null comment 'QQ', \
+                    permission char not null comment '许可', \
+                    active int not null comment '用户', \
+                    admin int not null comment '管理')"
+            )
+            _db.update(
+                "create table if not exists group_listener( \
+                    id int auto_increment comment '序号' primary key, \
+                    uid char(12) null comment '群号', \
+                    permission char not null comment '许可')"
+            )
 
 
 if __name__ == '__main__':
