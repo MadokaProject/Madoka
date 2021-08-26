@@ -1,3 +1,4 @@
+import asyncio
 import os
 
 from graia import scheduler
@@ -26,9 +27,17 @@ async def custom_schedule(loop, bcc, bot):
         await github_listener(bot)
 
     """计划任务获取接口，该接口用于方便插件开发者设置计划任务"""
-    for tasker in base.Schedule.__subclasses__():
+    tasks = []
+    for index, tasker in enumerate(base.Schedule.__subclasses__()):
         obj = tasker(bot)
         if obj.cron:
-            @sche.schedule(timers.crontabify(obj.cron))
-            async def Tasker():
-                await obj.process()
+            tasks.append(TaskerProcess(loop, bcc, obj))
+    await asyncio.gather(*tasks)
+
+
+async def TaskerProcess(loop, bcc, obj):
+    sche = scheduler.GraiaScheduler(loop=loop, broadcast=bcc)
+
+    @sche.schedule(timers.crontabify(obj.cron))
+    async def process():
+        await obj.process()
