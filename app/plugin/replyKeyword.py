@@ -6,7 +6,7 @@ from graia.application.message.elements.internal import Plain
 from app.plugin.base import Plugin, initDB
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
-from app.util.tools import isstartswith, message_source
+from app.util.tools import isstartswith
 
 
 class Reply(Plugin):
@@ -25,7 +25,7 @@ class Reply(Plugin):
             self.print_help()
             return
         try:
-            if not message_source(self):
+            if not hasattr(self, 'group'):
                 self.resp = MessageChain.create([
                     Plain('请在群聊内使用该命令!')
                 ])
