@@ -6,6 +6,7 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 from graia.broadcast import Broadcast
 from graia.scheduler import GraiaScheduler
+from graia.broadcast.interrupt import InterruptControl
 
 from app.core.config import *
 from app.core.controller import Controller
@@ -30,6 +31,8 @@ scheduler = GraiaScheduler(
     loop, bcc
 )
 
+inc: InterruptControl = InterruptControl(bcc)
+
 if not asyncio.run(initDB()):  # 初始化数据库
     exit('初始化数据库失败')
 
@@ -41,8 +44,9 @@ async def friend_message_listener(message: MessageChain, friend: Friend, app: Gr
 
 
 @bcc.receiver("GroupMessage")
-async def group_message_listener(message: MessageChain, group: Group, member: Member, app: GraiaMiraiApplication):
-    event = Controller(message, group, member, app)
+async def group_message_listener(message: MessageChain, group: Group, member: Member, app: GraiaMiraiApplication,
+                                 source: Source):
+    event = Controller(message, group, member, app, source, inc)
     await event.process_event()
 
 

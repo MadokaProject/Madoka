@@ -5,6 +5,7 @@
 HOST = 'http://127.0.0.1:8080'  # 机器人mirai地址(str)
 AUTHKEY = ''  # 机器人mirai验证密钥(str)
 QQ = 'bot qq'  # 机器人QQ(str)
+BOTNAME = ''    # 机器人名
 MASTER_QQ = ''  # 主人QQ(str)
 
 # 数据库基本配置

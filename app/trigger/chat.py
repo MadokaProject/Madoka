@@ -37,9 +37,8 @@ class Chat(Trigger):
     """智能聊天系统"""
     async def process(self):
         head, sep, message = self.message.asDisplay().partition(' ')
-        print(message)
         url = 'http://api.qingyunke.com/api.php'
-        if not message or message in '.,;!?。，；！？/\\':
+        if not message or message not in '.,;!?。，；！？/\\':
             return
         if hasattr(self, 'friend'):  # 好友聊天
             params = {
