@@ -1,5 +1,6 @@
 from graia.application import MessageChain, Friend, Group, Member, GraiaMiraiApplication
-from graia.application.message.elements.internal import Plain
+from graia.application.message.elements.internal import Plain, Source
+from graia.broadcast.interrupt import InterruptControl
 
 from app.core.settings import *
 from app.plugin import *
@@ -19,6 +20,10 @@ class Controller:
                 self.group = arg  # 消息来源 群聊
             elif isinstance(arg, Member):
                 self.member = arg  # 群聊消息发送者
+            elif isinstance(arg, Source):
+                self.source = arg   # 消息标识
+            elif isinstance(arg, InterruptControl):
+                self.inc = arg
             elif isinstance(arg, GraiaMiraiApplication):
                 self.app = arg  # 程序执行主体
 
@@ -65,7 +70,7 @@ class Controller:
             if hasattr(self, 'friend'):
                 obj = plugin(self.message, self.friend, self.app)
             elif hasattr(self, 'group'):
-                obj = plugin(self.message, self.group, self.member, self.app)
+                obj = plugin(self.message, self.group, self.member, self.source, self.inc, self.app)
             if (hasattr(self, 'group') and self.member.id in ACTIVE_USER) or (
                     hasattr(self, 'friend') and self.friend.id in ACTIVE_USER):
                 obj.hidden = False
