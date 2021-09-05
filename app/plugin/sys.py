@@ -31,9 +31,9 @@ class Sys(Plugin):
         try:
             if isstartswith(self.msg[0], 'au'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
-                BotUser(self.msg[1], active=1)
+                BotUser(int(self.msg[1]), active=1)
                 self.resp = MessageChain.create([
-                    Plain('添加成功')
+                    Plain('添加成功！')
                 ])
                 ACTIVE_USER.update({
                     int(self.msg[1]): '*',
@@ -41,25 +41,22 @@ class Sys(Plugin):
             elif isstartswith(self.msg[0], 'du'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 if int(self.msg[1]) not in ACTIVE_USER:
-                    self.resp = MessageChain.create([
-                        Plain('该用户未找到！')
-                    ])
+                    self.resp = MessageChain.create([Plain(
+                        '未找到该用户！'
+                    )])
                     return
                 with MysqlDao() as db:
-                    res = db.update(
-                        'DELETE FROM friend_listener WHERE uid=%s',
-                        [int(self.msg[1])]
-                    )
-                    if res:
-                        self.resp = MessageChain.create([
-                            Plain('移除成功！')
-                        ])
-                        ACTIVE_USER.pop(int(self.msg[1]))
+                    res = db.update('UPDATE user SET active=0 where uid=%s', [int(self.msg[1])])
+                if res:
+                    self.resp = MessageChain.create([
+                        Plain('取消成功！')
+                    ])
+                    ACTIVE_USER.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ag'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
-                BotGroup(self.msg[1])
+                BotGroup(int(self.msg[1]), active=1)
                 self.resp = MessageChain.create([
-                    Plain('添加成功')
+                    Plain('添加成功！')
                 ])
                 ACTIVE_GROUP.update({
                     int(self.msg[1]): '*'
@@ -67,32 +64,29 @@ class Sys(Plugin):
             elif isstartswith(self.msg[0], 'dg'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 if int(self.msg[1]) not in ACTIVE_GROUP:
-                    self.resp = MessageChain.create([
-                        Plain('该群组未找到！')
-                    ])
+                    self.resp = MessageChain.create([Plain(
+                        '未找到该群组！'
+                    )])
                     return
                 with MysqlDao() as db:
-                    res = db.update(
-                        'DELETE FROM group_listener WHERE uid=%s',
-                        [int(self.msg[1])]
-                    )
-                    if res:
-                        self.resp = MessageChain.create([
-                            Plain('移除成功！')
-                        ])
-                        ACTIVE_GROUP.pop(int(self.msg[1]))
+                    res = db.update('UPDATE `group` SET active=0 WHERE uid=%s', [int(self.msg[1])])
+                if res:
+                    self.resp = MessageChain.create([
+                        Plain('取消成功！')
+                    ])
+                    ACTIVE_GROUP.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ul'):
                 with MysqlDao() as db:
                     res = db.query(
-                        "SELECT uid FROM friend_listener WHERE active=1"
+                        "SELECT uid FROM user WHERE active=1"
                     )
                 self.resp = MessageChain.create([Plain(
-                    '\r\n'.join([f'{qq}' for (qq,) in res])
+                    ''.join([f'{qq}\r\n' for (qq,) in res])
                 )])
             elif isstartswith(self.msg[0], 'gl'):
                 with MysqlDao() as db:
                     res = db.query(
-                        "SELECT uid FROM group_listener"
+                        "SELECT uid FROM `group` WHERE active=1"
                     )
                 self.resp = MessageChain.create([Plain(
                     '\r\n'.join([f'{group_id}' for (group_id,) in res])
@@ -113,18 +107,20 @@ class DB(initDB):
     async def process(self):
         with MysqlDao() as _db:
             _db.update(
-                "create table if not exists friend_listener( \
+                "create table if not exists user( \
                     id int auto_increment comment '序号' primary key, \
                     uid char(12) null comment 'QQ', \
-                    permission char not null comment '许可', \
-                    active int not null comment '用户', \
-                    admin int not null comment '管理')"
+                    active int not null comment '状态', \
+                    admin int not null comment '管理', \
+                    points int default 0 null comment '积分', \
+                    last_login date comment '最后登陆')"
             )
             _db.update(
-                "create table if not exists group_listener( \
+                "create table if not exists `group`( \
                     id int auto_increment comment '序号' primary key, \
                     uid char(12) null comment '群号', \
-                    permission char not null comment '许可')"
+                    permission char not null comment '许可', \
+                    active int not null comment '状态')"
             )
 
 
