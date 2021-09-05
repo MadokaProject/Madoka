@@ -1,5 +1,6 @@
 from graia.application import MessageChain, GraiaMiraiApplication, Friend, Group, Member
-from graia.application.message.elements.internal import Plain
+from graia.application.message.elements.internal import Plain, Source
+from graia.broadcast.interrupt import InterruptControl
 
 from app.util.permission import *
 from app.util.tools import *
@@ -32,6 +33,10 @@ class Plugin:
                     self.enable = False
             elif isinstance(arg, Member):
                 self.member: Member = arg  # 群聊消息发送者
+            elif isinstance(arg, Source):
+                self.source: Source = arg   # 消息标识
+            elif isinstance(arg, InterruptControl):
+                self.inc = arg
             elif isinstance(arg, GraiaMiraiApplication):
                 self.app: GraiaMiraiApplication = arg  # 程序执行主体
         self.resp = None
