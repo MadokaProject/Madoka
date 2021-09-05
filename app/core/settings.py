@@ -5,7 +5,7 @@ from app.util.dao import MysqlDao
 ACTIVE_GROUP = {}
 """监听群聊消息列表"""
 with MysqlDao() as db:
-    res = db.query('SELECT uid, permission FROM group_listener')
+    res = db.query('SELECT uid, permission FROM `group` WHERE active=1')
 for (gid, permit) in res:
     ACTIVE_GROUP.update({
         int(gid): str(permit).split(',')
@@ -14,16 +14,16 @@ for (gid, permit) in res:
 ACTIVE_USER = {}
 """监听好友消息列表"""
 with MysqlDao() as db:
-    res = db.query('SELECT uid, permission FROM friend_listener WHERE active=1')
-for (qid, permit) in res:
+    res = db.query('SELECT uid FROM user WHERE active=1')
+for (qid,) in res:
     ACTIVE_USER.update({
-        int(qid): str(permit).split(',')
+        int(qid): '*'
     })
 
 ADMIN_USER = []
 """具有管理权限QQ列表"""
 with MysqlDao() as db:
-    res = db.query('SELECT uid FROM friend_listener WHERE admin=1')
+    res = db.query('SELECT uid FROM user WHERE admin=1')
 for (qid,) in res:
     ADMIN_USER.append(int(qid))
 

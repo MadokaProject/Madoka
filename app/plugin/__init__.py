@@ -8,5 +8,6 @@ __all__ = [
     'GroupJoin',
     'GithubListener',
     'mcinfo',
+    'game',
 
 ]
