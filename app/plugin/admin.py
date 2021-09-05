@@ -24,7 +24,7 @@ class Admin(Plugin):
         '.admin unaban\t解除全员禁言\r\n' \
         '.admin 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.admin 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
-        '.admin 超长消息 [文本长度] [图片数量] [禁言时间(m)] [回复消息]\t检测单消息超出[文本长度]或[图片数量]'
+        '.admin 超长消息 [文本长度] [禁言时间(m)] [回复消息]\t检测单消息是否超出[文本长度]'
     hidden = True
 
     @permission_required(level='ADMIN')
@@ -33,6 +33,11 @@ class Admin(Plugin):
             self.print_help()
             return
         try:
+            if not hasattr(self, 'group'):
+                self.resp = MessageChain.create([
+                    Plain('请在群聊内使用该命令!')
+                ])
+                return
             if isstartswith(self.msg[0], 'revoke'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 source = self.message[Source][0].id - int(self.msg[1])
@@ -130,13 +135,12 @@ class Admin(Plugin):
                             Plain('设置成功！')
                         ])
             elif isstartswith(self.msg[0], '超长消息'):
-                assert len(self.msg) == 5 and self.msg[1].isdigit() and self.msg[2].isdigit() and self.msg[3].isdigit()
+                assert len(self.msg) == 5 and self.msg[1].isdigit() and self.msg[2].isdigit()
                 with MysqlDao() as db:
                     if db.update(
                             'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
                             ['over-length', self.group.id, json.dumps({
                                 'text': int(self.msg[1]),
-                                'image': int(self.msg[2]),
                                 'mute': int(self.msg[3]) * 60,
                                 'message': self.msg[4]
                             })]
@@ -146,7 +150,6 @@ class Admin(Plugin):
                         CONFIG[str(self.group.id)].update({
                             'over-length': {
                                 'text': int(self.msg[1]),
-                                'image': int(self.msg[2]),
                                 'mute': int(self.msg[3]) * 60,
                                 'message': self.msg[4]
                             }

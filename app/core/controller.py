@@ -1,15 +1,9 @@
-from graia.application import GraiaMiraiApplication
-from graia.application.friend import Friend
-from graia.application.group import Group, Member
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, Image
+from graia.application import MessageChain, Friend, Group, Member, GraiaMiraiApplication
+from graia.application.message.elements.internal import Plain
 
 from app.core.settings import *
-from app.event.reply import ReplyS
 from app.plugin import *
-from app.plugin.chat import Chat
-from app.util.csm import csm
-from app.util.msg import save
+from app.trigger import *
 from app.util.tools import isstartswith
 
 
@@ -33,6 +27,19 @@ class Controller:
         send_help = False  # 是否为主菜单帮助
         resp = '▶帮助：help'
 
+        # 自定义预触发器
+        for trig in trigger.Trigger.__subclasses__():
+            obj = None
+            if hasattr(self, 'friend'):
+                obj = trig(self.message, self.friend, self.app)
+            elif hasattr(self, 'group'):
+                obj = trig(self.message, self.group, self.member, self.app)
+            if not obj.enable:
+                continue
+            await obj.process()
+            if obj.as_last:
+                break
+
         # 判断是否在权限允许列表
         if hasattr(self, 'friend'):
             if self.friend.id not in ACTIVE_USER:
@@ -40,21 +47,8 @@ class Controller:
         elif hasattr(self, 'group'):
             if self.group.id not in ACTIVE_GROUP:
                 return
-            if self.member.id not in ADMIN_USER:
-                try:
-                    content_record = self.message.get(Plain)[0].dict()['text']
-                    type_record = 'text'
-                except:
-                    content_record = self.message.get(Image)[0].dict()['url']
-                    type_record = 'image'
-                content_record = msg if type_record == 'text' else content_record
-                save(self.group.id, self.member.id, content_record)
-                if await csm(self, msg, type_record):
-                    return
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
-            await ReplyS(self)
-            await Chat(self)
             return
 
         # 指令规范化
