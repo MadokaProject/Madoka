@@ -38,13 +38,13 @@ class Chat(Trigger):
     async def process(self):
         head, sep, message = self.message.asDisplay().partition(' ')
         url = 'http://api.qingyunke.com/api.php'
-        if not message or message not in '.,;!?。，；！？/\\':
-            return
         if hasattr(self, 'friend'):  # 好友聊天
+            if not head or head[0] in '.,;!?。，；！？/\\':
+                return
             params = {
                 'key': 'free',
                 'appid': 0,
-                'msg': message,
+                'msg': head,
             }
             response = json.loads(await doHttpRequest(url, 'GET', params))
             if response['result'] == 0:
@@ -57,6 +57,8 @@ class Chat(Trigger):
                 ])
             await self.do_send(resp)
         elif hasattr(self, 'group'):
+            if not message or message[0] in '.,;!?。，；！？/\\':
+                return
             if self.message.get(At) and str(self.message.get(At)[0].dict()['target']) == QQ:  # 群聊聊天
                 params = {
                     'key': 'free',
