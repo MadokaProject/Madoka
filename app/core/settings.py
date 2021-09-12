@@ -58,3 +58,11 @@ for (name, uid, value) in res:
 
 NEW_FRIEND = {}
 """存储好友申请实例"""
+
+# 游戏记录
+MEMBER_RUNING_LIST = []
+"""创建游戏人"""
+GROUP_RUNING_LIST = []
+"""在游戏的群"""
+GROUP_GAME_PROCESS = {}
+"""成员答题限次"""
