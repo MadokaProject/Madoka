@@ -46,6 +46,18 @@ class BotUser:
             if not res:
                 raise Exception()
 
+    def update_english_answer(self, num):
+        """修改英语答题榜
+        :param num: str, 答题变动值
+        """
+        with MysqlDao() as db:
+            res = db.update(
+                "UPDATE user SET english_answer=english_answer+%s WHERE uid=%s",
+                [num, self.qq]
+            )
+            if not res:
+                raise Exception()
+
     def get_sign_in_status(self) -> bool:
         """查询签到状态"""
         with MysqlDao() as db:
