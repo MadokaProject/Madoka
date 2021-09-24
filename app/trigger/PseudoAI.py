@@ -15,10 +15,5 @@ class PseudoAI(Trigger):
                 Plain(message.replace('我', '你'))
             ])
             await self.do_send(resp)
-        elif message[0] in ['我']:
-            resp = MessageChain.create([
-                Plain(message.replace('我', '我也').replace('?', '!').replace('吗', '').replace('？', '！'))
-            ])
-            await self.do_send(resp)
         else:
             self.as_last = False
