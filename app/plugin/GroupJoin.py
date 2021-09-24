@@ -11,6 +11,7 @@ class GroupJoin(Plugin):
     entry = ['.join']
     brief_help = '\r\n▶入群欢迎: join'
     full_help = \
+        '.join\t仅管理可用\r\n' \
         '.join set [群号] [文本]\t设置入群欢迎消息\r\n' \
         '.join view [群号]\t查看入群欢迎消息\r\n' \
         '.join enable [群号]\t开启入群欢迎\r\n' \

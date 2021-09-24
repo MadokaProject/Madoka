@@ -11,20 +11,20 @@ from app.util.tools import isstartswith
 
 
 class Admin(Plugin):
-    entry = ['.admin']
-    brief_help = '\r\n▶管理: admin'
+    entry = ['.csm', '.群管']
+    brief_help = '\r\n▶群管: csm'
     full_help = \
-        '.admin\t仅限管理可用！\r\n' \
-        '.admin status [0 / 1]\t群管开关\r\n' \
-        '.admin kick [@qq]\t踢人\r\n' \
-        '.admin revoke [id]\t撤回消息\r\n' \
-        '.admin ban [time(m)] [@qq]\t禁言\r\n' \
-        '.admin aban\t全员禁言\r\n' \
-        '.admin unban [@qq]\t解除禁言\r\n' \
-        '.admin unaban\t解除全员禁言\r\n' \
-        '.admin 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
-        '.admin 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
-        '.admin 超长消息 [文本长度] [禁言时间(m)] [回复消息]\t检测单消息是否超出[文本长度]'
+        '.群管/.csm\t仅限管理可用！\r\n' \
+        '.群管/.csm status [0 / 1]\t群管开关\r\n' \
+        '.群管/.csm kick [@qq]\t踢人\r\n' \
+        '.群管/.csm revoke [id]\t撤回消息\r\n' \
+        '.群管/.csm ban [time(m)] [@qq]\t禁言\r\n' \
+        '.群管/.csm aban\t全员禁言\r\n' \
+        '.群管/.csm unban [@qq]\t解除禁言\r\n' \
+        '.群管/.csm unaban\t解除全员禁言\r\n' \
+        '.群管/.csm 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
+        '.群管/.csm 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
+        '.群管/.csm 超长消息 [文本长度] [禁言时间(m)] [回复消息]\t检测单消息是否超出[文本长度]'
     hidden = True
 
     @permission_required(level='ADMIN')

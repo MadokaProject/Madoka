@@ -10,13 +10,14 @@ from app.util.tools import isstartswith
 
 
 class Reply(Plugin):
-    entry = ['.reply']
+    entry = ['.reply', '.回复']
     brief_help = '\r\n▶群自定义回复: reply'
     full_help = \
-        '.reply add [keyword] [text]\t添加自定义回复\r\n' \
-        '.reply modify [keyword] [text]\t修改自定义回复\r\n' \
-        '.reply remove [keyword]\t删除自定义回复\r\n' \
-        '.reply list\t列出自定义回复'
+        '.回复/.reply\t仅管理员可用\r\n' \
+        '.回复/.reply add [keyword] [text]\t添加自定义回复\r\n' \
+        '.回复/.reply modify [keyword] [text]\t修改自定义回复\r\n' \
+        '.回复/.reply remove [keyword]\t删除自定义回复\r\n' \
+        '.回复/.reply list\t列出自定义回复'
     hidden = True
 
     @permission_required(level='ADMIN')

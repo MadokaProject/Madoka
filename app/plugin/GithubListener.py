@@ -12,6 +12,7 @@ class GithubListener(Plugin):
     entry = ['.github']
     brief_help = '\r\n▶Github监听: github'
     full_help = \
+        '.github\t仅管理可用\r\n' \
         '.github add [repo_name] [repo_api]\t添加监听仓库\r\n' \
         '.github modify [repo_name] [name|api] [value]\t修改监听仓库配置\r\n' \
         '.github remove [repo_name]\t删除监听仓库\r\n' \
