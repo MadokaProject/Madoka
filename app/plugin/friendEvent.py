@@ -11,11 +11,11 @@ class FriendEvent(Plugin):
     entry = ['.friend', '.好友']
     brief_help = '\r\n▶好友: friend'
     full_help = \
-        '.friend\t仅管理可用！\r\n' \
-        '.friend accept [QQ号]\t同意好友申请\r\n' \
-        '.friend reject [QQ号}\t拒绝好友申请\r\n' \
-        '.friend areject [QQ号]\t拒绝并不再接受该好友申请\r\n' \
-        '.friend list\t查看好友申请列表'
+        '.好友/.friend\t仅管理可用！\r\n' \
+        '.好友/.friend accept [QQ号]\t同意好友申请\r\n' \
+        '.好友/.friend reject [QQ号}\t拒绝好友申请\r\n' \
+        '.好友/.friend areject [QQ号]\t拒绝并不再接受该好友申请\r\n' \
+        '.好友/.friend list\t查看好友申请列表'
     hidden = True
 
     @permission_required(level='ADMIN')
