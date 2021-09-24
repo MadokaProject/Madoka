@@ -56,6 +56,7 @@ class Chat(Trigger):
                     Plain(random.choice(no_answer))
                 ])
             await self.do_send(resp)
+            self.as_last = True
         elif hasattr(self, 'group'):
             if not message or message[0] in '.,;!?。，；！？/\\':
                 return
@@ -75,3 +76,4 @@ class Chat(Trigger):
                         At(self.member.id), Plain(' ' + random.choice(no_answer))
                     ])
                 await self.do_send(resp)
+                self.as_last = True
