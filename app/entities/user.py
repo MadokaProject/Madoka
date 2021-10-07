@@ -28,8 +28,8 @@ class BotUser:
         """签到"""
         with MysqlDao() as db:
             res = db.update(
-                "UPDATE user SET points=points+%s, last_login=CURDATE() WHERE uid=%s",
-                [self.point, self.qq]
+                "UPDATE user SET points=points+%s, signin_points=%s, last_login=CURDATE() WHERE uid=%s",
+                [self.point, self.point, self.qq]
             )
             if not res:
                 raise Exception()

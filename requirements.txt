@@ -25,3 +25,4 @@ urllib3==1.26.4
 yarl==1.6.3
 jsonpath~=0.82
 Pillow~=8.3.2
+prettytable~=2.2.1
