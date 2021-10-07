@@ -113,6 +113,7 @@ class DB(initDB):
                     active int not null comment '状态', \
                     admin int not null comment '管理', \
                     points int default 0 null comment '积分', \
+                    signin_points int default 0 null comment '签到积分', \
                     english_answer int default 0 null comment '英语答题榜', \
                     last_login date comment '最后登陆')"
             )
