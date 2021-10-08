@@ -14,7 +14,7 @@ class CSM(Trigger):
             return
         if CONFIG.__contains__(str(self.group.id)) and CONFIG[str(self.group.id)].__contains__('status') and \
                 CONFIG[str(self.group.id)]['status']:  # 默认关闭，需自行开启(.admin status)
-            if self.spam:  # 刷屏检测(优先)
+            if await self.spam():  # 刷屏检测(优先)
                 self.as_last = True
 
     # 刷屏检测
@@ -22,9 +22,12 @@ class CSM(Trigger):
         try:
             with MysqlDao() as db:
                 # 获取该群组某人的最后三条消息记录
-                res = db.query('SELECT * FROM msg where uid=%s and qid=%s', [self.group.id, self.member.id])[-3:]
+                res = db.query(
+                    'SELECT * FROM msg where uid=%s and qid=%s ORDER BY id DESC LIMIT 3',
+                    [self.group.id, self.member.id]
+                )
                 if len(res) > 2:
-                    time = (res[2][3] - res[0][3]).seconds
+                    time = (res[0][3] - res[2][3]).seconds
                     flood = CONFIG[str(self.group.id)]['mute'] if CONFIG[str(self.group.id)].__contains__('mute') else {
                         'time': 5, 'mute': 300, 'message': '请勿刷屏！'}
                     duplicate = CONFIG[str(self.group.id)]['duplicate'] if CONFIG[str(self.group.id)].__contains__(
