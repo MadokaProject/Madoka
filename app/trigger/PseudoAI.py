@@ -10,9 +10,14 @@ class PseudoAI(Trigger):
             return
         message = self.message.asDisplay()
         self.as_last = True
-        if message[0:2] in ['我不', '我要']:
+        if message[0:2] in '我不':
             resp = MessageChain.create([
-                Plain(message.replace('我', '你'))
+                Plain(message.replace('我不', '你'))
+            ])
+            await self.do_send(resp)
+        elif message[0:2] in ['我要', '我想', '我知道']:
+            resp = MessageChain.create([
+                Plain(message.replace('我', '你不'))
             ])
             await self.do_send(resp)
         else:
