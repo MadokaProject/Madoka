@@ -9,5 +9,6 @@ __all__ = [
     'GithubListener',
     'mcinfo',
     'game',
+    'rank',
 
 ]
