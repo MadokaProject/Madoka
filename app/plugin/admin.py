@@ -15,13 +15,13 @@ class Admin(Plugin):
     brief_help = '\r\n▶群管: csm'
     full_help = \
         '.群管/.csm\t仅限管理可用！\r\n' \
-        '.群管/.csm status [0 / 1]\t群管开关\r\n' \
-        '.群管/.csm kick [@qq]\t踢人\r\n' \
-        '.群管/.csm revoke [id]\t撤回消息\r\n' \
-        '.群管/.csm ban [time(m)] [@qq]\t禁言\r\n' \
-        '.群管/.csm aban\t全员禁言\r\n' \
-        '.群管/.csm unban [@qq]\t解除禁言\r\n' \
-        '.群管/.csm unaban\t解除全员禁言\r\n' \
+        '.群管/.csm 状态/status [0 / 1]\t群管开关\r\n' \
+        '.群管/.csm 踢/kick [@qq]\t踢人\r\n' \
+        '.群管/.csm 撤回/revoke [id]\t撤回消息\r\n' \
+        '.群管/.csm 禁言/ban [time(m)] [@qq]\t禁言\r\n' \
+        '.群管/.csm 全员禁言/aban\t全员禁言\r\n' \
+        '.群管/.csm 解禁/unban [@qq]\t解除禁言\r\n' \
+        '.群管/.csm 全员解禁/unaban\t解除全员禁言\r\n' \
         '.群管/.csm 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.群管/.csm 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.群管/.csm 超长消息 [文本长度] [禁言时间(m)] [回复消息]\t检测单消息是否超出[文本长度]'
@@ -38,42 +38,42 @@ class Admin(Plugin):
                     Plain('请在群聊内使用该命令!')
                 ])
                 return
-            if isstartswith(self.msg[0], 'revoke'):
+            if isstartswith(self.msg[0], ['revoke', '撤回']):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 source = self.message[Source][0].id - int(self.msg[1])
                 await self.app.revokeMessage(source)
                 self.resp = MessageChain.create([
                     Plain('消息撤回成功！')
                 ])
-            elif isstartswith(self.msg[0], 'kick'):
+            elif isstartswith(self.msg[0], ['kick', '踢']):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
                 await self.app.kick(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('飞机票快递成功！')
                 ])
-            elif isstartswith(self.msg[0], 'ban'):
+            elif isstartswith(self.msg[0], ['ban', '禁言']):
                 assert len(self.msg) == 3 and self.msg[1].isdigit()
                 await self.app.mute(self.group, int(self.msg[2][1:]), int(self.msg[1]) * 60)
                 self.resp = MessageChain.create([
                     Plain('禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], 'unban'):
+            elif isstartswith(self.msg[0], ['unban', '解禁']):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
                 await self.app.unmute(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('解除禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], 'aban'):
+            elif isstartswith(self.msg[0], ['aban', '全员禁言']):
                 await self.app.muteAll(self.group.id)
                 self.resp = MessageChain.create([
                     Plain('全员禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], 'unaban'):
+            elif isstartswith(self.msg[0], ['unaban', '全员解禁']):
                 await self.app.unmuteAll(self.group.id)
                 self.resp = MessageChain.create([
                     Plain('全员解除禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], 'status'):
+            elif isstartswith(self.msg[0], ['status', '状态']):
                 assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
                 with MysqlDao() as db:
                     if db.update(
