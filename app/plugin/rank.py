@@ -28,13 +28,15 @@ class Rank(Plugin):
                     )
                     members = await self.app.memberList(self.group.id)
                     group_user = {item.id: item.name for item in members}
+                    index = 1
                     self.resp = MessageChain.create([Plain('群内发言排行：\r\n')])
                     msg = PrettyTable()
                     msg.field_names = ['序号', '群昵称', '发言条数']
-                    for index, (qid, num) in enumerate(res):
+                    for qid, num in res:
                         if int(qid) not in group_user.keys():
                             continue
-                        msg.add_row([index + 1, group_user[int(qid)], num])
+                        msg.add_row([index, group_user[int(qid)], num])
+                        index += 1
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
                     self.resp.plus(
