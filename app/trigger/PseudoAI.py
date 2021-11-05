@@ -10,7 +10,7 @@ class PseudoAI(Trigger):
             return
         message = self.message.asDisplay()
         self.as_last = True
-        if message[0:2] in '我不':
+        if message[0:2] in ['我不要', '我不想', '我不知道']:
             resp = MessageChain.create([
                 Plain(message.replace('我不', '你'))
             ])
