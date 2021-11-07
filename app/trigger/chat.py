@@ -39,7 +39,7 @@ class Chat(Trigger):
         head, sep, message = self.message.asDisplay().partition(' ')
         url = 'http://api.qingyunke.com/api.php'
         if hasattr(self, 'friend'):  # 好友聊天
-            if not head or head[0] in '.,;!?。，；！？/\\':
+            if not head or head[0] in '.,;!?。，；！？/\\' or self.friend.id in MEMBER_RUNING_LIST:
                 return
             params = {
                 'key': 'free',
