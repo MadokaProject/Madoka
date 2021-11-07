@@ -6,7 +6,7 @@ from app.trigger.trigger import Trigger
 
 class PseudoAI(Trigger):
     async def process(self):
-        if self.msg[0][0] in '.,;!?。，；！？/\\':  # 判断是否为指令
+        if self.msg[0][0] in '.,;!?。，；！？/\\' or not hasattr(self, 'group'):  # 判断是否为指令
             return
         message = self.message.asDisplay()
         self.as_last = True
