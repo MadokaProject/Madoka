@@ -3,7 +3,7 @@ from PIL import Image, ImageFont, ImageDraw
 
 from .CutString import get_cut_str
 
-font_file = 'app/font/sarasa-mono-sc-semibold.ttf'
+font_file = 'app/resource/font/sarasa-mono-sc-semibold.ttf'
 font = ImageFont.truetype(font_file, 32)
 
 
