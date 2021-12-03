@@ -58,11 +58,12 @@ class RandomUserAgentMiddleware(object):
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
-async def doHttpRequest(url, method, params=None, headers=None):
+async def doHttpRequest(url, method, _type='TEXT', params=None, headers=None):
     """通用Http异步请求函数
 
     :param url: str 请求的网址*
     :param method: str 请求方法*
+    :param _type: str 返回类型 [text(default),json,header]
     :param params: dict 请求参数
     :param headers: dict 请求头(可自动生成)
     :return: str
@@ -79,7 +80,14 @@ async def doHttpRequest(url, method, params=None, headers=None):
         'User-Agent': ua.roll_ua()
     } if not headers else headers
     async with aiohttp.request(method=method, url=url, params=params, headers=headers) as r:
-        response = await r.text(encoding=r.get_encoding())
+        if _type in ['TEXT', 'text']:
+            response = await r.text(encoding=r.get_encoding())
+        elif _type in ['JSON', 'json']:
+            response = await r.json()
+        elif _type in ['HEADER', 'header']:
+            response = r.headers
+        else:
+            response = 'please set _type in [text, json, header]'
         return response
 
 

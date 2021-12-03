@@ -46,7 +46,7 @@ class Chat(Trigger):
                 'appid': 0,
                 'msg': head,
             }
-            response = json.loads(await doHttpRequest(url, 'GET', params))
+            response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
             if response['result'] == 0:
                 resp = MessageChain.create([
                     Plain(str(response['content']).replace('{br}', '\r\n').replace('菲菲', BOTNAME))
@@ -66,7 +66,7 @@ class Chat(Trigger):
                     'appid': 0,
                     'msg': message,
                 }
-                response = json.loads(await doHttpRequest(url, 'GET', params))
+                response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
                 if response['result'] == 0:
                     resp = MessageChain.create([
                         At(self.member.id), Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', BOTNAME))
