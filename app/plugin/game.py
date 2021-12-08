@@ -22,7 +22,7 @@ class Game(Plugin):
         '.积分/.gp 打工/work\t每天可以打工随机获取积分。\r\n' \
         '.积分/.gp 转给/tf@XX[num]\t转给XX num积分。\r\n' \
         '.积分/.gp 踢/kick@XX\t消耗30积分踢XX，使其掉落随机数量积分！\r\n' \
-        '.积分/.gp 偷/steal@XX\t偷XX，使其掉落随机数量积分！\r\n' \
+        '.积分/.gp 偷/steal@XX\t偷XX，偷取其随机数量积分！\r\n' \
         '.积分/.gp 排行/rank\t显示群内已注册成员积分排行榜'
 
     num = {
