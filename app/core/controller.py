@@ -2,6 +2,7 @@ from graia.application import MessageChain, Friend, Group, Member, GraiaMiraiApp
 from graia.application.message.elements.internal import Plain, Source
 from graia.broadcast.interrupt import InterruptControl
 
+from app.core.config import Config
 from app.core.settings import *
 from app.plugin import *
 from app.trigger import *
@@ -30,7 +31,7 @@ class Controller:
     async def process_event(self):
         msg = self.message.asDisplay()
         send_help = False  # 是否为主菜单帮助
-        resp = '▶帮助：help'
+        resp = '[√]\t帮助：help'
 
         # 自定义预触发器
         for trig in trigger.Trigger.__subclasses__():
@@ -44,6 +45,9 @@ class Controller:
             await obj.process()
             if obj.as_last:
                 break
+        config = Config()
+        if config.ONLINE and config.DEBUG:
+            return
 
         # 判断是否在权限允许列表
         if hasattr(self, 'friend'):

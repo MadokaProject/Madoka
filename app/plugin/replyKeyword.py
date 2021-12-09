@@ -2,6 +2,7 @@ import asyncio
 
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.plugin.base import Plugin, initDB
 from app.util.dao import MysqlDao
@@ -11,7 +12,7 @@ from app.util.tools import isstartswith
 
 class Reply(Plugin):
     entry = ['.reply', '.回复']
-    brief_help = '\r\n▶群自定义回复: reply'
+    brief_help = '\r\n[√]\t群自定义回复: reply'
     full_help = \
         '.回复/.reply\t仅管理员可用\r\n' \
         '.回复/.reply add [keyword] [text]\t添加自定义回复\r\n' \
@@ -110,7 +111,7 @@ class Reply(Plugin):
             print(e)
             self.args_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()
 
 

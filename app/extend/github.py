@@ -4,15 +4,18 @@ import requests
 from graia.application import enter_context, MessageChain
 from graia.application.message.elements.internal import Plain
 
-from app.core.config import *
+from app.core.config import Config
 from app.core.settings import *
 from app.util.dao import MysqlDao
 
 
 async def github_listener(app):
+    config = Config()
+    if not config.REPO_ENABLE:  # 未开启仓库监听
+        return
     app.logger.info('github_listener is running...')
 
-    group = REPO_GROUP
+    group = config.REPO_GROUP
     repo = [i for i in REPO.keys()]
     repo_api = [i for i in REPO.values()]
     if not repo or not repo_api:

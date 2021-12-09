@@ -2,6 +2,7 @@ import asyncio
 
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.core.settings import *
 from app.entities.group import BotGroup
@@ -14,7 +15,7 @@ from app.util.tools import isstartswith
 
 class Sys(Plugin):
     entry = ['.sys']
-    brief_help = '\r\n▶系统: sys'
+    brief_help = '\r\n[√]\t系统: sys'
     full_help = \
         '.sys\t仅管理可用！\r\n' \
         '.sys au [qq]\t添加用户\r\n' \
@@ -98,7 +99,7 @@ class Sys(Plugin):
             print(e)
             self.args_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()
 
 
