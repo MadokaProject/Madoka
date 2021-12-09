@@ -51,6 +51,7 @@ class Admin(Plugin):
                             self.resp = MessageChain.create([
                                 Plain("升级超时！")
                             ])
+                        logger.warning('升级超时！')
                 elif isstartswith(self.msg[0], 'r'):
                     restart('-r', *shell)
                 sys.exit()
