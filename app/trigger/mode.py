@@ -1,5 +1,6 @@
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.core.config import Config
 from app.trigger.trigger import Trigger
@@ -17,11 +18,13 @@ class ChangeMode(Trigger):
         if config.ONLINE:
             if config.DEBUG:
                 await self.do_send(MessageChain.create([
-                    Plain('>> 已退出DEBUG模式！\t\n>> 服务端进入工作状态！'),
+                    Plain('>> 已退出DEBUG模式！\r\n>> 服务端进入工作状态！')
                 ]))
+                logger.info('>> 已退出DEBUG模式！\t>> 服务端进入工作状态！')
             else:
                 await self.do_send(MessageChain.create([
                     Plain('>> 已进入DEBUG模式！\r\n>> 服务端进入休眠状态！')
                 ]))
+                logger.info('>> 已进入DEBUG模式！\t>> 服务端进入休眠状态！')
         config.change_debug()
         self.as_last = True
