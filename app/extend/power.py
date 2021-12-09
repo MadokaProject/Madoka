@@ -2,6 +2,7 @@ import getopt
 
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, At
+from loguru import logger
 
 from app.core.settings import *
 
@@ -52,6 +53,7 @@ async def power(app, argv):
             await app.sendFriendMessage(target, MessageChain.create([
                 Plain('进程未正常结束！')
             ]))
+        logger.warning('进程未正常结束！')
         return
     if reboot:
         if group:
@@ -63,6 +65,7 @@ async def power(app, argv):
             await app.sendFriendMessage(target, MessageChain.create([
                 Plain('重启成功！')
             ]))
+        logger.success('重启成功！')
         return
     if upgrade is not None:
         if upgrade:
@@ -75,6 +78,7 @@ async def power(app, argv):
                 await app.sendFriendMessage(target, MessageChain.create([
                     Plain('升级成功！')
                 ]))
+            logger.success('升级成功！')
         else:
             if group:
                 await app.sendGroupMessage(group, MessageChain.create([
@@ -85,3 +89,4 @@ async def power(app, argv):
                 await app.sendFriendMessage(target, MessageChain.create([
                     Plain('升级失败！')
                 ]))
+            logger.error('升级失败！')
