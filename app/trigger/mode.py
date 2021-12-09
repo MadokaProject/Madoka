@@ -20,11 +20,11 @@ class ChangeMode(Trigger):
                 await self.do_send(MessageChain.create([
                     Plain('>> 已退出DEBUG模式！\r\n>> 服务端进入工作状态！')
                 ]))
-                logger.info('>> 已退出DEBUG模式！\t>> 服务端进入工作状态！')
+                logger.info('>> 已退出DEBUG模式！  >> 服务端进入工作状态！')
             else:
                 await self.do_send(MessageChain.create([
                     Plain('>> 已进入DEBUG模式！\r\n>> 服务端进入休眠状态！')
                 ]))
-                logger.info('>> 已进入DEBUG模式！\t>> 服务端进入休眠状态！')
+                logger.info('>> 已进入DEBUG模式！  >> 服务端进入休眠状态！')
         config.change_debug()
         self.as_last = True
