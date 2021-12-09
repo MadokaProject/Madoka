@@ -1,4 +1,4 @@
-app/core/config.py
+app/core/env.config.ini
 .idea/*
 **/__pycache__/
 venv/*

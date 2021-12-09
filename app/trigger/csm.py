@@ -1,6 +1,7 @@
 from graia.application.group import MemberPerm
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, At
+from loguru import logger
 
 from app.core.settings import *
 from app.trigger.trigger import Trigger
@@ -57,4 +58,4 @@ class CSM(Trigger):
                 await self.do_send(resp)
                 return True
         except Exception as e:
-            print(e)
+            logger.exception(e)

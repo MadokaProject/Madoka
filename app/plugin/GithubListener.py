@@ -1,5 +1,6 @@
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.core.settings import *
 from app.plugin.base import Plugin
@@ -10,7 +11,7 @@ from app.util.tools import isstartswith
 
 class GithubListener(Plugin):
     entry = ['.github']
-    brief_help = '\r\n▶Github监听: github'
+    brief_help = '\r\n[√]\tGithub监听: github'
     full_help = \
         '.github\t仅管理可用\r\n' \
         '.github add [repo_name] [repo_api]\t添加监听仓库\r\n' \
@@ -110,5 +111,5 @@ class GithubListener(Plugin):
             print(e)
             self.args_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()

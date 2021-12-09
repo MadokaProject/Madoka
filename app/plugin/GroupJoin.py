@@ -1,5 +1,6 @@
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.plugin.base import Plugin, initDB
 from app.util.dao import MysqlDao
@@ -9,7 +10,7 @@ from app.util.tools import isstartswith
 
 class GroupJoin(Plugin):
     entry = ['.join']
-    brief_help = '\r\n▶入群欢迎: join'
+    brief_help = '\r\n[√]\t入群欢迎: join'
     full_help = \
         '.join\t仅管理可用\r\n' \
         '.join set [群号] [文本]\t设置入群欢迎消息\r\n' \
@@ -92,7 +93,7 @@ class GroupJoin(Plugin):
             print(e)
             self.args_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()
 
 

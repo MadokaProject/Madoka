@@ -1,3 +1,5 @@
+from loguru import logger
+
 from app.plugin import *
 from app.util.dao import MysqlDao
 
@@ -53,7 +55,7 @@ async def initDB():
     try:
         await initSysDB()
         await initPluginDB()
-        print('初始化数据库成功！')
+        logger.success('初始化数据表成功')
         return True
     except Exception as e:
-        print('初始化数据库失败：' + str(e))
+        logger.exception('初始化数据库失败：' + str(e))

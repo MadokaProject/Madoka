@@ -3,6 +3,7 @@ from graia.application.group import Group, Member
 from graia.application.message.chain import MessageChain
 from graia.application.message.elements.internal import Plain, Image, At
 
+from app.core.config import Config
 from app.util.dao import MysqlDao
 
 
@@ -17,6 +18,10 @@ class Join:
                 self.app = arg  # 程序执行主体
 
     async def process_event(self):
+        config = Config()
+        if config.ONLINE and config.DEBUG:
+            return
+
         with MysqlDao() as db:
             res = db.query(
                 'SELECT text, active FROM group_join WHERE uid=%s',

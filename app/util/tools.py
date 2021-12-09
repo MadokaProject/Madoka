@@ -33,14 +33,3 @@ def restart(*args):
 
 def app_path():
     return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-
-# def check_bot_permit(self) -> bool:
-#     """验证机器人管理权限
-#
-#     :return: bool 管理权限: True, 普通权限: False
-#     """
-#     if self.group.accountPerm == MemberPerm.Member:
-#         return False
-#     else:
-#         return True

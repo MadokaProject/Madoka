@@ -2,7 +2,7 @@ __all__ = [
     'base',
     'sys',
     'power',
-    'admin',
+    'csm',
     'friendEvent',
     'replyKeyword',
     'GroupJoin',

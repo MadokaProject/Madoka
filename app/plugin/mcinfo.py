@@ -7,6 +7,7 @@ import time
 import jsonpath
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.plugin.base import Plugin
 from app.util.dao import MysqlDao
@@ -140,7 +141,7 @@ class StatusPing:
 
 class McStatus(Plugin):
     entry = ['.mc', '.mcinfo', '.info']
-    brief_help = '\r\n▶MC状态：mc'
+    brief_help = '\r\n[√]\tMC状态：mc'
     full_help = \
         '.mc/.info/.mcinfo [ip] [port] [timeout]\r\n' \
         'ip: MC服务器域名或IP\r\n' \
@@ -151,7 +152,7 @@ class McStatus(Plugin):
     async def set_default_mc(self, ip='127.0.0.1', port=25565):
         default_ip, default_port = ip, port
         with MysqlDao() as db:
-            res = db.update(
+            db.update(
                 'UPDATE mc_server SET `default`=0 WHERE `default`=1'
             )
             res = db.query(
@@ -159,12 +160,12 @@ class McStatus(Plugin):
                 [default_ip, default_port]
             )
             if res[0][0]:
-                res = db.update(
+                db.update(
                     'UPDATE mc_server SET `default`=1 WHERE ip=%s and port=%s',
                     [default_ip, default_port]
                 )
             else:
-                res = db.update(
+                db.update(
                     'INSERT INTO mc_server (ip, port, `default`, listen, delay) VALUES (%s, %s, 1, 0, 60)',
                     [default_ip, default_port]
                 )
@@ -198,7 +199,7 @@ class McStatus(Plugin):
             print(e)
             self.arg_type_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()
 
 

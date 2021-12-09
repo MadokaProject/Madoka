@@ -2,6 +2,7 @@ import asyncio
 
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain, Source
+from loguru import logger
 
 from app.core.settings import *
 from app.plugin.base import Plugin
@@ -12,7 +13,7 @@ from app.util.tools import isstartswith
 
 class Admin(Plugin):
     entry = ['.csm', '.群管']
-    brief_help = '\r\n▶群管: csm'
+    brief_help = '\r\n[√]\t群管: csm'
     full_help = \
         '.群管/.csm\t仅限管理可用！\r\n' \
         '.群管/.csm 状态/status [0 / 1]\t群管开关\r\n' \
@@ -167,7 +168,7 @@ class Admin(Plugin):
             print(e)
             self.args_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()
 
 

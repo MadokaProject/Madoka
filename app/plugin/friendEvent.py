@@ -1,5 +1,6 @@
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Plain
+from loguru import logger
 
 from app.core.settings import NEW_FRIEND
 from app.plugin.base import Plugin
@@ -9,7 +10,7 @@ from app.util.tools import isstartswith
 
 class FriendEvent(Plugin):
     entry = ['.friend', '.好友']
-    brief_help = '\r\n▶好友: friend'
+    brief_help = '\r\n[√]\t好友: friend'
     full_help = \
         '.好友/.friend\t仅管理可用！\r\n' \
         '.好友/.friend accept [QQ号]\t同意好友申请\r\n' \
@@ -77,5 +78,5 @@ class FriendEvent(Plugin):
             print(e)
             self.args_error()
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()

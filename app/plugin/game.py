@@ -3,6 +3,7 @@ import random
 from prettytable import PrettyTable
 from graia.application import MessageChain
 from graia.application.message.elements.internal import Image_UnsafeBytes, Plain, At, Face
+from loguru import logger
 
 from app.entities.user import BotUser
 from app.plugin.base import Plugin
@@ -14,7 +15,7 @@ from app.util.tools import isstartswith
 
 class Game(Plugin):
     entry = ['.gp', '.积分']
-    brief_help = '\r\n▶积分：gp'
+    brief_help = '\r\n[√]\t积分：gp'
     full_help = \
         '.积分/.gp\t可以查询当前积分总量。\r\n' \
         '.积分/.gp 签到/signin [幸运儿/lucky | 倒霉蛋/unlucky]\t每天可以签到随机获取积分。\r\n' \
@@ -114,7 +115,7 @@ class Game(Plugin):
                             )),
                         ])
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         elif isstartswith(self.msg[0], ['转给', '转账', 'tf']):
             """转账"""
@@ -147,7 +148,7 @@ class Game(Plugin):
                 print(e)
                 self.arg_type_error()
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         elif isstartswith(self.msg[0], ['排行', 'rank']):
             try:
@@ -173,7 +174,7 @@ class Game(Plugin):
                         ])
                     )
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         elif isstartswith(self.msg[0], ['踢', 'kick']):
             """踢"""
@@ -238,7 +239,7 @@ class Game(Plugin):
                     ])
 
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         elif isstartswith(self.msg[0], ['偷', 'steal']):
             try:
@@ -285,7 +286,7 @@ class Game(Plugin):
                     ])
 
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         elif isstartswith(self.msg[0], ['搬砖', 'bz']):
             try:
@@ -316,7 +317,7 @@ class Game(Plugin):
                             Plain(random.choice(bricks))
                         ])
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         elif isstartswith(self.msg[0], ['打工', 'work']):
             try:
@@ -347,7 +348,7 @@ class Game(Plugin):
                             Plain(random.choice(works))
                         ])
             except Exception as e:
-                print(e)
+                logger.exception(e)
                 self.unkown_error()
         else:
             self.args_error()

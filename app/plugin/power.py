@@ -1,8 +1,8 @@
 import subprocess
 import sys
-
 from graia.application import MessageChain
 from graia.application.message.elements.internal import At, Plain
+from loguru import logger
 
 from app.plugin.base import Plugin
 from app.util.decorator import permission_required
@@ -11,7 +11,7 @@ from app.util.tools import isstartswith, restart
 
 class Admin(Plugin):
     entry = ['.power', '.电源', '.p']
-    brief_help = '\r\n▶电源：p'
+    brief_help = '\r\n[√]\t电源：p'
     full_help = \
         '.电源/.p\t仅限管理员使用！\r\n' \
         '.电源/.p k\t关闭机器人\r\n' \
@@ -54,9 +54,11 @@ class Admin(Plugin):
                 elif isstartswith(self.msg[0], 'r'):
                     restart('-r', *shell)
                 sys.exit()
+            elif isstartswith(self.msg[0], 'c'):
+                DEBUG = True
             else:
                 self.args_error()
                 return
         except Exception as e:
-            print(e)
+            logger.exception(e)
             self.unkown_error()
