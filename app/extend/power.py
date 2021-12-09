@@ -26,7 +26,7 @@ async def power(app, argv):
                 Plain('\t\t例如：-u true, --upgrade=true\r\n'),
                 Plain('\t-g\t--group\t来自群组\r\n'),  # 此参数代表来自群组 [可选]
                 Plain('\t\t例如：-g 123, --group=123\r\n'),
-                Plain('\t-e\t--target\t执行者\r\n'),  # 此参数代表命令执行者 <建议必选>
+                Plain('\t-t\t--target\t执行者\r\n'),  # 此参数代表命令执行者 <建议必选>
                 Plain('\t\t例如：-e 123, --e=123\r\n'),
             ]))
             return

@@ -26,7 +26,7 @@ $ sh run.sh
 
 ### 运行前配置
 
-本应用与数据库相关联，使用前请创建一个数据库如 `qqbot` ，并补全 `app/core/env.config.py` → `app/core/config.py` 文件
+本应用与数据库相关联，使用前请创建一个数据库如 `qqbot` ，并补全 `app/core/env.config.ini` → `app/core/config.ini` 文件
 
 > 请注意你需要拥有 MySQL 数据库服务，否则无法正常使用本应用
 
@@ -84,23 +84,28 @@ python main.py
 ```
 ├───app                         程序主体
 │   ├───api                     api 存放目录
-│   │   └───sign.py             api: 腾讯AI请求之前或之后处理函数
+│   │   └───doHttp.py             通用Http异步请求函数
 │   ├───core                    核心目录
-│   │   └───config.py           项目配置文件
+│   │   └───config.ini           项目配置文件
 │   │   └───controller.py       核心控制器
 │   ├───entities                实体控制
 │   ├───event                   其他监听事件存放目录
 │   ├───extend                  定时、循环执行事件存放目录
 │   ├───plugin                  插件（指令）存放目录
+│   ├───resource                资源文件存放目录
+│   ├───tirgger                 预处理函数存放目录
 │   └───util                    工具函数存放目录
-│       └───dao.py              数据访问接口
-│       └───decorator.py        管理员鉴权接口
-│       └───msg.py              消息记录函数
-│       └───permission.py       鉴权接口
+│       ├───CutString.py        字符串自动断行工具
+│       ├───dao.py              数据库访问接口
+│       ├───decorator.py        管理员鉴权接口
+│       ├───msg.py              消息存储函数
+│       ├───permission.py       鉴权接口
+│       ├───text2image.py       图片生成工具
 │       └───tools.py            工具函数
 ├───.gitignore                  git 提交忽略文件
+├───initDB.py                   初始化数据库函数
 ├───main.py                     应用执行入口
-├───requirements.txt            用于描述应用的依赖关系
+├───requirements.txt            项目运行环境依赖包
 ├───README.md                   项目说明文件
 ```
 
