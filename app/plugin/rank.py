@@ -1,7 +1,7 @@
-from prettytable import PrettyTable
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Image_UnsafeBytes, Plain
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Image, Plain
 from loguru import logger
+from prettytable import PrettyTable
 
 from app.plugin.base import Plugin
 from app.util.dao import MysqlDao
@@ -25,9 +25,10 @@ class Rank(Plugin):
                 """发言榜"""
                 with MysqlDao() as db:
                     res = db.query(
-                        "SELECT qid, count(qid) FROM msg WHERE uid=%s GROUP BY qid ORDER BY count(qid) DESC", [self.group.id]
+                        "SELECT qid, count(qid) FROM msg WHERE uid=%s GROUP BY qid ORDER BY count(qid) DESC",
+                        [self.group.id]
                     )
-                    members = await self.app.memberList(self.group.id)
+                    members = await self.app.getMemberList(self.group.id)
                     group_user = {item.id: item.name for item in members}
                     index = 1
                     self.resp = MessageChain.create([Plain('群内发言排行：\r\n')])
@@ -40,9 +41,9 @@ class Rank(Plugin):
                         index += 1
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
-                    self.resp.plus(
+                    self.resp.extend(
                         MessageChain.create([
-                            Image_UnsafeBytes((await create_image(msg.get_string())).getvalue())
+                            Image(data_bytes=(await create_image(msg.get_string())).getvalue())
                         ])
                     )
             else:

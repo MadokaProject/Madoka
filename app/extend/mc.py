@@ -3,8 +3,8 @@ import pickle
 import time
 
 import jsonpath
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
 
 from app.plugin.mcinfo import StatusPing
 

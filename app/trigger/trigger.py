@@ -1,6 +1,8 @@
 from typing import List
 
-from graia.application import MessageChain, Friend, Group, Member, GraiaMiraiApplication
+from graia.ariadne.app import Ariadne
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.model import Friend, Group, Member
 
 from app.core.settings import ADMIN_USER
 from app.util.tools import parse_args
@@ -21,8 +23,8 @@ class Trigger:
                 self.group: Group = arg  # 消息来源 群聊
             elif isinstance(arg, Member):
                 self.member: Member = arg  # 群聊消息发送者
-            elif isinstance(arg, GraiaMiraiApplication):
-                self.app: GraiaMiraiApplication = arg  # 程序执行主体
+            elif isinstance(arg, Ariadne):
+                self.app: Ariadne = arg  # 程序执行主体
         self.resp = None
 
     async def process(self):

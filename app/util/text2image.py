@@ -1,4 +1,5 @@
 from io import BytesIO
+
 from PIL import Image, ImageFont, ImageDraw
 
 from .CutString import get_cut_str

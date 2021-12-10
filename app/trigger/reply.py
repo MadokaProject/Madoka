@@ -1,5 +1,5 @@
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, At
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain, At
 
 from app.trigger.trigger import Trigger
 from app.util.dao import MysqlDao

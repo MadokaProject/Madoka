@@ -1,9 +1,9 @@
 import random
 
-from prettytable import PrettyTable
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Image_UnsafeBytes, Plain, At, Face
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Image, Plain, At, Face
 from loguru import logger
+from prettytable import PrettyTable
 
 from app.entities.user import BotUser
 from app.plugin.base import Plugin
@@ -66,7 +66,7 @@ class Game(Plugin):
                         if not res:
                             self.resp = MessageChain.create([Plain('今日还未诞生 [幸运儿 | 倒霉蛋]')])
                             return
-                        members = await self.app.memberList(self.group.id)
+                        members = await self.app.getMemberList(self.group.id)
                         group_user = {item.id: item.name for item in members}
                         self.resp = MessageChain.create(
                             [Plain('群内今日签到幸运儿：\r\n' if self.msg[1] in ['幸运儿', 'lucky'] else '群内今日签到倒霉蛋：\r\n')])
@@ -81,9 +81,9 @@ class Game(Plugin):
                                 index += 1
                         msg.align = 'r'
                         msg.align['群昵称'] = 'l'
-                        self.resp.plus(
+                        self.resp.extend(
                             MessageChain.create([
-                                Image_UnsafeBytes((await create_image(msg.get_string())).getvalue())
+                                Image(data_bytes=(await create_image(msg.get_string())).getvalue())
                             ])
                         )
                     return
@@ -156,7 +156,7 @@ class Game(Plugin):
                     res = db.query(
                         "SELECT uid, points FROM user ORDER BY points DESC"
                     )
-                    members = await self.app.memberList(self.group.id)
+                    members = await self.app.getMemberList(self.group.id)
                     group_user = {item.id: item.name for item in members}
                     self.resp = MessageChain.create([Plain('群内积分排行：\r\n')])
                     index = 1
@@ -168,9 +168,9 @@ class Game(Plugin):
                             index += 1
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
-                    self.resp.plus(
+                    self.resp.extend(
                         MessageChain.create([
-                            Image_UnsafeBytes((await create_image(msg.get_string())).getvalue())
+                            Image(data_bytes=(await create_image(msg.get_string())).getvalue())
                         ])
                     )
             except Exception as e:

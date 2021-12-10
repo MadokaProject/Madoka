@@ -1,5 +1,5 @@
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
 
 from app.core.config import Config
 from app.core.settings import NEW_FRIEND

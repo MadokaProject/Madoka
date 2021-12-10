@@ -1,6 +1,6 @@
-from graia.application.group import MemberPerm
-from graia.application.message.chain import MessageChain
-from graia.application.message.elements.internal import Plain, At
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain, At
+from graia.ariadne.model import MemberPerm
 from loguru import logger
 
 from app.core.settings import *
@@ -10,6 +10,7 @@ from app.util.dao import MysqlDao
 
 class CSM(Trigger):
     """群管系统"""
+
     async def process(self):
         if not hasattr(self, 'group') or self.check_admin() or self.group.accountPerm == MemberPerm.Member:
             return
@@ -34,7 +35,7 @@ class CSM(Trigger):
                     duplicate = CONFIG[str(self.group.id)]['duplicate'] if CONFIG[str(self.group.id)].__contains__(
                         'duplicate') else {'time': 30, 'mute': 120, 'message': '请勿发送重复消息！'}
                     if time < flood['time']:  # 刷屏禁言
-                        await self.app.mute(self.group, self.member.id, flood['mute'])
+                        await self.app.muteMember(self.group, self.member.id, flood['mute'])
                         resp = MessageChain.create([
                             At(self.member.id), Plain(' ' + flood['message'])
                         ])
@@ -42,7 +43,7 @@ class CSM(Trigger):
                         return True
                     elif res[0][4] == res[1][4] == res[2][4] \
                             and res[0][4].strip() != '' and time < duplicate['time']:  # 30秒内重复消息禁言
-                        await self.app.mute(self.group, self.member.id, duplicate['mute'])
+                        await self.app.muteMember(self.group, self.member.id, duplicate['mute'])
                         resp = MessageChain.create([
                             At(self.member.id), Plain(' ' + duplicate['message'])
                         ])
@@ -51,7 +52,7 @@ class CSM(Trigger):
             over_length = CONFIG[str(self.group.id)]['over-length'] if CONFIG[str(self.group.id)].__contains__(
                 'over-length') else {'text': 500, 'mute': 120, 'message': '请勿发送超长消息'}
             if len(self.msg) > over_length['text']:
-                await self.app.mute(self.group, self.member.id, over_length['mute'])
+                await self.app.muteMember(self.group, self.member.id, over_length['mute'])
                 resp = MessageChain.create([
                     At(self.member.id), Plain(' ' + over_length['message'])
                 ])

@@ -1,8 +1,10 @@
 from datetime import datetime, timedelta
 
 import requests
-from graia.application import enter_context, MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.context import enter_context
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
+from loguru import logger
 
 from app.core.config import Config
 from app.core.settings import *
@@ -13,7 +15,7 @@ async def github_listener(app):
     config = Config()
     if not config.REPO_ENABLE:  # 未开启仓库监听
         return
-    app.logger.info('github_listener is running...')
+    logger.info('github_listener is running...')
 
     group = config.REPO_GROUP
     repo = [i for i in REPO.keys()]

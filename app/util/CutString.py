@@ -25,8 +25,8 @@ def get_cut_str(str, cut):
         elif next_str[0] == "\n":
             next_str = next_str[1:]
         elif s == "\n":
-            str_list.append(next_str[:i-1])
-            next_str = next_str[i-1:]
+            str_list.append(next_str[:i - 1])
+            next_str = next_str[i - 1:]
             si = 0
             i = 0
             continue

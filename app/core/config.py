@@ -12,7 +12,7 @@ class Config:
         self.LOGIN_HOST = self.cf.get('bot', 'login_host', fallback='127.0.0.1')
         self.LOGIN_PORT = self.cf.get('bot', 'login_port', fallback='8080')
         self.LOGIN_QQ = self.cf.get('bot', 'login_qq')
-        self.AUTH_KEY = self.cf.get('bot', 'auth_key')
+        self.VERIFY_KEY = self.cf.get('bot', 'verify_key')
         self.BOT_NAME = self.cf.get('bot', 'bot_name')
         self.MASTER_QQ = self.cf.get('bot', 'master_qq')
         self.DEBUG = True if self.cf.get('bot', 'debug', fallback='False').lower() == 'true' else False
