@@ -1,7 +1,7 @@
 import asyncio
 
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain, Source
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain, Source
 from loguru import logger
 
 from app.core.settings import *
@@ -42,25 +42,25 @@ class Admin(Plugin):
             if isstartswith(self.msg[0], ['revoke', '撤回']):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 source = self.message[Source][0].id - int(self.msg[1])
-                await self.app.revokeMessage(source)
+                await self.app.recallMessage(source)
                 self.resp = MessageChain.create([
                     Plain('消息撤回成功！')
                 ])
             elif isstartswith(self.msg[0], ['kick', '踢']):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
-                await self.app.kick(self.group, int(self.msg[1][1:]))
+                await self.app.kickMember(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('飞机票快递成功！')
                 ])
             elif isstartswith(self.msg[0], ['ban', '禁言']):
                 assert len(self.msg) == 3 and self.msg[1].isdigit()
-                await self.app.mute(self.group, int(self.msg[2][1:]), int(self.msg[1]) * 60)
+                await self.app.muteMember(self.group, int(self.msg[2][1:]), int(self.msg[1]) * 60)
                 self.resp = MessageChain.create([
                     Plain('禁言成功！')
                 ])
             elif isstartswith(self.msg[0], ['unban', '解禁']):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
-                await self.app.unmute(self.group, int(self.msg[1][1:]))
+                await self.app.unmuteMember(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('解除禁言成功！')
                 ])

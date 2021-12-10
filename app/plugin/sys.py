@@ -1,7 +1,7 @@
 import asyncio
 
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.core.settings import *

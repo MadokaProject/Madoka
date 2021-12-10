@@ -1,5 +1,7 @@
-from graia.application import MessageChain, Friend, Group, Member, GraiaMiraiApplication
-from graia.application.message.elements.internal import Plain, Source
+from graia.ariadne.app import Ariadne
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain, Source
+from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
 from app.core.config import Config
@@ -22,10 +24,10 @@ class Controller:
             elif isinstance(arg, Member):
                 self.member = arg  # 群聊消息发送者
             elif isinstance(arg, Source):
-                self.source = arg   # 消息标识
+                self.source = arg  # 消息标识
             elif isinstance(arg, InterruptControl):
                 self.inc = arg
-            elif isinstance(arg, GraiaMiraiApplication):
+            elif isinstance(arg, Ariadne):
                 self.app = arg  # 程序执行主体
 
     async def process_event(self):

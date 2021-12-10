@@ -32,4 +32,3 @@ def repeated(uid, qid, num):
             if bot[0][0] == res[0][0]:
                 return False
         return True
-

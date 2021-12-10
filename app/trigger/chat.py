@@ -1,7 +1,7 @@
 import random
 
-from graia.application import MessageChain
-from graia.application.message.elements.internal import Plain, At
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import Plain, At
 
 from app.api.doHttp import doHttpRequest
 from app.core.config import Config
@@ -35,6 +35,7 @@ no_answer = [
 
 class Chat(Trigger):
     """智能聊天系统"""
+
     async def process(self):
         config = Config()
         head, sep, message = self.message.asDisplay().partition(' ')
@@ -70,7 +71,8 @@ class Chat(Trigger):
                 response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
                 if response['result'] == 0:
                     resp = MessageChain.create([
-                        At(self.member.id), Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
+                        At(self.member.id),
+                        Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
                     ])
                 else:
                     resp = MessageChain.create([

@@ -6,6 +6,7 @@ from app.util.dao import MysqlDao
 
 async def initDB():
     """初始化数据表"""
+
     async def initSysDB() -> None:
         """初始化系统数据表"""
         with MysqlDao() as db:
@@ -52,6 +53,7 @@ async def initDB():
         for PluginDB in base.initDB.__subclasses__():
             """初始化插件数据表"""
             await PluginDB().process()
+
     try:
         await initSysDB()
         await initPluginDB()

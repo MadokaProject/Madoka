@@ -1,7 +1,7 @@
 import subprocess
-import sys
-from graia.application import MessageChain
-from graia.application.message.elements.internal import At, Plain
+
+from graia.ariadne.message.chain import MessageChain
+from graia.ariadne.message.element import At, Plain
 from loguru import logger
 
 from app.plugin.base import Plugin
@@ -54,7 +54,7 @@ class Admin(Plugin):
                         logger.warning('升级超时！')
                 elif isstartswith(self.msg[0], 'r'):
                     restart('-r', *shell)
-                sys.exit()
+                await self.app.request_stop()
             elif isstartswith(self.msg[0], 'c'):
                 DEBUG = True
             else:
