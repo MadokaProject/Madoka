@@ -21,3 +21,9 @@ class BotGroup:
                 )
                 if not res:
                     raise Exception()
+            elif self.active == 1:
+                res = db.update(
+                    "UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id]
+                )
+                if not res:
+                    raise Exception()

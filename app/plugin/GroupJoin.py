@@ -32,8 +32,7 @@ class GroupJoin(Plugin):
                 with MysqlDao() as db:
                     res = db.update(
                         'INSERT INTO group_join(uid, text, active) VALUES (%s, %s, %s)',
-                        [self.group.id if self.msg[1] == '1' else self.msg[1],
-                         '\n'.join([f'{value}' for value in self.msg[2:]]), 1]
+                        [self.msg[1], '\n'.join([f'{value}' for value in self.msg[2:]]), 1]
                     )
                     self.resp = MessageChain.create([
                         Plain("设置成功！" if res else "设置失败！")
@@ -41,20 +40,21 @@ class GroupJoin(Plugin):
             elif isstartswith(self.msg[0], 'view'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 with MysqlDao() as db:
-                    res = db.query(
-                        'SELECT text, active FROM group_join WHERE uid=%s',
-                        [self.group.id if self.msg[1] == '1' else self.msg[1]]
-                    )
+                    res = db.query('SELECT text, active FROM group_join WHERE uid=%s', [self.msg[1]])
                     self.resp = MessageChain.create([Plain(
                         ''.join([f'欢迎消息：{text}\n开启状态：{active}' for (text, active) in res]) if res else "该群组未配置欢迎消息！"
                     )])
             elif isstartswith(self.msg[0], 'enable'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 with MysqlDao() as db:
-                    res = db.update(
-                        'UPDATE group_join SET active=%s WHERE uid=%s',
-                        [1, self.group.id if self.msg[1] == '1' else self.msg[1]]
-                    )
+                    res = db.query('SELECT COUNT(*) FROM group_join WHERE uid=%s', [self.msg[1]])
+                    if not res[0][0]:
+                        db.update('INSERT INTO group_join(uid, text, active) VALUES (%s, %s, %s)', [self.msg[1], '', 1])
+                    else:
+                        db.update(
+                            'UPDATE group_join SET active=%s WHERE uid=%s',
+                            [1, self.group.id if self.msg[1] == '1' else self.msg[1]]
+                        )
                     self.resp = MessageChain.create([
                         Plain("开启成功！" if res else "开启失败，未找到该群组！")
                     ])

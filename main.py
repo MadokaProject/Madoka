@@ -3,7 +3,20 @@ import sys
 from pathlib import Path
 
 from graia.ariadne.app import Ariadne
-from graia.ariadne.event.mirai import NewFriendRequestEvent
+from graia.ariadne.event.mirai import (
+    NewFriendRequestEvent,
+    BotInvitedJoinGroupRequestEvent,
+    BotJoinGroupEvent,
+    BotLeaveEventKick,
+    BotLeaveEventActive,
+    BotGroupPermissionChangeEvent,
+    BotMuteEvent,
+    MemberCardChangeEvent,
+    MemberJoinEvent,
+    MemberLeaveEventKick,
+    MemberLeaveEventQuit,
+    MemberHonorChangeEvent,
+)
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.model import Friend, Group, Member, MiraiSession
@@ -14,8 +27,7 @@ from loguru import logger
 
 from app.core.config import Config
 from app.core.controller import Controller
-from app.event.friendRequest import FriendRequest
-from app.event.join import Join
+from app.event.event import EventController
 from app.extend.power import power
 from app.extend.schedule import custom_schedule
 from initDB import initDB
@@ -68,15 +80,87 @@ async def group_message_listener(message: MessageChain, group: Group, member: Me
     await event.process_event()
 
 
-@bcc.receiver("MemberJoinEvent")
-async def group_join_listener(group: Group, member: Member, app: Ariadne):
-    event = Join(group, member, app)
+@bcc.receiver("ApplicationLaunched")
+async def application_launched(app: Ariadne):
+    event = EventController("ApplicationLaunched", app, inc)
+    await event.process_event()
+
+
+@bcc.receiver("ApplicationShutdowned")
+async def application_showdown_listener(app: Ariadne):
+    event = EventController("ApplicationShutdowned", app, inc)
     await event.process_event()
 
 
 @bcc.receiver("NewFriendRequestEvent")
-async def friend_request_listener(app: Ariadne, event: NewFriendRequestEvent):
-    event = FriendRequest(app, event)
+async def new_friend_request_listener(app: Ariadne, event: NewFriendRequestEvent):
+    event = EventController("NewFriendRequestEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("BotInvitedJoinGroupRequestEvent")
+async def bot_invited_join_group_request_listener(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
+    event = EventController("BotInvitedJoinGroupRequestEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("BotJoinGroupEvent")
+async def bot_join_group_listener(app: Ariadne, event: BotJoinGroupEvent):
+    event = EventController("BotJoinGroupEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("BotLeaveEventKick")
+async def bot_leave_kick_listener(app: Ariadne, event: BotLeaveEventKick):
+    event = EventController("BotLeaveEventKick", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("BotLeaveEventActive")
+async def bot_leave_active_listener(app: Ariadne, event: BotLeaveEventActive):
+    event = EventController("BotLeaveEventActive", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("BotGroupPermissionChangeEvent")
+async def bot_group_permission_change_listener(app: Ariadne, event: BotGroupPermissionChangeEvent):
+    event = EventController("BotGroupPermissionChangeEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("BotMuteEvent")
+async def bot_mute_listener(group: Group, app: Ariadne, event: BotMuteEvent):
+    event = EventController("BotMuteEvent", group, app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("MemberCardChangeEvent")
+async def member_card_change_listener(app: Ariadne, event: MemberCardChangeEvent):
+    event = EventController("MemberCardChangeEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("MemberJoinEvent")
+async def member_join_listener(app: Ariadne, event: MemberJoinEvent):
+    event = EventController("MemberJoinEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("MemberLeaveEventKick")
+async def member_leave_kick_listener(app: Ariadne, event: MemberLeaveEventKick):
+    event = EventController("MemberLeaveEventKick", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("MemberLeaveEventQuit")
+async def member_leave_quit_listener(app: Ariadne, event: MemberLeaveEventQuit):
+    event = EventController("MemberLeaveEventQuit", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("MemberHonorChangeEvent")
+async def member_honor_change_listener(app: Ariadne, event: MemberHonorChangeEvent):
+    event = EventController("MemberHonorChangeEvent", app, inc, event)
     await event.process_event()
 
 

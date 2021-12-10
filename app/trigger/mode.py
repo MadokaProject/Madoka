@@ -9,8 +9,11 @@ from app.util.decorator import permission_required
 
 class ChangeMode(Trigger):
     async def process(self):
+        config = Config()
         if self.msg[0] == '.mode':
             await self.change_mode()
+        if config.ONLINE and config.DEBUG:
+            self.as_last = True
 
     @permission_required(level='ADMIN')
     async def change_mode(self):

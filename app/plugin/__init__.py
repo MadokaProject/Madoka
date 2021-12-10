@@ -3,7 +3,6 @@ __all__ = [
     'sys',
     'power',
     'csm',
-    'friendEvent',
     'replyKeyword',
     'GroupJoin',
     'GithubListener',
