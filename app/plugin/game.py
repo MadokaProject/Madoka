@@ -163,6 +163,8 @@ class Game(Plugin):
                     msg = PrettyTable()
                     msg.field_names = ['序号', '群昵称', '积分']
                     for item in res:
+                        if item[1] == 0:
+                            continue
                         if int(item[0]) in group_user.keys():
                             msg.add_row([index, group_user[int(item[0])], item[1]])
                             index += 1
