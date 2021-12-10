@@ -23,6 +23,12 @@ class BotUser:
                 )
                 if not res:
                     raise Exception()
+            elif self.active == 1:
+                res = db.update(
+                    "UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]
+                )
+                if not res:
+                    raise Exception()
 
     def sign_in(self):
         """签到"""

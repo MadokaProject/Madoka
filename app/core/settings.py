@@ -56,9 +56,6 @@ for (name, uid, value) in res:
         name: json.loads(value)
     })
 
-NEW_FRIEND = {}
-"""存储好友申请实例"""
-
 # 游戏记录
 MEMBER_RUNING_LIST = []
 """创建游戏人"""

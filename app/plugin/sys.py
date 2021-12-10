@@ -48,10 +48,10 @@ class Sys(Plugin):
                     return
                 with MysqlDao() as db:
                     res = db.update('UPDATE user SET active=0 where uid=%s', [int(self.msg[1])])
-                if res:
-                    self.resp = MessageChain.create([
-                        Plain('取消成功！')
-                    ])
+                    if res:
+                        self.resp = MessageChain.create([
+                            Plain('取消成功！')
+                        ])
                     ACTIVE_USER.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ag'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
@@ -71,10 +71,10 @@ class Sys(Plugin):
                     return
                 with MysqlDao() as db:
                     res = db.update('UPDATE `group` SET active=0 WHERE uid=%s', [int(self.msg[1])])
-                if res:
-                    self.resp = MessageChain.create([
-                        Plain('取消成功！')
-                    ])
+                    if res:
+                        self.resp = MessageChain.create([
+                            Plain('取消成功！')
+                        ])
                     ACTIVE_GROUP.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ul'):
                 with MysqlDao() as db:

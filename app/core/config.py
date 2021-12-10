@@ -15,6 +15,7 @@ class Config:
         self.VERIFY_KEY = self.cf.get('bot', 'verify_key')
         self.BOT_NAME = self.cf.get('bot', 'bot_name')
         self.MASTER_QQ = self.cf.get('bot', 'master_qq')
+        self.MASTER_NAME = self.cf.get('bot', 'master_name')
         self.DEBUG = True if self.cf.get('bot', 'debug', fallback='False').lower() == 'true' else False
         self.ONLINE = True if self.cf.get('bot', 'online', fallback='True').lower() == 'true' else False
 
