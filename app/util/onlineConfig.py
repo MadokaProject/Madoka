@@ -18,19 +18,19 @@ def save_config(name: str, uid, value, model: str = None) -> bool:
             if model in ['add', 'remove']:
                 res = db.query('SELECT value FROM config WHERE name=%s and uid=%s', [name, uid])
                 if res:
-                    params = json.loads(res)
+                    params = json.loads(res[0][0])
                     if model == 'add':
                         params.update(value)
                     else:
                         params.pop(value)
-            if db.update('REPLACE INTO config(name, uid, value) VALUES (%s, %s, %s)',
-                         [name, uid, json.dumps({params})]):
-                if not CONFIG.__contains__(uid):
-                    CONFIG.update({uid: {}})
-                CONFIG[uid].update({name: params})
-                return True
         except Exception:
             pass
+        if db.update('REPLACE INTO config(name, uid, value) VALUES (%s, %s, %s)',
+                     [name, uid, json.dumps(params)]):
+            if not CONFIG.__contains__(uid):
+                CONFIG.update({uid: {}})
+            CONFIG[uid].update({name: params})
+            return True
     return False
 
 
@@ -43,4 +43,5 @@ def get_config(name: str, uid) -> dict:
     with MysqlDao() as db:
         res = db.query('SELECT value FROM config WHERE name=%s and uid=%s', [name, uid])
         if res:
-            return json.loads(res)
+            print(res[0])
+            return json.loads(res[0][0])
