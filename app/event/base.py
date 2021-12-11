@@ -1,6 +1,7 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.mirai import (
     NewFriendRequestEvent,
+    NudgeEvent,
     BotInvitedJoinGroupRequestEvent,
     BotJoinGroupEvent,
     BotLeaveEventKick,
@@ -36,6 +37,8 @@ class Event:
                 self.inc = arg
             elif isinstance(arg, NewFriendRequestEvent):
                 self.new_friend = arg
+            elif isinstance(arg, NudgeEvent):
+                self.nudge = arg
             elif isinstance(arg, BotInvitedJoinGroupRequestEvent):
                 self.bot_invited_join = arg
             elif isinstance(arg, BotJoinGroupEvent):
@@ -48,8 +51,6 @@ class Event:
                 self.bot_group_perm_change = arg
             elif isinstance(arg, BotMuteEvent):
                 self.bot_mute = arg
-            # elif isinstance(arg, NudgeEvent):
-            #     self.event = arg
             elif isinstance(arg, MemberCardChangeEvent):
                 self.member_card_change = arg
             elif isinstance(arg, MemberJoinEvent):

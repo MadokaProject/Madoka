@@ -5,6 +5,7 @@ from pathlib import Path
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.mirai import (
     NewFriendRequestEvent,
+    NudgeEvent,
     BotInvitedJoinGroupRequestEvent,
     BotJoinGroupEvent,
     BotLeaveEventKick,
@@ -98,6 +99,13 @@ async def new_friend_request_listener(app: Ariadne, event: NewFriendRequestEvent
     await event.process_event()
 
 
+@bcc.receiver("NudgeEvent")
+async def nudge_listener(app: Ariadne, event: NudgeEvent):
+    print('戳一戳')
+    event = EventController("NudgeEvent", app, inc, event)
+    await event.process_event()
+
+
 @bcc.receiver("BotInvitedJoinGroupRequestEvent")
 async def bot_invited_join_group_request_listener(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
     event = EventController("BotInvitedJoinGroupRequestEvent", app, inc, event)
@@ -129,8 +137,8 @@ async def bot_group_permission_change_listener(app: Ariadne, event: BotGroupPerm
 
 
 @bcc.receiver("BotMuteEvent")
-async def bot_mute_listener(group: Group, app: Ariadne, event: BotMuteEvent):
-    event = EventController("BotMuteEvent", group, app, inc, event)
+async def bot_mute_listener(app: Ariadne, event: BotMuteEvent):
+    event = EventController("BotMuteEvent", app, inc, event)
     await event.process_event()
 
 
