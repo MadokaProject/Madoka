@@ -57,9 +57,7 @@ eg: {group: {name: api}}
 """
 for _uid in CONFIG.keys():
     if CONFIG[_uid].__contains__('repo'):
-        REPO.update({_uid: {}})
-        for _name, _api in CONFIG[_uid]['repo']:
-            REPO[_uid].update({_name, _api})
+        REPO.update({_uid: CONFIG[_uid]['repo']})
 
 # 戳一戳记录
 NUDGE_INFO = {}
