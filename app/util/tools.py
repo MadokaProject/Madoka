@@ -16,12 +16,18 @@ def parse_args(args, keep_head=False) -> list:
     return args
 
 
-def isstartswith(prefix: str, args) -> bool:
-    """判断prefix是否以args中某元素开头"""
+def isstartswith(prefix: str, args, full_match=None) -> bool:
+    """判断prefix是否以args中某元素开头
+
+    full_match为1时指完全匹配
+    """
     if type(args) == str:
         args = [args]
     for arg in args:
-        if prefix.startswith(arg):
+        if full_match == 1:
+            if prefix == arg:
+                return True
+        elif prefix.startswith(arg):
             return True
     return False
 

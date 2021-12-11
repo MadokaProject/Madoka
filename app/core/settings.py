@@ -46,7 +46,10 @@ for (ip, port, report, delay) in res:
     )
 
 CONFIG = {}
-"""存储在线配置"""
+"""存储在线配置
+
+eg: {group: {name: json.loads(value)}}
+"""
 with MysqlDao() as db:
     res = db.query('SELECT name, uid, value FROM config')
 for (name, uid, value) in res:
