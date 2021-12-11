@@ -37,9 +37,13 @@ class GroupJoin(Plugin):
                 self.resp = MessageChain.create([Plain('设置成功！')])
             elif isstartswith(self.msg[0], ['查看', 'view']):
                 res = get_config('member_join', self.group.id)
-                self.resp = MessageChain.create([Plain(
-                    ''.join([f'欢迎消息：{text}\n开启状态：{active}' for active, text in res]) if res else "该群组未配置欢迎消息！"
-                )])
+                if not res:
+                    self.resp = MessageChain.create([Plain("该群组未配置欢迎消息！")])
+                else:
+                    self.resp = MessageChain.create([
+                        Plain(f"欢迎消息：{res['text'] if res.__contains__('text') else '默认欢迎消息'}"),
+                        Plain(f"\n开启状态：{res['active']}")
+                    ])
             elif isstartswith(self.msg[0], ['开启', 'enable']):
                 save_config('member_join', self.group.id, {'active': 1}, model='add')
                 self.resp = MessageChain.create([Plain("开启成功！")])

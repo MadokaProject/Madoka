@@ -34,7 +34,7 @@ def save_config(name: str, uid, value, model: str = None) -> bool:
     return False
 
 
-def get_config(name: str, uid):
+def get_config(name: str, uid) -> dict:
     """在线配置获取
     :param name: 配置名
     :param uid: 配置群组
@@ -44,4 +44,3 @@ def get_config(name: str, uid):
         res = db.query('SELECT value FROM config WHERE name=%s and uid=%s', [name, uid])
         if res:
             return json.loads(res)
-    return False

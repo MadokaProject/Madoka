@@ -10,6 +10,7 @@ from app.core.config import Config
 from app.core.settings import ADMIN_USER
 from app.event.base import Event
 from app.util.dao import MysqlDao
+from app.util.onlineConfig import get_config
 from app.util.sendMessage import safeSendGroupMessage
 
 
@@ -55,12 +56,10 @@ class MemberJoin(Event):
             At(self.member_join.member.id),
             Plain(" 加入本群"),
         ]
-        with MysqlDao() as db:
-            res = db.query('SELECT text, active FROM group_join WHERE uid=%s', [self.member_join.member.group.id])
-            if res:
-                if res[0][1] == 1:
-                    msg.append(Plain(f"\r\n{res[0]}") if len(res) == 2 else None)
-                    await safeSendGroupMessage(self.member_join.member.group, MessageChain.create(msg))
+        res = get_config('member_join', self.member_join.member.group.id)
+        if res and res['active']:
+            msg.append(Plain(f"\r\n{res['text']}") if res.__contains__('text') else None)
+            await safeSendGroupMessage(self.member_join.member.group, MessageChain.create(msg))
 
 
 class MemberLeaveKick(Event):
