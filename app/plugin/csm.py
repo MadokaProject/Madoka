@@ -23,7 +23,7 @@ class Admin(Plugin):
         '.群管/.csm 全员禁言/allmute\t全员禁言\r\n' \
         '.群管/.csm 解禁/unmute [@qq]\t解除禁言\r\n' \
         '.群管/.csm 全员解禁/allunmute\t解除全员禁言\r\n' \
-        '.群管/.csm 禁言退出 [0/ 1]\t设置机器人被禁言是否退出\r\n' \
+        '.群管/.csm 禁言退群 [0/ 1]\t设置机器人被禁言是否退群\r\n' \
         '.群管/.csm 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.群管/.csm 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.群管/.csm 超长消息 [文本长度] [禁言时间(m)] [回复消息]\t检测单消息是否超出[文本长度]'
@@ -159,7 +159,7 @@ class Admin(Plugin):
                         self.resp = MessageChain.create([
                             Plain('设置成功！')
                         ])
-            elif isstartswith(self.msg[0], '禁言退出'):
+            elif isstartswith(self.msg[0], '禁言退群'):
                 assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
                 with MysqlDao() as db:
                     if db.update(
