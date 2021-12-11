@@ -33,65 +33,41 @@ class Sys(Plugin):
             if isstartswith(self.msg[0], 'au'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 BotUser(int(self.msg[1]), active=1)
-                self.resp = MessageChain.create([
-                    Plain('添加成功！')
-                ])
-                ACTIVE_USER.update({
-                    int(self.msg[1]): '*',
-                })
+                self.resp = MessageChain.create([Plain('添加成功！')])
+                ACTIVE_USER.update({int(self.msg[1]): '*'})
             elif isstartswith(self.msg[0], 'du'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 if int(self.msg[1]) not in ACTIVE_USER:
-                    self.resp = MessageChain.create([Plain(
-                        '未找到该用户！'
-                    )])
+                    self.resp = MessageChain.create([Plain('未找到该用户！')])
                     return
                 with MysqlDao() as db:
                     res = db.update('UPDATE user SET active=0 where uid=%s', [int(self.msg[1])])
                     if res:
-                        self.resp = MessageChain.create([
-                            Plain('取消成功！')
-                        ])
+                        self.resp = MessageChain.create([Plain('取消成功！')])
                     ACTIVE_USER.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ag'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 BotGroup(int(self.msg[1]), active=1)
-                self.resp = MessageChain.create([
-                    Plain('添加成功！')
-                ])
-                ACTIVE_GROUP.update({
-                    int(self.msg[1]): '*'
-                })
+                self.resp = MessageChain.create([Plain('添加成功！')])
+                ACTIVE_GROUP.update({int(self.msg[1]): '*'})
             elif isstartswith(self.msg[0], 'dg'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 if int(self.msg[1]) not in ACTIVE_GROUP:
-                    self.resp = MessageChain.create([Plain(
-                        '未找到该群组！'
-                    )])
+                    self.resp = MessageChain.create([Plain('未找到该群组！')])
                     return
                 with MysqlDao() as db:
                     res = db.update('UPDATE `group` SET active=0 WHERE uid=%s', [int(self.msg[1])])
                     if res:
-                        self.resp = MessageChain.create([
-                            Plain('取消成功！')
-                        ])
+                        self.resp = MessageChain.create([Plain('取消成功！')])
                     ACTIVE_GROUP.pop(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ul'):
                 with MysqlDao() as db:
-                    res = db.query(
-                        "SELECT uid FROM user WHERE active=1"
-                    )
-                self.resp = MessageChain.create([Plain(
-                    ''.join([f'{qq}\r\n' for (qq,) in res])
-                )])
+                    res = db.query("SELECT uid FROM user WHERE active=1")
+                self.resp = MessageChain.create([Plain(''.join([f'{qq}\r\n' for (qq,) in res]))])
             elif isstartswith(self.msg[0], 'gl'):
                 with MysqlDao() as db:
-                    res = db.query(
-                        "SELECT uid FROM `group` WHERE active=1"
-                    )
-                self.resp = MessageChain.create([Plain(
-                    '\r\n'.join([f'{group_id}' for (group_id,) in res])
-                )])
+                    res = db.query("SELECT uid FROM `group` WHERE active=1")
+                self.resp = MessageChain.create([Plain('\r\n'.join([f'{group_id}' for (group_id,) in res]))])
             else:
                 self.args_error()
                 return

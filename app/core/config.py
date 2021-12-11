@@ -26,7 +26,6 @@ class Config:
         self.MYSQL_DATABASE = self.cf.get('mysql', 'mysql_database')
 
         self.REPO_ENABLE = True if self.cf.get('github', 'enable', fallback='False').lower() == 'true' else False
-        self.REPO_GROUP = self.cf.get('github', 'repo_group', fallback='[]').strip('[').strip(']').split(',')
         self.REPO_TIME = self.cf.get('github', 'repo_time', fallback='*/10  * * * *')
 
     def change_debug(self):
