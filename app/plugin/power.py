@@ -55,8 +55,6 @@ class Admin(Plugin):
                 elif isstartswith(self.msg[0], 'r'):
                     restart('-r', *shell)
                 await self.app.request_stop()
-            elif isstartswith(self.msg[0], 'c'):
-                DEBUG = True
             else:
                 self.args_error()
                 return

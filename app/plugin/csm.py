@@ -4,10 +4,9 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Source
 from loguru import logger
 
-from app.core.settings import *
 from app.plugin.base import Plugin
-from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
+from app.util.onlineConfig import save_config
 from app.util.tools import isstartswith
 
 
@@ -77,103 +76,36 @@ class Admin(Plugin):
                 ])
             elif isstartswith(self.msg[0], ['status', '状态']):
                 assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
-                with MysqlDao() as db:
-                    if db.update(
-                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
-                            ['status', self.group.id, self.msg[1]]
-                    ):
-                        if not CONFIG.__contains__(str(self.group.id)):
-                            CONFIG.update({str(self.group.id): {}})
-                        CONFIG[str(self.group.id)].update({
-                            'status': int(self.msg[1])
-                        })
-                        self.resp = MessageChain.create([
-                            Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')
-                        ])
+                if save_config('status', self.group.id, self.msg[1]):
+                    self.resp = MessageChain.create([Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')])
             elif isstartswith(self.msg[0], '刷屏检测'):
                 assert len(self.msg) == 4 and self.msg[1].isdigit() and self.msg[2].isdigit()
-                with MysqlDao() as db:
-                    if db.update(
-                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
-                            ['mute', self.group.id, json.dumps({
-                                'time': int(self.msg[1]),
-                                'mute': int(self.msg[2]) * 60,
-                                'message': self.msg[3]
-                            })]
-                    ):
-                        if not CONFIG.__contains__(str(self.group.id)):
-                            CONFIG.update({str(self.group.id): {}})
-                        CONFIG[str(self.group.id)].update({
-                            'mute': {
-                                'time': int(self.msg[1]),
-                                'mute': int(self.msg[2]) * 60,
-                                'message': self.msg[3]
-                            }
-                        })
-                        self.resp = MessageChain.create([
-                            Plain('设置成功！')
-                        ])
+                if save_config('mute', self.group.id, {
+                    'time': int(self.msg[1]),
+                    'mute': int(self.msg[2]) * 60,
+                    'message': self.msg[3]
+                }):
+                    self.resp = MessageChain.create([Plain('设置成功！')])
             elif isstartswith(self.msg[0], '重复消息'):
                 assert len(self.msg) == 4 and self.msg[1].isdigit() and self.msg[2].isdigit()
-                with MysqlDao() as db:
-                    if db.update(
-                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
-                            ['duplicate', self.group.id, json.dumps({
-                                'time': int(self.msg[1]),
-                                'mute': int(self.msg[2]) * 60,
-                                'message': self.msg[3]
-                            })]
-                    ):
-                        if not CONFIG.__contains__(str(self.group.id)):
-                            CONFIG.update({str(self.group.id): {}})
-                        CONFIG[str(self.group.id)].update({
-                            'duplicate': {
-                                'time': int(self.msg[1]),
-                                'mute': int(self.msg[2]) * 60,
-                                'message': self.msg[3]
-                            }
-                        })
-                        self.resp = MessageChain.create([
-                            Plain('设置成功！')
-                        ])
+                if save_config('duplicate', self.group.id, {
+                    'time': int(self.msg[1]),
+                    'mute': int(self.msg[2]) * 60,
+                    'message': self.msg[3]
+                }):
+                    self.resp = MessageChain.create([Plain('设置成功！')])
             elif isstartswith(self.msg[0], '超长消息'):
                 assert len(self.msg) == 4 and self.msg[1].isdigit() and self.msg[2].isdigit()
-                with MysqlDao() as db:
-                    if db.update(
-                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
-                            ['over-length', self.group.id, json.dumps({
-                                'text': int(self.msg[1]),
-                                'mute': int(self.msg[2]) * 60,
-                                'message': self.msg[3]
-                            })]
-                    ):
-                        if not CONFIG.__contains__(str(self.group.id)):
-                            CONFIG.update({str(self.group.id): {}})
-                        CONFIG[str(self.group.id)].update({
-                            'over-length': {
-                                'text': int(self.msg[1]),
-                                'mute': int(self.msg[2]) * 60,
-                                'message': self.msg[3]
-                            }
-                        })
-                        self.resp = MessageChain.create([
-                            Plain('设置成功！')
-                        ])
+                if save_config('over-length', self.group.id, {
+                    'text': int(self.msg[1]),
+                    'mute': int(self.msg[2]) * 60,
+                    'message': self.msg[3]
+                }):
+                    self.resp = MessageChain.create([Plain('设置成功！')])
             elif isstartswith(self.msg[0], '禁言退群'):
                 assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
-                with MysqlDao() as db:
-                    if db.update(
-                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
-                            ['bot_mute_event', self.group.id, self.msg[1]]
-                    ):
-                        if not CONFIG.__contains__(str(self.group.id)):
-                            CONFIG.update({str(self.group.id): {}})
-                        CONFIG[str(self.group.id)].update({
-                            'bot_mute_event': int(self.msg[1])
-                        })
-                        self.resp = MessageChain.create([
-                            Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')
-                        ])
+                if save_config('bot_mute_event', self.group.id, self.msg[1]):
+                    self.resp = MessageChain.create([Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')])
             else:
                 self.args_error()
                 return

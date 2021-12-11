@@ -20,19 +20,6 @@ async def initDB():
                     content varchar(800) not null comment '内容')"
             )
             db.update(
-                "create table if not exists github( \
-                    id int auto_increment comment '序号' primary key, \
-                    repo varchar(50) not null comment '仓库', \
-                    branch varchar(50) not null comment '分支', \
-                    sha char(40) not null comment '记录')"
-            )
-            db.update(
-                "create table if not exists github_config( \
-                    id int auto_increment comment '序号' primary key, \
-                    repo char(50) not null comment '仓库名', \
-                    api char(110) not null comment 'api')"
-            )
-            db.update(
                 "create table if not exists mc_server( \
                     ip char(15) not null comment 'IP', \
                     port char(5) not null comment '端口', \

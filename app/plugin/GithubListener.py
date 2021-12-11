@@ -2,10 +2,10 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
-from app.core.settings import *
+from app.core.settings import REPO
 from app.plugin.base import Plugin
-from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
+from app.util.onlineConfig import save_config
 from app.util.tools import isstartswith
 
 
@@ -28,81 +28,41 @@ class GithubListener(Plugin):
         try:
             if isstartswith(self.msg[0], 'add'):
                 assert len(self.msg) == 3
-                if self.msg[1] in REPO:
-                    self.resp = MessageChain.create([
-                        Plain('添加失败，该仓库名已存在！')
-                    ])
+                group_id = str(self.group.id)
+                if REPO.__contains__(group_id) and self.msg[1] in REPO[group_id]:
+                    self.resp = MessageChain.create([Plain('添加失败，该仓库名已存在！')])
                     return
-                with MysqlDao() as db:
-                    res = db.update(
-                        'INSERT INTO github_config (repo, api) VALUES (%s, %s)',
-                        [self.msg[1], self.msg[2]]
-                    )
-                    if not res:
-                        raise Exception()
-                    self.resp = MessageChain.create([
-                        Plain("添加成功！")
-                    ])
-                    REPO.update({
-                        self.msg[1]: self.msg[2]
-                    })
-
+                if save_config('repo', group_id, {self.msg[1]: self.msg[2]}, model='add'):
+                    self.resp = MessageChain.create([Plain("添加成功！")])
+                    if not REPO.__contains__(group_id):
+                        REPO.update({group_id: {}})
+                    REPO[group_id].update({self.msg[1]: self.msg[2]})
             elif isstartswith(self.msg[0], 'modify'):
-                assert len(self.msg) == 4
-                if self.msg[1] not in REPO:
-                    self.resp = MessageChain.create([
-                        Plain('修改失败，该仓库名不存在！')
-                    ])
+                assert len(self.msg) == 4 and self.msg[2] in ['name', 'api']
+                group_id = str(self.group.id)
+                if not REPO.__contains__(group_id) or self.msg[1] not in REPO[group_id]:
+                    self.resp = MessageChain.create([Plain('修改失败，该仓库名不存在！')])
                     return
-                with MysqlDao() as db:
-                    if self.msg[2] == 'name':
-                        res = db.update(
-                            'UPDATE github_config SET repo=%S WHERE repo=%s',
-                            [self.msg[3], self.msg[1]]
-                        )
-                        REPO[self.msg[3]] = REPO.pop(self.msg[1])
-                        if not res:
-                            raise Exception()
-                    elif self.msg[2] == 'api':
-                        res = db.update(
-                            'UPDATE github_config SET api=%s WHERE repo=%s',
-                            [self.msg[3], self.msg[1]]
-                        )
-                        REPO[self.msg[1]] = self.msg[3]
-                        if not res:
-                            raise Exception()
-                    else:
-                        self.args_error()
-                        return
-                    if res:
-                        self.resp = MessageChain.create([
-                            Plain("修改成功！")
-                        ])
+                if self.msg[2] == 'name':
+                    save_config('repo', group_id, self.msg[1], model='remove')
+                    save_config('repo', group_id, {self.msg[3]: REPO[group_id][self.msg[1]]}, model='add')
+                    REPO[group_id][self.msg[3]] = REPO[group_id].pop(self.msg[1])
+                else:
+                    save_config('repo', group_id, {self.msg[1]: self.msg[3]}, model='add')
+                    REPO[group_id][self.msg[1]] = self.msg[3]
+                self.resp = MessageChain.create([Plain("修改成功！")])
             elif isstartswith(self.msg[0], 'remove'):
                 assert len(self.msg) == 2
-                if self.msg[1] not in REPO:
-                    self.resp = MessageChain.create([
-                        Plain('删除失败，该仓库名不存在！')
-                    ])
+                group_id = self.group.id
+                if not REPO.__contains__(group_id) or self.msg[1] not in REPO[group_id]:
+                    self.resp = MessageChain.create([Plain('删除失败，该仓库名不存在！')])
                     return
-                with MysqlDao() as db:
-                    res = db.update(
-                        'DELETE FROM github_config WHERE repo=%s',
-                        [self.msg[1]]
-                    )
-                    if not res:
-                        raise Exception
-                    self.resp = MessageChain.create([
-                        Plain("删除成功！")
-                    ])
-                    REPO.pop(self.msg[1])
+                save_config('repo', group_id, self.msg[1], model='remove')
+                REPO[group_id].pop(self.msg[1])
+                self.resp = MessageChain.create([Plain("删除成功！")])
             elif isstartswith(self.msg[0], 'list'):
-                with MysqlDao() as db:
-                    res = db.query(
-                        "SELECT repo, api FROM github_config"
-                    )
                 self.resp = MessageChain.create([Plain(
-                    '\r\n'.join([f'{repo}: {repo_api}' for (repo, repo_api) in res])
+                    '\r\n'.join([f'{name}: {api}' for (name, api) in REPO[str(self.group.id)]])
                 )])
             else:
                 self.args_error()

@@ -12,11 +12,12 @@ from loguru import logger
 
 from app.core.config import Config
 from app.core.settings import ACTIVE_GROUP, ADMIN_USER
-from app.core.settings import NUDGE_INFO, CONFIG
+from app.core.settings import NUDGE_INFO
 from app.entities.group import BotGroup
 from app.event.base import Event
 from app.util.control import Rest
 from app.util.dao import MysqlDao
+from app.util.onlineConfig import get_config
 from app.util.sendMessage import safeSendGroupMessage
 
 
@@ -204,9 +205,8 @@ class BotMute(Event):
     event_name = "BotMuteEvent"
 
     async def process(self):
-        if not CONFIG.__contains__(str(self.bot_mute.operator.group.id)) or \
-                not CONFIG[str(self.bot_mute.operator.group.id)].__contains__('bot_mute_event') or \
-                CONFIG[str(self.bot_mute.operator.group.id)]['bot_mute_event']:
+        res = get_config('bot_mute_event', self.bot_mute.operator.group.id)
+        if not res or res:
             try:
                 with MysqlDao() as db:
                     db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_mute.operator.group.id])

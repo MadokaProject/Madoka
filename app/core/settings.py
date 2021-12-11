@@ -4,45 +4,36 @@ from app.util.dao import MysqlDao
 
 ACTIVE_GROUP = {}
 """监听群聊消息列表"""
-with MysqlDao() as db:
-    res = db.query('SELECT uid, permission FROM `group` WHERE active=1')
-for (gid, permit) in res:
+with MysqlDao() as _db:
+    _res = _db.query('SELECT uid, permission FROM `group` WHERE active=1')
+for (_gid, _permit) in _res:
     ACTIVE_GROUP.update({
-        int(gid): str(permit).split(',')
+        int(_gid): str(_permit).split(',')
     })
 
 ACTIVE_USER = {}
 """监听好友消息列表"""
-with MysqlDao() as db:
-    res = db.query('SELECT uid FROM user WHERE active=1')
-for (qid,) in res:
+with MysqlDao() as _db:
+    _res = _db.query('SELECT uid FROM user WHERE active=1')
+for (_qid,) in _res:
     ACTIVE_USER.update({
-        int(qid): '*'
+        int(_qid): '*'
     })
 
 ADMIN_USER = []
 """具有管理权限QQ列表"""
-with MysqlDao() as db:
-    res = db.query('SELECT uid FROM user WHERE admin=1')
-for (qid,) in res:
-    ADMIN_USER.append(int(qid))
-
-REPO = {}
-"""Github监听仓库"""
-with MysqlDao() as db:
-    res = db.query('SELECT repo, api FROM github_config')
-for (repo, api) in res:
-    REPO.update({
-        str(repo): str(api)
-    })
+with MysqlDao() as _db:
+    _res = _db.query('SELECT uid FROM user WHERE admin=1')
+for (_qid,) in _res:
+    ADMIN_USER.append(int(_qid))
 
 LISTEN_MC_SERVER = []
 """MC服务器自动监听列表"""
-with MysqlDao() as db:
-    res = db.query('SELECT ip,port,report,delay FROM mc_server WHERE listen=1')
-for (ip, port, report, delay) in res:
+with MysqlDao() as _db:
+    _res = _db.query('SELECT ip,port,report,delay FROM mc_server WHERE listen=1')
+for (_ip, _port, _report, _delay) in _res:
     LISTEN_MC_SERVER.append(
-        [[ip, int(port)], [i for i in str(report).split(',')], delay]
+        [[_ip, int(_port)], [i for i in str(_report).split(',')], _delay]
     )
 
 CONFIG = {}
@@ -50,14 +41,25 @@ CONFIG = {}
 
 eg: {group: {name: json.loads(value)}}
 """
-with MysqlDao() as db:
-    res = db.query('SELECT name, uid, value FROM config')
-for (name, uid, value) in res:
-    if not CONFIG.__contains__(uid):
-        CONFIG.update({uid: {}})
-    CONFIG[uid].update({
-        name: json.loads(value)
+with MysqlDao() as _db:
+    _res = _db.query('SELECT name, uid, value FROM config')
+for (_name, _uid, _value) in _res:
+    if not CONFIG.__contains__(_uid):
+        CONFIG.update({_uid: {}})
+    CONFIG[_uid].update({
+        _name: json.loads(_value)
     })
+
+REPO = {}
+"""Github监听仓库
+
+eg: {group: {name: api}}
+"""
+for _uid in CONFIG.keys():
+    if CONFIG[_uid].__contains__('repo'):
+        REPO.update({_uid: {}})
+        for _name, _api in CONFIG[_uid]['repo']:
+            REPO[_uid].update({_name, _api})
 
 # 戳一戳记录
 NUDGE_INFO = {}

@@ -2,7 +2,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 
 from app.trigger.trigger import Trigger
-from app.util.dao import MysqlDao
+from app.util.onlineConfig import get_config
 
 
 class Reply(Trigger):
@@ -13,14 +13,8 @@ class Reply(Trigger):
             return
         if self.msg[0][0] in '.,;!?。，；！？/\\':  # 判断是否为指令
             return
-        with MysqlDao() as db:
-            res = db.query(
-                'SELECT text FROM group_reply WHERE uid=%s and keyword=%s',
-                [self.group.id, self.message.asDisplay()]
-            )
-            if res:
-                resp = MessageChain.create([
-                    At(self.member.id), Plain(' ' + res[0][0])
-                ])
-                await self.do_send(resp)
-                self.as_last = True
+        res = get_config('group_reply', self.group.id)
+        message = self.message.asDisplay()
+        if res and res.__contains__(message):
+            await self.do_send(MessageChain.create([At(self.member.id), Plain(' ' + res[message])]))
+            self.as_last = True

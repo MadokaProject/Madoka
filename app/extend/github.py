@@ -1,4 +1,7 @@
+import os
+import pickle
 from datetime import datetime, timedelta
+from pathlib import Path
 
 import requests
 from graia.ariadne.context import enter_context
@@ -6,9 +9,10 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
+from app.api.doHttp import doHttpRequest
 from app.core.config import Config
-from app.core.settings import *
-from app.util.dao import MysqlDao
+from app.core.settings import REPO
+from app.util.tools import app_path
 
 
 async def github_listener(app):
@@ -17,45 +21,37 @@ async def github_listener(app):
         return
     logger.info('github_listener is running...')
 
-    group = config.REPO_GROUP
-    repo = [i for i in REPO.keys()]
-    repo_api = [i for i in REPO.values()]
-    if not repo or not repo_api:
-        return
-    for repo_num in range(len(repo)):
-        branches = requests.get(repo_api[repo_num]).json()  # 获取该仓库的全部branch json
-        for branch in branches:  # 挨个分支进行检测
-            with MysqlDao() as db:
-                res = db.query(
-                    'SELECT * FROM github where repo=%s and branch=%s',
-                    [repo[repo_num], branch['name']]
-                )
-                if res:
-                    if res[0][3] != branch['commit']['sha']:  # sha不一致
-                        db.update(
-                            'update github set sha = %s where repo=%s and branch=%s',
-                            [[branch['commit']['sha']], repo[repo_num], branch['name']]
-                        )
-                        await message_push(app, group, repo[repo_num], branch)
-                else:
-                    db.update(
-                        'INSERT INTO github(repo, branch, sha) VALUES(%s, %s, %s)',
-                        [repo[repo_num], branch['name'], branch['commit']['sha']]
-                    )
-                    await message_push(app, group, repo[repo_num], branch)
+    Path('./app/tmp/github').mkdir(parents=True, exist_ok=True)
+    for group in REPO.keys():
+        if os.path.exists(file := os.sep.join([app_path(), 'tmp', 'github', f'{group}.dat'])):
+            with open(file, 'rb') as f:
+                obj = pickle.load(f)
+        else:
+            obj = {}
+        for name, api in REPO[group]:
+            if not obj.__contains__(name):
+                obj.update({name: {}})
+            branches = await doHttpRequest(api, 'get', 'JSON')
+            for branch in branches:
+                if not obj[name].__contains__(branch):
+                    obj[name].update({branch: {}})
+                if not obj[name][branch].__contains__('sha') or branch['commit']['sha'] != obj[name][branch]['sha']:
+                    obj[name][branch]['sha'] = branch['commit']['sha']
+                    await message_push(app, group, name, branch)
+        with open(file, 'wb') as f:
+            pickle.dump(obj, f)
 
 
-async def message_push(app, groups, repo, branch):
+async def message_push(app, group, repo, branch):
     commit_info = requests.get(branch['commit']['url']).json()
     commit_time = datetime.strftime(
         datetime.strptime(commit_info['commit']['author']['date'],
                           "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8), '%Y-%m-%d %H:%M:%S')
     with enter_context(app=app):
-        for group in groups:
-            await app.sendGroupMessage(group, MessageChain.create([
-                Plain('Recent Commits to ' + repo + ':' + branch['name']),
-                Plain("\r\nCommit: " + commit_info['commit']['message']),
-                Plain("\r\nAuthor: " + commit_info['commit']['author']['name']),
-                Plain("\r\nUpdated: " + commit_time),
-                Plain("\r\nLink: " + commit_info['html_url'])
-            ]))
+        await app.sendGroupMessage(group, MessageChain.create([
+            Plain('Recent Commits to ' + repo + ':' + branch['name']),
+            Plain("\r\nCommit: " + commit_info['commit']['message']),
+            Plain("\r\nAuthor: " + commit_info['commit']['author']['name']),
+            Plain("\r\nUpdated: " + commit_time),
+            Plain("\r\nLink: " + commit_info['html_url'])
+        ]))

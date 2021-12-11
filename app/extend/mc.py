@@ -51,19 +51,19 @@ class McServer:
             ])
             resp_content = MessageChain.create([])
             if status and (status != self.status):
-                resp_content.plus(MessageChain.create([
+                resp_content.extend(MessageChain.create([
                     Plain('服务器已开启！\r\n')
                 ]))
             for player in self.players - players:
-                resp_content.plus(MessageChain.create([
+                resp_content.extend(MessageChain.create([
                     Plain(f'{player}退出了服务器！\r\n')
                 ]))
             for player in players - self.players:
-                resp_content.plus(MessageChain.create([
+                resp_content.extend(MessageChain.create([
                     Plain(f'{player}加入了服务器！\r\n')
                 ]))
             if (not status) and (status != self.status):
-                resp_content.plus(MessageChain.create([
+                resp_content.extend(MessageChain.create([
                     Plain('服务器已关闭！\r\n')
                 ]))
             self.status = status
@@ -71,7 +71,7 @@ class McServer:
             self.description = description
             self.time = time.time()
             if resp_content.__root__:
-                resp.plus(resp_content)
+                resp.extend(resp_content)
                 return resp
             return None
 
