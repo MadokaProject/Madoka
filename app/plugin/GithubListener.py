@@ -62,7 +62,7 @@ class GithubListener(Plugin):
                 self.resp = MessageChain.create([Plain("删除成功！")])
             elif isstartswith(self.msg[0], 'list'):
                 self.resp = MessageChain.create([Plain(
-                    '\r\n'.join([f'{name}: {api}' for (name, api) in REPO[str(self.group.id)]])
+                    '\r\n'.join([f'{name}: {api}' for name, api in REPO[str(self.group.id)].items()])
                 )])
             else:
                 self.args_error()
