@@ -56,6 +56,9 @@ for (name, uid, value) in res:
         name: json.loads(value)
     })
 
+# 戳一戳记录
+NUDGE_INFO = {}
+
 # 游戏记录
 MEMBER_RUNING_LIST = []
 """创建游戏人"""
