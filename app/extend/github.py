@@ -28,15 +28,15 @@ async def github_listener(app):
                 obj = pickle.load(f)
         else:
             obj = {}
-        for name, api in REPO[group]:
+        for name, api in REPO[group].items():
             if not obj.__contains__(name):
                 obj.update({name: {}})
             branches = await doHttpRequest(api, 'get', 'JSON')
             for branch in branches:
-                if not obj[name].__contains__(branch):
-                    obj[name].update({branch: {}})
-                if not obj[name][branch].__contains__('sha') or branch['commit']['sha'] != obj[name][branch]['sha']:
-                    obj[name][branch]['sha'] = branch['commit']['sha']
+                if not obj[name].__contains__(branch['name']):
+                    obj[name].update({branch['name']: None})
+                if branch['commit']['sha'] != obj[name][branch['name']]:
+                    obj[name][branch['name']] = branch['commit']['sha']
                     await message_push(app, group, name, branch)
         with open(file, 'wb') as f:
             pickle.dump(obj, f)
