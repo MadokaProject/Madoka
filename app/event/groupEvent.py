@@ -9,7 +9,6 @@ from graia.ariadne.model import MemberInfo
 from app.core.config import Config
 from app.core.settings import ADMIN_USER
 from app.event.base import Event
-from app.util.dao import MysqlDao
 from app.util.onlineConfig import get_config
 from app.util.sendMessage import safeSendGroupMessage
 

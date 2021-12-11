@@ -29,7 +29,7 @@ class GroupJoin(Plugin):
                 self.resp = MessageChain.create([Plain('请在群组使用该命令！')])
                 return
             if isstartswith(self.msg[0], ['设置', 'set']):
-                assert len(self.msg) >= 2 and self.msg[1].isdigit()
+                assert len(self.msg) >= 2
                 save_config('member_join', self.group.id, {
                     'active': 1,
                     'text': '\n'.join([f'{value}' for value in self.msg[1:]])
