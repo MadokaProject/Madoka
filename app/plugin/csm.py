@@ -17,12 +17,13 @@ class Admin(Plugin):
     full_help = \
         '.群管/.csm\t仅限管理可用！\r\n' \
         '.群管/.csm 状态/status [0 / 1]\t群管开关\r\n' \
-        '.群管/.csm 踢/kick [@qq]\t踢人\r\n' \
+        '.群管/.csm 踢/ban [@qq]\t踢人\r\n' \
         '.群管/.csm 撤回/revoke [id]\t撤回消息\r\n' \
-        '.群管/.csm 禁言/ban [time(m)] [@qq]\t禁言\r\n' \
-        '.群管/.csm 全员禁言/aban\t全员禁言\r\n' \
-        '.群管/.csm 解禁/unban [@qq]\t解除禁言\r\n' \
-        '.群管/.csm 全员解禁/unaban\t解除全员禁言\r\n' \
+        '.群管/.csm 禁言/mute [time(m)] [@qq]\t禁言\r\n' \
+        '.群管/.csm 全员禁言/allmute\t全员禁言\r\n' \
+        '.群管/.csm 解禁/unmute [@qq]\t解除禁言\r\n' \
+        '.群管/.csm 全员解禁/allunmute\t解除全员禁言\r\n' \
+        '.群管/.csm 禁言退出 [0/ 1]\t设置机器人被禁言是否退出\r\n' \
         '.群管/.csm 刷屏检测 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.群管/.csm 重复消息 [时长(s)] [禁言时间(m)] [回复消息]\t检测[时长]内的3条消息\r\n' \
         '.群管/.csm 超长消息 [文本长度] [禁言时间(m)] [回复消息]\t检测单消息是否超出[文本长度]'
@@ -46,30 +47,30 @@ class Admin(Plugin):
                 self.resp = MessageChain.create([
                     Plain('消息撤回成功！')
                 ])
-            elif isstartswith(self.msg[0], ['kick', '踢']):
+            elif isstartswith(self.msg[0], ['ban', '踢']):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
                 await self.app.kickMember(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('飞机票快递成功！')
                 ])
-            elif isstartswith(self.msg[0], ['ban', '禁言']):
+            elif isstartswith(self.msg[0], ['mute', '禁言'], full_match=1):
                 assert len(self.msg) == 3 and self.msg[1].isdigit()
                 await self.app.muteMember(self.group, int(self.msg[2][1:]), int(self.msg[1]) * 60)
                 self.resp = MessageChain.create([
                     Plain('禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], ['unban', '解禁']):
+            elif isstartswith(self.msg[0], ['unmute', '解禁']):
                 assert len(self.msg) == 2 and self.msg[1][1:].isdigit()
                 await self.app.unmuteMember(self.group, int(self.msg[1][1:]))
                 self.resp = MessageChain.create([
                     Plain('解除禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], ['aban', '全员禁言']):
+            elif isstartswith(self.msg[0], ['allmute', '全员禁言']):
                 await self.app.muteAll(self.group.id)
                 self.resp = MessageChain.create([
                     Plain('全员禁言成功！')
                 ])
-            elif isstartswith(self.msg[0], ['unaban', '全员解禁']):
+            elif isstartswith(self.msg[0], ['allunmute', '全员解禁']):
                 await self.app.unmuteAll(self.group.id)
                 self.resp = MessageChain.create([
                     Plain('全员解除禁言成功！')
@@ -84,7 +85,7 @@ class Admin(Plugin):
                         if not CONFIG.__contains__(str(self.group.id)):
                             CONFIG.update({str(self.group.id): {}})
                         CONFIG[str(self.group.id)].update({
-                            'status': self.msg[1]
+                            'status': int(self.msg[1])
                         })
                         self.resp = MessageChain.create([
                             Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')
@@ -136,14 +137,14 @@ class Admin(Plugin):
                             Plain('设置成功！')
                         ])
             elif isstartswith(self.msg[0], '超长消息'):
-                assert len(self.msg) == 5 and self.msg[1].isdigit() and self.msg[2].isdigit()
+                assert len(self.msg) == 4 and self.msg[1].isdigit() and self.msg[2].isdigit()
                 with MysqlDao() as db:
                     if db.update(
                             'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
                             ['over-length', self.group.id, json.dumps({
                                 'text': int(self.msg[1]),
-                                'mute': int(self.msg[3]) * 60,
-                                'message': self.msg[4]
+                                'mute': int(self.msg[2]) * 60,
+                                'message': self.msg[3]
                             })]
                     ):
                         if not CONFIG.__contains__(str(self.group.id)):
@@ -151,12 +152,27 @@ class Admin(Plugin):
                         CONFIG[str(self.group.id)].update({
                             'over-length': {
                                 'text': int(self.msg[1]),
-                                'mute': int(self.msg[3]) * 60,
-                                'message': self.msg[4]
+                                'mute': int(self.msg[2]) * 60,
+                                'message': self.msg[3]
                             }
                         })
                         self.resp = MessageChain.create([
                             Plain('设置成功！')
+                        ])
+            elif isstartswith(self.msg[0], '禁言退出'):
+                assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
+                with MysqlDao() as db:
+                    if db.update(
+                            'REPLACE INTO config(name, uid, value) VALUES(%s, %s, %s)',
+                            ['bot_mute_event', self.group.id, self.msg[1]]
+                    ):
+                        if not CONFIG.__contains__(str(self.group.id)):
+                            CONFIG.update({str(self.group.id): {}})
+                        CONFIG[str(self.group.id)].update({
+                            'bot_mute_event': int(self.msg[1])
+                        })
+                        self.resp = MessageChain.create([
+                            Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')
                         ])
             else:
                 self.args_error()

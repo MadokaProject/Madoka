@@ -1,15 +1,16 @@
 from typing import Optional, Union
+
 from graia.ariadne.context import ariadne_ctx
 from graia.ariadne.exception import UnknownTarget
-from graia.ariadne.model import BotMessage, Group
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain, Source
+from graia.ariadne.model import BotMessage, Group
 
 
 async def safeSendGroupMessage(
-    target: Union[Group, int],
-    message: MessageChain,
-    quote: Optional[Union[Source, int]] = None,
+        target: Union[Group, int],
+        message: MessageChain,
+        quote: Optional[Union[Source, int]] = None,
 ) -> BotMessage:
     app = ariadne_ctx.get()
     try:

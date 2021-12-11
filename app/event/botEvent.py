@@ -1,7 +1,7 @@
 import asyncio
 import time
-
 from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
 from graia.ariadne.event.message import FriendMessage
 from graia.ariadne.message.chain import MessageChain
@@ -11,8 +11,8 @@ from graia.broadcast.interrupt.waiter import Waiter
 from loguru import logger
 
 from app.core.config import Config
-from app.core.settings import NUDGE_INFO
 from app.core.settings import ACTIVE_GROUP, ADMIN_USER
+from app.core.settings import NUDGE_INFO, CONFIG
 from app.entities.group import BotGroup
 from app.event.base import Event
 from app.util.control import Rest
@@ -118,7 +118,6 @@ class BotJoinGroup(Event):
             Plain(f"\n群名：{self.bot_join_group.group.name}"),
             Plain(f"\n群人数：{membernum}"),
         ]))
-        print(ACTIVE_GROUP)
         if self.bot_join_group.group.id not in ACTIVE_GROUP:
             await safeSendGroupMessage(
                 self.bot_join_group.group.id,
@@ -205,20 +204,23 @@ class BotMute(Event):
     event_name = "BotMuteEvent"
 
     async def process(self):
-        try:
-            with MysqlDao() as db:
-                db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_mute.group.id])
-            ACTIVE_GROUP.pop(self.bot_mute.group.id)
-        except Exception:
-            pass
-        for qq in ADMIN_USER:
-            await self.app.sendFriendMessage(qq, MessageChain.create([
-                Plain("收到禁言事件， 已退出该群，并移出白名单"),
-                Plain(f"\r\n群号: {self.bot_mute.group.id}"),
-                Plain(f"\r\n群名: {self.bot_mute.group.name}"),
-                Plain(f"\r\n操作者: {self.bot_mute.operator.name} | {self.bot_mute.operator.id}")
-            ]))
-        await self.app.quitGroup(self.bot_mute.group)
+        if not CONFIG.__contains__(str(self.bot_mute.operator.group.id)) or \
+                not CONFIG[str(self.bot_mute.operator.group.id)].__contains__('bot_mute_event') or \
+                CONFIG[str(self.bot_mute.operator.group.id)]['bot_mute_event']:
+            try:
+                with MysqlDao() as db:
+                    db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_mute.operator.group.id])
+                ACTIVE_GROUP.pop(self.bot_mute.operator.group.id)
+            except Exception:
+                pass
+            for qq in ADMIN_USER:
+                await self.app.sendFriendMessage(qq, MessageChain.create([
+                    Plain("收到禁言事件， 已退出该群，并移出白名单"),
+                    Plain(f"\r\n群号: {self.bot_mute.operator.group.id}"),
+                    Plain(f"\r\n群名: {self.bot_mute.operator.group.id}"),
+                    Plain(f"\r\n操作者: {self.bot_mute.operator.name} | {self.bot_mute.operator.id}")
+                ]))
+            await self.app.quitGroup(self.bot_mute.operator.group)
 
 
 class Nudge(Event):

@@ -101,7 +101,6 @@ async def new_friend_request_listener(app: Ariadne, event: NewFriendRequestEvent
 
 @bcc.receiver("NudgeEvent")
 async def nudge_listener(app: Ariadne, event: NudgeEvent):
-    print('戳一戳')
     event = EventController("NudgeEvent", app, inc, event)
     await event.process_event()
 
