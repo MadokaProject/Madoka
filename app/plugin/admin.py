@@ -7,13 +7,13 @@ from loguru import logger
 from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
-from app.plugin.base import Plugin, initDB
+from app.plugin.base import Plugin, InitDB
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith
 
 
-class Sys(Plugin):
+class Module(Plugin):
     entry = ['.sys']
     brief_help = '\r\n[√]\t系统: sys'
     full_help = \
@@ -79,7 +79,7 @@ class Sys(Plugin):
             self.unkown_error()
 
 
-class DB(initDB):
+class DB(InitDB):
 
     async def process(self):
         with MysqlDao() as _db:
@@ -104,7 +104,7 @@ class DB(initDB):
 
 
 if __name__ == '__main__':
-    a = Sys(MessageChain.create([Plain(
+    a = Module(MessageChain.create([Plain(
         '.sys au 123'
     )]))
     asyncio.run(a.get_resp())

@@ -8,7 +8,7 @@ from app.util.onlineConfig import save_config, get_config
 from app.util.tools import isstartswith
 
 
-class GroupJoin(Plugin):
+class Module(Plugin):
     entry = ['.join', '.入群欢迎']
     brief_help = '\r\n[√]\t入群欢迎: join'
     full_help = \

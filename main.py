@@ -1,178 +1,61 @@
-import asyncio
-import sys
 from pathlib import Path
 
 from graia.ariadne.app import Ariadne
-from graia.ariadne.event.mirai import (
-    NewFriendRequestEvent,
-    NudgeEvent,
-    BotInvitedJoinGroupRequestEvent,
-    BotJoinGroupEvent,
-    BotLeaveEventKick,
-    BotLeaveEventActive,
-    BotGroupPermissionChangeEvent,
-    BotMuteEvent,
-    MemberCardChangeEvent,
-    MemberJoinEvent,
-    MemberLeaveEventKick,
-    MemberLeaveEventQuit,
-    MemberHonorChangeEvent,
-)
+from graia.ariadne.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
+from graia.ariadne.event.message import GroupMessage, FriendMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
-from graia.ariadne.model import Friend, Group, Member, MiraiSession
-from graia.broadcast import Broadcast
-from graia.broadcast.interrupt import InterruptControl
-from graia.scheduler import GraiaScheduler
+from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
+from app.core.appCore import AppCore
 from app.core.config import Config
 from app.core.controller import Controller
-from app.event.event import EventController
-from app.extend.power import power
-from app.extend.schedule import custom_schedule
-from initDB import initDB
+from app.util.other import online_notice, offline_notice
+
+config = Config()
 
 LOG_PATH = Path("./app/tmp/logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
-logger.add(
-    LOG_PATH.joinpath("latest.log"),
-    encoding="utf-8",
-    backtrace=True,
-    diagnose=True,
-    rotation="00:00",
-    retention="30 days",
-    compression="tar.xz",
-    colorize=False,
-)
-logger.info("PyIBot is starting...")
+logger.add(LOG_PATH.joinpath("common.log"), level="INFO", retention=f"{config.COMMON_RETENTION} days", encoding="utf-8")
+logger.add(LOG_PATH.joinpath("error.log"), level="ERROR", retention=f"{config.ERROR_RETENTION} days", encoding="utf-8")
 
-loop = asyncio.get_event_loop()
-bcc = Broadcast(loop=loop)
-config = Config()
-bot = Ariadne(
-    broadcast=bcc,
-    connect_info=MiraiSession(
-        host='http://' + config.LOGIN_HOST + ':' + config.LOGIN_PORT,
-        verify_key=config.VERIFY_KEY,
-        account=config.LOGIN_QQ
-    )
-)
-scheduler = GraiaScheduler(
-    loop, bcc
-)
+core = AppCore(config)
 
-inc: InterruptControl = InterruptControl(bcc)
+core.load_plugin_modules()
+core.load_schedulers()
 
-if not asyncio.run(initDB()):  # 初始化数据库
-    logger.error('初始化数据库失败')
-    exit(-3306)
+app = core.get_app()
+bcc = core.get_bcc()
+inc = core.get_inc()
+plugin = core.get_plugin()
 
 
-@bcc.receiver("FriendMessage")
-async def friend_message_listener(message: MessageChain, friend: Friend, app: Ariadne):
-    event = Controller(message, friend, app)
-    await event.process_event()
+@bcc.receiver(FriendMessage)
+async def friend_message_handler(app: Ariadne, message: MessageChain, friend: Friend):
+    message_text_log = message.asDisplay().replace("\n", "\\n")
+    logger.info(f"收到来自好友 <{friend.nickname}> 的消息：{message_text_log}")
+    await Controller(plugin, app, message, friend).process_event()
 
 
-@bcc.receiver("GroupMessage")
-async def group_message_listener(message: MessageChain, group: Group, member: Member, app: Ariadne, source: Source):
-    event = Controller(message, group, member, app, source, inc)
-    await event.process_event()
+@bcc.receiver(GroupMessage)
+async def group_message_handler(app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
+    message_text_log = message.asDisplay().replace("\n", "\\n")
+    logger.info(f"收到来自群 <{group.name}> 中成员 <{member.name}> 的消息：{message_text_log}")
+    await Controller(plugin, app, message, group, member, source, inc).process_event()
 
 
-@bcc.receiver("ApplicationLaunched")
-async def application_launched(app: Ariadne):
-    event = EventController("ApplicationLaunched", app, inc)
-    await event.process_event()
+@logger.catch
+@bcc.receiver(ApplicationLaunched)
+async def init():
+    await core.bot_launch_init()
+    await online_notice(app, config)
 
 
-@bcc.receiver("ApplicationShutdowned")
-async def application_showdown_listener(app: Ariadne):
-    event = EventController("ApplicationShutdowned", app, inc)
-    await event.process_event()
+@logger.catch
+@bcc.receiver(ApplicationShutdowned)
+async def stop():
+    await offline_notice(app, config)
 
 
-@bcc.receiver("NewFriendRequestEvent")
-async def new_friend_request_listener(app: Ariadne, event: NewFriendRequestEvent):
-    event = EventController("NewFriendRequestEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("NudgeEvent")
-async def nudge_listener(app: Ariadne, event: NudgeEvent):
-    event = EventController("NudgeEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("BotInvitedJoinGroupRequestEvent")
-async def bot_invited_join_group_request_listener(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
-    event = EventController("BotInvitedJoinGroupRequestEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("BotJoinGroupEvent")
-async def bot_join_group_listener(app: Ariadne, event: BotJoinGroupEvent):
-    event = EventController("BotJoinGroupEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("BotLeaveEventKick")
-async def bot_leave_kick_listener(app: Ariadne, event: BotLeaveEventKick):
-    event = EventController("BotLeaveEventKick", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("BotLeaveEventActive")
-async def bot_leave_active_listener(app: Ariadne, event: BotLeaveEventActive):
-    event = EventController("BotLeaveEventActive", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("BotGroupPermissionChangeEvent")
-async def bot_group_permission_change_listener(app: Ariadne, event: BotGroupPermissionChangeEvent):
-    event = EventController("BotGroupPermissionChangeEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("BotMuteEvent")
-async def bot_mute_listener(app: Ariadne, event: BotMuteEvent):
-    event = EventController("BotMuteEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("MemberCardChangeEvent")
-async def member_card_change_listener(app: Ariadne, event: MemberCardChangeEvent):
-    event = EventController("MemberCardChangeEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("MemberJoinEvent")
-async def member_join_listener(app: Ariadne, event: MemberJoinEvent):
-    event = EventController("MemberJoinEvent", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("MemberLeaveEventKick")
-async def member_leave_kick_listener(app: Ariadne, event: MemberLeaveEventKick):
-    event = EventController("MemberLeaveEventKick", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("MemberLeaveEventQuit")
-async def member_leave_quit_listener(app: Ariadne, event: MemberLeaveEventQuit):
-    event = EventController("MemberLeaveEventQuit", app, inc, event)
-    await event.process_event()
-
-
-@bcc.receiver("MemberHonorChangeEvent")
-async def member_honor_change_listener(app: Ariadne, event: MemberHonorChangeEvent):
-    event = EventController("MemberHonorChangeEvent", app, inc, event)
-    await event.process_event()
-
-
-if not config.DEBUG or not config.ONLINE:
-    asyncio.run(custom_schedule(loop, bcc, bot))
-
-loop.create_task(power(bot, sys.argv))
-loop.run_until_complete(bot.lifecycle())
+core.launch()

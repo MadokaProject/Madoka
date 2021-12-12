@@ -13,7 +13,7 @@ from app.util.text2image import create_image
 from app.util.tools import isstartswith
 
 
-class Game(Plugin):
+class Module(Plugin):
     entry = ['.gp', '.积分']
     brief_help = '\r\n[√]\t积分：gp'
     full_help = \

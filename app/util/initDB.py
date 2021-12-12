@@ -1,13 +1,16 @@
+import importlib
+import os
+
 from loguru import logger
 
-from app.plugin import *
 from app.util.dao import MysqlDao
+from app.util.tools import app_path
 
 
-async def initDB():
+async def InitDB():
     """初始化数据表"""
 
-    async def initSysDB() -> None:
+    async def InitSysDB() -> None:
         """初始化系统数据表"""
         with MysqlDao() as db:
             """初始化系统数据表"""
@@ -36,15 +39,23 @@ async def initDB():
                     primary key (name, uid))"
             )
 
-    async def initPluginDB():
-        for PluginDB in base.initDB.__subclasses__():
-            """初始化插件数据表"""
-            await PluginDB().process()
+    async def InitPluginDB():
+        ignore = ["__init__.py", "__pycache__", "base.py"]
+        for DB in os.listdir(os.path.join(app_path(), "plugin")):
+            try:
+                if DB not in ignore and not os.path.isdir(DB):
+                    __DB = importlib.import_module(f"app.plugin.{DB.split('.')[0]}")
+                    if hasattr(__DB, 'DB'):
+                        await __DB.DB().process()
+            except ModuleNotFoundError as __e:
+                logger.error(f"初始化数据库失败: {DB} - {__e}")
+                return False
 
     try:
-        await initSysDB()
-        await initPluginDB()
+        await InitSysDB()
+        await InitPluginDB()
         logger.success('初始化数据表成功')
         return True
     except Exception as e:
-        logger.exception('初始化数据库失败：' + str(e))
+        logger.error('初始化数据库失败: ' + str(e))
+        return False

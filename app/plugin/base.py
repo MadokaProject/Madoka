@@ -9,7 +9,7 @@ from app.util.tools import *
 
 
 class Plugin:
-    """插件继承此父类，并重写下面三个参数
+    """插件继承此父类，并重写下面四个参数
     :param entry: 程序入口点参数
     :param brief_help: 简短帮助，显示在主帮助菜单
     :param full_help: 完整帮助，显示在插件帮助菜单
@@ -127,7 +127,7 @@ class Plugin:
             return None
 
 
-class Schedule:
+class Scheduler:
     """计划任务继承此父类，并重写下面一个参数。该类用于插件开发者设置计划任务
     :param cron: cron 表达式
     """
@@ -141,7 +141,7 @@ class Schedule:
         raise NotImplementedError
 
 
-class initDB:
+class InitDB:
     """初始化数据表继承此父类。该类用于插件开发者创建所需数据表
     （注意：数据表命名格式：Plugin_<插件名>_<表名>，如: Plugin_base_demo）
     """

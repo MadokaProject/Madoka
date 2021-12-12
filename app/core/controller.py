@@ -6,14 +6,14 @@ from graia.broadcast.interrupt import InterruptControl
 
 from app.core.config import Config
 from app.core.settings import *
-from app.plugin import *
 from app.trigger import *
 from app.util.tools import isstartswith
 
 
 class Controller:
-    def __init__(self, *args):
+    def __init__(self, plugin: list, *args):
         """存储消息"""
+        self.plugin = plugin  # 插件列表
         for arg in args:
             if isinstance(arg, MessageChain):
                 self.message = arg  # 消息内容
@@ -26,7 +26,7 @@ class Controller:
             elif isinstance(arg, Source):
                 self.source = arg  # 消息标识
             elif isinstance(arg, InterruptControl):
-                self.inc = arg
+                self.inc = arg  # 中断器
             elif isinstance(arg, Ariadne):
                 self.app = arg  # 程序执行主体
 
@@ -71,12 +71,12 @@ class Controller:
             send_help = True
 
         # 加载插件
-        for plugin in base.Plugin.__subclasses__():
+        for plugin in self.plugin:
             obj = None
             if hasattr(self, 'friend'):
-                obj = plugin(self.message, self.friend, self.app)
+                obj = plugin.Module(self.message, self.friend, self.app)
             elif hasattr(self, 'group'):
-                obj = plugin(self.message, self.group, self.member, self.source, self.inc, self.app)
+                obj = plugin.Module(self.message, self.group, self.member, self.source, self.inc, self.app)
             if (hasattr(self, 'group') and self.member.id in ACTIVE_USER) or (
                     hasattr(self, 'friend') and self.friend.id in ACTIVE_USER):
                 obj.hidden = False
