@@ -45,7 +45,7 @@ class BotInvitedJoinGroupRequest(Event):
 
             @Waiter.create_using_function([FriendMessage])
             async def waiter(waiter_friend: Friend, waiter_message: MessageChain):
-                if waiter_friend.id == config.MASTER_QQ:
+                if waiter_friend.id == int(config.MASTER_QQ):
                     saying = waiter_message.asDisplay()
                     if saying == "同意":
                         return True
