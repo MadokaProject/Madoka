@@ -1,5 +1,4 @@
 import asyncio
-import time
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
@@ -15,40 +14,9 @@ from app.core.settings import ACTIVE_GROUP, ADMIN_USER
 from app.core.settings import NUDGE_INFO
 from app.entities.group import BotGroup
 from app.event.base import Event
-from app.util.control import Rest
 from app.util.dao import MysqlDao
 from app.util.onlineConfig import get_config
 from app.util.sendMessage import safeSendGroupMessage
-
-
-class BotInit(Event):
-    """PyIBot 成功启动"""
-    event_name = "ApplicationLaunched"
-
-    async def process(self):
-        config = Config()
-        groupList = await self.app.getGroupList()
-        groupNum = len(groupList)
-        await self.app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([
-            Plain('PyIBot 成功启动。\r\n'),
-            Plain(f'当前 {config.BOT_NAME} 共加入了 {groupNum} 个群')
-        ]))
-        now_localtime = time.strftime("%H:%M:%S", time.localtime())
-        if "00:00:00" < now_localtime < "07:30:00":
-            Rest.set_sleep(1)
-            await self.app.sendFriendMessage(
-                config.MASTER_QQ,
-                MessageChain.create([Plain("夜深了，早点休息")]),
-            )
-
-
-class BotStop(Event):
-    """PyIBot 关闭"""
-    event_name = "ApplicationShutdowned"
-
-    async def process(self):
-        config = Config()
-        await self.app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([Plain('正在关闭')]))
 
 
 class BotInvitedJoinGroupRequest(Event):

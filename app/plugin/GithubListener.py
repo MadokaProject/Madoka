@@ -9,7 +9,7 @@ from app.util.onlineConfig import save_config
 from app.util.tools import isstartswith
 
 
-class GithubListener(Plugin):
+class Module(Plugin):
     entry = ['.github']
     brief_help = '\r\n[√]\tGithub监听: github'
     full_help = \

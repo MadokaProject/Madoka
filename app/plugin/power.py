@@ -9,7 +9,7 @@ from app.util.decorator import permission_required
 from app.util.tools import isstartswith, restart
 
 
-class Admin(Plugin):
+class Module(Plugin):
     entry = ['.power', '.电源', '.p']
     brief_help = '\r\n[√]\t电源：p'
     full_help = \

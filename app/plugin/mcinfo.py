@@ -139,7 +139,7 @@ class StatusPing:
         return response
 
 
-class McStatus(Plugin):
+class Module(Plugin):
     entry = ['.mc', '.mcinfo', '.info']
     brief_help = '\r\n[√]\tMC状态：mc'
     full_help = \
@@ -204,6 +204,6 @@ class McStatus(Plugin):
 
 
 if __name__ == '__main__':
-    a = McStatus(MessageChain.create([Plain('.mc')]))
+    a = Module(MessageChain.create([Plain('.mc')]))
     asyncio.run(a.get_resp())
     print(a.resp)

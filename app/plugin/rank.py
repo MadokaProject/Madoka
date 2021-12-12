@@ -9,7 +9,7 @@ from app.util.text2image import create_image
 from app.util.tools import isstartswith
 
 
-class Rank(Plugin):
+class Module(Plugin):
     entry = ['.rank', '.排行']
     brief_help = '\r\n[√]\t排行：rank'
     full_help = \

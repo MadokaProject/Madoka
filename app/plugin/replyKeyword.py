@@ -10,7 +10,7 @@ from app.util.onlineConfig import save_config, get_config
 from app.util.tools import isstartswith
 
 
-class Reply(Plugin):
+class Module(Plugin):
     entry = ['.reply', '.回复']
     brief_help = '\r\n[√]\t群自定义回复: reply'
     full_help = \
@@ -60,7 +60,7 @@ class Reply(Plugin):
 
 
 if __name__ == '__main__':
-    a = Reply(MessageChain.create([Plain(
+    a = Module(MessageChain.create([Plain(
         '.reply add 123456 测试'
     )]))
     asyncio.run(a.get_resp())

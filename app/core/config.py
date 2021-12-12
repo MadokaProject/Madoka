@@ -25,6 +25,9 @@ class Config:
         self.MYSQL_PWD = self.cf.get('mysql', 'mysql_pwd')
         self.MYSQL_DATABASE = self.cf.get('mysql', 'mysql_database')
 
+        self.COMMON_RETENTION = self.cf.get('log', 'commonRetention', fallback='7')
+        self.ERROR_RETENTION = self.cf.get('log', 'errorRetention', fallback='30')
+
         self.REPO_ENABLE = True if self.cf.get('github', 'enable', fallback='False').lower() == 'true' else False
         self.REPO_TIME = self.cf.get('github', 'repo_time', fallback='*/10  * * * *')
 

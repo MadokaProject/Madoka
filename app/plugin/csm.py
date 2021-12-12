@@ -10,7 +10,7 @@ from app.util.onlineConfig import save_config
 from app.util.tools import isstartswith
 
 
-class Admin(Plugin):
+class Module(Plugin):
     entry = ['.csm', '.群管']
     brief_help = '\r\n[√]\t群管: csm'
     full_help = \
@@ -121,7 +121,7 @@ class Admin(Plugin):
 
 
 if __name__ == '__main__':
-    a = Admin(MessageChain.create([Plain(
+    a = Module(MessageChain.create([Plain(
         '.admin ban 123'
     )]))
     asyncio.run(a.get_resp())
