@@ -5,6 +5,7 @@ from graia.ariadne.message.element import At, Plain
 from loguru import logger
 
 from app.plugin.base import Plugin
+from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith, restart
 
@@ -13,13 +14,13 @@ class Module(Plugin):
     entry = ['.power', '.电源', '.p']
     brief_help = '\r\n[√]\t电源：p'
     full_help = \
-        '.电源/.p\t仅限管理员使用！\r\n' \
+        '.电源/.p\t仅限主人使用！\r\n' \
         '.电源/.p k\t关闭机器人\r\n' \
         '.电源/.p r\t重启机器人\r\n' \
         '.电源/.p u [timeout]\t升级机器人(默认超时时间为10秒)\r\n'
     hidden = True
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.MASTER)
     async def process(self):
         if not self.msg:
             self.print_help()

@@ -5,6 +5,7 @@ from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.plugin.base import Plugin
+from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.onlineConfig import save_config, get_config
 from app.util.tools import isstartswith
@@ -19,9 +20,8 @@ class Module(Plugin):
         '.回复/.reply 修改/modify [keyword] [text]\t修改自定义回复\r\n' \
         '.回复/.reply 删除/remove [keyword]\t删除自定义回复\r\n' \
         '.回复/.reply 列出/list\t列出自定义回复'
-    hidden = True
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
             self.print_help()

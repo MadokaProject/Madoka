@@ -49,13 +49,12 @@ async def InitDB():
                         await __DB.DB().process()
             except ModuleNotFoundError as __e:
                 logger.error(f"初始化数据库失败: {DB} - {__e}")
-                return False
+                exit()
 
     try:
         await InitSysDB()
         await InitPluginDB()
         logger.success('初始化数据表成功')
-        return True
     except Exception as e:
         logger.error('初始化数据库失败: ' + str(e))
-        return False
+        exit()

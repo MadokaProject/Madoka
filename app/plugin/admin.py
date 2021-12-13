@@ -8,23 +8,24 @@ from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
 from app.plugin.base import Plugin, InitDB
+from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 from app.util.tools import isstartswith
 
 
 class Module(Plugin):
-    entry = ['.sys']
-    brief_help = '\r\n[√]\t系统: sys'
+    entry = ['.admin']
+    brief_help = '\r\n[√]\t白名单: admin'
     full_help = \
-        '.sys\t仅管理可用！\r\n' \
-        '.sys au [qq]\t添加用户\r\n' \
-        '.sys du [qq]\t移除用户\r\n' \
-        '.sys ag [qg]\t添加群组\r\n' \
-        '.sys dg [qg]\t移除群组'
+        '.admin\t仅主人可用！\r\n' \
+        '.admin au [qq]\t添加用户\r\n' \
+        '.admin du [qq]\t移除用户\r\n' \
+        '.admin ag [qg]\t添加群组\r\n' \
+        '.admin dg [qg]\t移除群组'
     hidden = True
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.MASTER)
     async def process(self):
         if not self.msg:
             self.print_help()

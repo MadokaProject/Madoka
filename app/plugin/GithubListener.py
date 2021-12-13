@@ -4,6 +4,7 @@ from loguru import logger
 
 from app.core.settings import REPO
 from app.plugin.base import Plugin
+from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.onlineConfig import save_config
 from app.util.tools import isstartswith
@@ -18,9 +19,8 @@ class Module(Plugin):
         '.github modify [repo_name] [name|api] [value]\t修改监听仓库配置\r\n' \
         '.github remove [repo_name]\t删除监听仓库\r\n' \
         '.github list\t列出所有监听仓库'
-    hidden = True
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
             self.print_help()

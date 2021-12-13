@@ -7,6 +7,7 @@ from graia.broadcast.interrupt import InterruptControl
 from app.core.config import Config
 from app.core.settings import *
 from app.trigger import *
+from app.util.control import Permission
 from app.util.tools import isstartswith
 
 
@@ -35,6 +36,14 @@ class Controller:
         send_help = False  # 是否为主菜单帮助
         resp = '[√]\t帮助：help'
 
+        # 判断是否在权限允许列表
+        if hasattr(self, 'friend'):
+            if self.friend.id not in ACTIVE_USER or self.friend.id in BANNED_USER:
+                return
+        elif hasattr(self, 'group'):
+            if self.group.id not in ACTIVE_GROUP or self.member.id in BANNED_USER:
+                return
+
         # 自定义预触发器
         for trig in trigger.Trigger.__subclasses__():
             obj = None
@@ -50,14 +59,6 @@ class Controller:
         config = Config()
         if config.ONLINE and config.DEBUG:
             return
-
-        # 判断是否在权限允许列表
-        if hasattr(self, 'friend'):
-            if self.friend.id not in ACTIVE_USER:
-                return
-        elif hasattr(self, 'group'):
-            if self.group.id not in ACTIVE_GROUP:
-                return
 
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
             return
@@ -77,18 +78,19 @@ class Controller:
                 obj = plugin.Module(self.message, self.friend, self.app)
             elif hasattr(self, 'group'):
                 obj = plugin.Module(self.message, self.group, self.member, self.source, self.inc, self.app)
-            if (hasattr(self, 'group') and self.member.id in ACTIVE_USER) or (
-                    hasattr(self, 'friend') and self.friend.id in ACTIVE_USER):
-                obj.hidden = False
+            if (hasattr(self, 'group') and Permission.get(self.member) >= Permission.SUPER_ADMIN) or (
+                    hasattr(self, 'friend') and Permission.get(self.friend.id) >= Permission.SUPER_ADMIN):
+                obj.hidden = False  # 隐藏菜单仅超级管理员以上可见
             if send_help and not obj.hidden:  # 主菜单帮助获取
                 if not obj.enable:
                     resp += obj.brief_help.replace('√', '×')
                 else:
                     resp += obj.brief_help
             elif isstartswith(msg, obj.entry):  # 指令执行
-                if obj.enable:
+                resp = await obj.set_switch()
+                if obj.enable and not resp:
                     resp = await obj.get_resp()
-                else:
+                elif not resp:
                     resp = MessageChain.create([
                         Plain('此功能未开启！')
                     ])

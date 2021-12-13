@@ -1,5 +1,4 @@
 import asyncio
-import configparser
 import importlib
 import os
 import sys
@@ -125,8 +124,7 @@ class AppCore:
 
     async def bot_launch_init(self):
         try:
-            if not await InitDB():
-                exit()
+            await InitDB()
             self.__loop.create_task(power(self.__app, sys.argv))
             group_list = await self.__app.getGroupList()
             logger.info("本次启动活动群组如下：")
