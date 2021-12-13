@@ -4,7 +4,7 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.model import Friend, Group, Member
 
-from app.core.settings import ADMIN_USER
+from app.util.control import Permission
 from app.util.tools import parse_args
 
 
@@ -42,9 +42,12 @@ class Trigger:
     def check_admin(self):
         """检查是否管理员"""
         if hasattr(self, 'group'):
-            if self.member.id in ADMIN_USER:
+            if Permission.get(self.member) >= Permission.GROUP_ADMIN:
                 return True
         elif hasattr(self, 'friend'):
-            if self.friend.id in ADMIN_USER:
-                return True
+            if Permission.get(self.friend.id) >= Permission.SUPER_ADMIN:
+                return False
         return False
+
+    def not_admin(self):
+        return

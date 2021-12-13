@@ -6,19 +6,22 @@ ACTIVE_GROUP = {}
 """监听群聊消息列表"""
 with MysqlDao() as _db:
     _res = _db.query('SELECT uid, permission FROM `group` WHERE active=1')
-for (_gid, _permit) in _res:
-    ACTIVE_GROUP.update({
-        int(_gid): str(_permit).split(',')
-    })
+for _gid, _permit in _res:
+    ACTIVE_GROUP.update({int(_gid): str(_permit).split(',')})
 
 ACTIVE_USER = {}
 """监听好友消息列表"""
 with MysqlDao() as _db:
-    _res = _db.query('SELECT uid FROM user WHERE active=1')
-for (_qid,) in _res:
-    ACTIVE_USER.update({
-        int(_qid): '*'
-    })
+    _res = _db.query('SELECT uid, permission FROM user WHERE active=1')
+for _uid, _permit in _res:
+    ACTIVE_USER.update({int(_uid): str(_permit).split(',')})
+
+BANNED_USER = []
+"""用户黑名单列表"""
+with MysqlDao() as _db:
+    _res = _db.query('SELECT uid FROM user WHERE active=-1')
+for _qid in _res:
+    BANNED_USER.append(int(_qid))
 
 ADMIN_USER = []
 """具有管理权限QQ列表"""

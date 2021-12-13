@@ -13,8 +13,8 @@ from graia.ariadne.message.element import Plain, Source
 from graia.ariadne.model import Friend, Member, MemberPerm
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
-
-from app.core.settings import ADMIN_USER, ACTIVE_USER
+from app.core.config import Config
+from app.core.settings import ADMIN_USER, BANNED_USER
 from .sendMessage import safeSendGroupMessage
 
 SLEEP = 0
@@ -42,17 +42,19 @@ class Permission:
     用于管理权限的类，不应被实例化
     """
 
-    MASTER = 30
-    GROUP_ADMIN = 20
-    USER = 10
+    MASTER = 4
+    SUPER_ADMIN = 3
+    GROUP_ADMIN = 2
+    USER = 1
     BANNED = 0
     DEFAULT = USER
+    config = Config()
 
     @classmethod
     def get(cls, member: Union[Member, int]) -> int:
         """
         获取用户的权限
-        :param user: 用户实例或QQ号
+        :param member: 用户实例或QQ号
         :return: 等级，整数
         """
 
@@ -63,9 +65,11 @@ class Permission:
             user = member
             user_permission = cls.DEFAULT
 
-        if user in ADMIN_USER:
+        if user == int(cls.config.MASTER_QQ):
             res = cls.MASTER
-        elif user in ACTIVE_USER:
+        elif user in ADMIN_USER:
+            res = cls.SUPER_ADMIN
+        elif user in BANNED_USER:
             res = cls.BANNED
         elif user_permission in [MemberPerm.Administrator, MemberPerm.Owner]:
             res = cls.GROUP_ADMIN

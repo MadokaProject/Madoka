@@ -10,6 +10,7 @@ from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.plugin.base import Plugin
+from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
 
@@ -148,7 +149,7 @@ class Module(Plugin):
         'port: MC服务器端口号\r\n' \
         'timeout: 设置超时时间'
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.MASTER)
     async def set_default_mc(self, ip='127.0.0.1', port=25565):
         default_ip, default_port = ip, port
         with MysqlDao() as db:

@@ -4,6 +4,7 @@ from loguru import logger
 
 from app.core.config import Config
 from app.trigger.trigger import Trigger
+from app.util.control import Permission
 from app.util.decorator import permission_required
 
 
@@ -15,7 +16,7 @@ class ChangeMode(Trigger):
         if config.ONLINE and config.DEBUG:
             self.as_last = True
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.MASTER)
     async def change_mode(self):
         config = Config()
         if config.ONLINE:

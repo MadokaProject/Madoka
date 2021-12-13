@@ -3,6 +3,7 @@ from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.plugin.base import Plugin
+from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.onlineConfig import save_config, get_config
 from app.util.tools import isstartswith
@@ -17,9 +18,8 @@ class Module(Plugin):
         '.入群欢迎/.join 查看/view\t查看入群欢迎消息\r\n' \
         '.入群欢迎/.join 开启/enable\t开启入群欢迎\r\n' \
         '.入群欢迎/.join 关闭/disable\t关闭入群欢迎'
-    hidden = True
 
-    @permission_required(level='ADMIN')
+    @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
             self.print_help()
