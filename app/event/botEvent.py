@@ -173,7 +173,7 @@ class BotMute(Event):
     event_name = "BotMuteEvent"
 
     async def process(self):
-        res = get_config('bot_mute_event', self.bot_mute.operator.group.id)
+        res = await get_config('bot_mute_event', self.bot_mute.operator.group.id)
         if not res or res:
             try:
                 with MysqlDao() as db:

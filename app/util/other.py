@@ -9,7 +9,7 @@ from app.util.onlineConfig import get_config
 async def online_notice(app: Ariadne, config: Config):
     group_list = await app.getGroupList()
     for group in group_list:
-        if get_config('online_notice', group.id):
+        if await get_config('online_notice', group.id):
             await app.sendGroupMessage(group, MessageChain.create([Plain(f"{config.BOT_NAME}打卡上班啦！")]))
 
 

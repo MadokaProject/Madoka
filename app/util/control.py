@@ -10,12 +10,13 @@ from typing import DefaultDict, Set, Tuple, Union
 from graia.ariadne.event.message import GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Source
-from graia.ariadne.model import Friend, Member, MemberPerm
+from graia.ariadne.model import Friend, Group, Member, MemberPerm
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
 from app.core.config import Config
 from app.core.settings import ADMIN_USER, BANNED_USER
-from .sendMessage import safeSendGroupMessage
+from app.util.onlineConfig import set_plugin_switch
+from app.util.sendMessage import safeSendGroupMessage
 
 SLEEP = 0
 
@@ -190,3 +191,16 @@ class Interval:
             if member not in cls.sent_alert:
                 cls.sent_alert.add(member)
             raise ExecutionStop()
+
+
+class Switch:
+    """用于开关功能的类，不应被实例化"""
+
+    @classmethod
+    async def plugin(cls, src: Union[Member, int], perm, dst: Union[Group, int]):
+        if Permission.get(src) < Permission.GROUP_ADMIN:
+            return '你的权限不足，无权操作此命令'
+        if await set_plugin_switch(dst, perm):
+            return '操作成功'
+        else:
+            return '操作失败'

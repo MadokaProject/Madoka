@@ -17,17 +17,24 @@ class BotUser:
                 [self.qq]
             )
             if not res[0][0]:
-                res = db.update(
+                if not db.update(
                     "INSERT INTO user (uid, points, active, admin) VALUES (%s, %s, %s, %s)",
                     [self.qq, self.point, self.active, self.admin]
-                )
-                if not res:
+                ):
                     raise Exception()
             elif self.active == 1:
-                res = db.update(
-                    "UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]
-                )
-                if not res:
+                if not db.update("UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]):
+                    raise Exception()
+
+    def user_deactivate(self):
+        """取消激活"""
+        with MysqlDao() as db:
+            res = db.query(
+                "SELECT COUNT(*) FROM user WHERE uid=%s",
+                [self.qq]
+            )
+            if res[0][0]:
+                if not db.update("UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]):
                     raise Exception()
 
     def sign_in(self):

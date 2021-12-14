@@ -34,15 +34,15 @@ class Module(Plugin):
                 return
             if isstartswith(self.msg[0], ['添加', 'add']):
                 assert len(self.msg) == 3
-                save_config('group_reply', self.group.id, {self.msg[1]: self.msg[2]}, model='add')
+                await save_config('group_reply', self.group.id, {self.msg[1]: self.msg[2]}, model='add')
                 self.resp = MessageChain.create([Plain('添加/修改成功！')])
             elif isstartswith(self.msg[0], 'remove'):
                 assert len(self.msg) == 2
-                msg = '删除成功!' if save_config('group_reply', self.group.id, self.msg[1],
+                msg = '删除成功!' if await save_config('group_reply', self.group.id, self.msg[1],
                                              model='remove') else '删除失败!该关键词不存在'
                 self.resp = MessageChain.create([Plain(msg)])
             elif isstartswith(self.msg[0], 'list'):
-                res = get_config('group_reply', self.group.id)
+                res = await get_config('group_reply', self.group.id)
                 self.resp = MessageChain.create(
                     [Plain('\n'.join(f'{key}' for key in res.keys()) if res else '该群组暂未配置！')])
             else:

@@ -38,10 +38,12 @@ class MemberCardChange(Event):
                     self.member_card_change.member.group.id, MessageChain.create([Plain("请不要修改我的群名片")])
                 )
         else:
-            await safeSendGroupMessage(self.member_card_change.member.group, MessageChain.create([
-                At(self.member_card_change.member.id),
-                Plain(f" 的群名片由 {self.member_card_change.origin} 被修改为 {self.member_card_change.current}")
-            ]))
+            res = await get_config('member_card_change', self.member_leave_kick.member.group.id)
+            if res and res['active']:
+                await safeSendGroupMessage(self.member_card_change.member.group, MessageChain.create([
+                    At(self.member_card_change.member.id),
+                    Plain(f" 的群名片由 {self.member_card_change.origin} 被修改为 {self.member_card_change.current}")
+                ]))
 
 
 class MemberJoin(Event):
@@ -55,7 +57,7 @@ class MemberJoin(Event):
             At(self.member_join.member.id),
             Plain(" 加入本群"),
         ]
-        res = get_config('member_join', self.member_join.member.group.id)
+        res = await get_config('member_join', self.member_join.member.group.id)
         if res and res['active']:
             msg.append(Plain(f"\r\n{res['text']}") if res.__contains__('text') else None)
             await safeSendGroupMessage(self.member_join.member.group, MessageChain.create(msg))
@@ -72,7 +74,9 @@ class MemberLeaveKick(Event):
             At(self.member_leave_kick.operator.id),
             Plain(" 踢出本群"),
         ]
-        await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain.create(msg))
+        res = await get_config('member_kick', self.member_leave_kick.member.group.id)
+        if res and res['active']:
+            await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain.create(msg))
 
 
 class MemberLeaveQuit(Event):
@@ -84,7 +88,9 @@ class MemberLeaveQuit(Event):
             Image(data_bytes=await avater_blackandwhite(self.member_leave_quit.member.id)),
             Plain(f"\n{self.member_leave_quit.member.name} 退出本群"),
         ]
-        await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain.create(msg))
+        res = await get_config('member_quit', self.member_leave_quit.member.group.id)
+        if res and res['active']:
+            await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain.create(msg))
 
 
 class MemberHonorChange(Event):
