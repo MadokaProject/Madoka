@@ -5,6 +5,5 @@ __all__ = [
     'csm',
     'reply',
     'chat',
-    'PseudoAI',
     'repeat'
 ]
