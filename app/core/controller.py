@@ -81,7 +81,7 @@ class Controller:
                 if hasattr(self, 'group'):
                     resp = await Switch.plugin(self.member, perm, self.group)
                 elif len(__args) == 3:
-                    resp = await Switch.plugin(self.friend.id, perm, __args[2])
+                    resp = await Switch.plugin(self.friend.id, perm, int(__args[2]))
                 if resp:
                     await self._do_send(MessageChain.create([Plain(resp)]))
                     return
@@ -109,7 +109,7 @@ class Controller:
                     if hasattr(self, 'group'):
                         resp = await Switch.plugin(self.member, perm, self.group)
                     elif len(__args) == 3:
-                        resp = await Switch.plugin(self.friend.id, perm, __args[2])
+                        resp = await Switch.plugin(self.friend.id, perm, int(__args[2]))
                     if resp:
                         await self._do_send(MessageChain.create([Plain(resp)]))
                         return
