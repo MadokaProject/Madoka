@@ -1,6 +1,14 @@
+<div align="center">
+
 # PyIBot
 
 一个基于 Graia 和 Mirai 的快速、可配置、可自定义插件的 QQ 机器人
+
+[![License](https://img.shields.io/badge/license-AGPL--v3-green)](https://www.gnu.org/licenses/agpl-3.0.html)
+[![Python](https://img.shields.io/badge/python-3.8-blue)](https://docs.python.org/zh-cn/3.8/)
+[![Release](https://img.shields.io/github/v/release/PyIBot/Application)](https://github.com/PyIBot/Application/releases/latest)
+
+</div>
 
 > PyIBot 是一个非盈利的开源项目，仅供交流学习使用。请勿用于商业或非法用途，因使用而与腾讯公司产生的一切纠纷均与原作者无关。
 
@@ -11,12 +19,9 @@
 $ pip install -r requirements.txt
 
 # Start the mirai service and Configuration profile
-# Native debug
-$ python main.py
-
 # Run on the server
 $ screen -S qq-bot
-$ sh run.sh
+$ python main.py
 ```
 
 ## 部署流程
@@ -46,15 +51,15 @@ pip install -r requirements.txt
 
 ### 安装插件
 
-推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键安装，手动安装如下：
+~~推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键安装~~，手动安装如下：
 
-前往 [Plugins](https://github.com/PyIBot/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录后重启 PyIBot, 机器人支持热重启。
+前往 [Plugins](https://github.com/PyIBot/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录后执行重载插件命令 `.sys reload`
 
 > 你可自行在该目录编写其他插件，同时欢迎你将你的插件 PR 到此插件库
 
 ### 升级插件
 
-推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级，手动升级请重新下载覆盖原文件。
+~~推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级~~，手动升级请重新下载覆盖原文件。
 
 ### 运行
 
@@ -65,7 +70,7 @@ python main.py
 ## 升级
 
 - 推荐使用机器人命令 `.p u` 自动升级
-- 使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级。
+- ~~使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级。~~
 - 手动升级：git pull 拉取。
 
 ## 项目版本管理
