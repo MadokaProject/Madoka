@@ -15,7 +15,8 @@ class Module(Plugin):
     brief_help = '\r\n[√]\t系统: sys'
     full_help = \
         '.系统/.sys\t仅限主人可用！\r\n' \
-        '.系统/.sys 禁言退群 [0/ 1]\t设置机器人被禁言是否退群\r\n' \
+        '.系统/.sys 禁言退群 [0 / 1]\t设置机器人被禁言是否退群\r\n' \
+        '.系统/.sys 上线通知 [0 / 1]\t设置机器人上线是否发送通知\r\n' \
         '.系统/.sys 重载插件/reload\t重新加载插件'
     hidden = True
 
@@ -25,19 +26,18 @@ class Module(Plugin):
             self.print_help()
             return
         try:
-            if not hasattr(self, 'group'):
-                self.resp = MessageChain.create([
-                    Plain('请在群聊内使用该命令!')
-                ])
-                return
-            if isstartswith(self.msg[0], '禁言退群'):
-                assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
-                if await save_config('bot_mute_event', self.group.id, int(self.msg[1])):
-                    self.resp = MessageChain.create([Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')])
-            elif isstartswith(self.msg[0], ['重载插件', 'reload']):
+            if isstartswith(self.msg[0], ['重载插件', 'reload']):
                 core: AppCore = AppCore.get_core_instance()
                 core.load_plugin_modules()
                 self.resp = MessageChain.create([Plain('重载成功！')])
+            elif isstartswith(self.msg[0], ['禁言退群', '上线通知']):
+                if not hasattr(self, 'group'):
+                    self.resp = MessageChain.create([Plain('请在群聊内使用该命令!')])
+                    return
+                assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
+                config_name = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}[self.msg[0]]
+                if await save_config(config_name, self.group.id, int(self.msg[1])):
+                    self.resp = MessageChain.create([Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')])
             else:
                 self.args_error()
                 return
