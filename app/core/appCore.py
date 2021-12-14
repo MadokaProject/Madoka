@@ -138,6 +138,7 @@ class AppCore:
 
     def load_plugin_modules(self):
         ignore = ["__init__.py", "__pycache__", "base.py"]
+        self.__plugin.clear()
         for plugin in os.listdir(os.path.join(app_path(), "plugin")):
             try:
                 if plugin not in ignore and not os.path.isdir(plugin):

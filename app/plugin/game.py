@@ -73,19 +73,16 @@ class Module(Plugin):
                         index = 1
                         msg = PrettyTable()
                         msg.field_names = ['序号', '群昵称', '签到积分']
-                        for item in res[:10]:
-                            if int(item[0]) in group_user.keys():
-                                if item[1] == 0:
-                                    continue
-                                msg.add_row([index, group_user[int(item[0])], item[1]])
-                                index += 1
+                        for qid, signin_points in res[:10]:
+                            if int(qid) not in group_user.keys() or signin_points == 0:
+                                continue
+                            msg.add_row([index, group_user[int(qid)], signin_points])
+                            index += 1
                         msg.align = 'r'
                         msg.align['群昵称'] = 'l'
-                        self.resp.extend(
-                            MessageChain.create([
-                                Image(data_bytes=(await create_image(msg.get_string())).getvalue())
-                            ])
-                        )
+                        self.resp.extend(MessageChain.create([
+                            Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                        ]))
                     return
                 point = random.randint(1, 101)
                 user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id, point)
@@ -162,19 +159,16 @@ class Module(Plugin):
                     index = 1
                     msg = PrettyTable()
                     msg.field_names = ['序号', '群昵称', '积分']
-                    for item in res:
-                        if item[1] == 0:
+                    for qid, point in res:
+                        if point == 0 or int(qid) not in group_user.keys():
                             continue
-                        if int(item[0]) in group_user.keys():
-                            msg.add_row([index, group_user[int(item[0])], item[1]])
-                            index += 1
+                        msg.add_row([index, group_user[int(qid)], point])
+                        index += 1
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
-                    self.resp.extend(
-                        MessageChain.create([
-                            Image(data_bytes=(await create_image(msg.get_string())).getvalue())
-                        ])
-                    )
+                    self.resp.extend(MessageChain.create([
+                        Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                    ]))
             except Exception as e:
                 logger.exception(e)
                 self.unkown_error()
