@@ -1,4 +1,3 @@
-import asyncio
 import getopt
 
 from graia.ariadne.message.chain import MessageChain
@@ -9,7 +8,6 @@ from app.core.settings import *
 
 
 async def power(app, argv):
-    await asyncio.sleep(3)  # 等待 Ariadne 启动
     upgrade = None
     shutdown = False
     group = False
