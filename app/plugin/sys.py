@@ -30,7 +30,7 @@ class Module(Plugin):
                 return
             if isstartswith(self.msg[0], '禁言退群'):
                 assert len(self.msg) == 2 and self.msg[1] in ['0', '1']
-                if save_config('bot_mute_event', self.group.id, int(self.msg[1])):
+                if await save_config('bot_mute_event', self.group.id, int(self.msg[1])):
                     self.resp = MessageChain.create([Plain('开启成功！' if int(self.msg[1]) else '关闭成功！')])
             else:
                 self.args_error()

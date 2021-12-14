@@ -13,7 +13,7 @@ class Reply(Trigger):
             return
         if self.msg[0][0] in '.,;!?。，；！？/\\':  # 判断是否为指令
             return
-        res = get_config('group_reply', self.group.id)
+        res = await get_config('group_reply', self.group.id)
         message = self.message.asDisplay()
         if res and res.__contains__(message):
             await self.do_send(MessageChain.create([At(self.member.id), Plain(' ' + res[message])]))

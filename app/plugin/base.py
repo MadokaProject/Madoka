@@ -3,10 +3,8 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Source
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
-from loguru import logger
 
 from app.util.control import Permission
-from app.util.onlineConfig import set_plugin_switch
 from app.util.permission import *
 from app.util.tools import *
 
@@ -125,33 +123,6 @@ class Plugin:
     async def process(self):
         """子类必须重写此方法，此方法用于修改要发送的信息内容"""
         raise NotImplementedError
-
-    async def set_switch(self):
-        """设置插件开关"""
-        if self.msg:
-            try:
-                if isstartswith(self.msg[0], ['enable', '开启插件'], full_match=1) and self.check_admin():
-                    if hasattr(self, 'group'):
-                        set_plugin_switch(self.group, '*' if len(self.msg) == 2 and self.msg[1] == 'all' else self.entry[0][1:])
-                    elif hasattr(self, 'friend'):
-                        assert len(self.msg) >= 2 and self.msg[1].isdigit()
-                        set_plugin_switch(int(self.msg[1]), '*' if len(self.msg) == 3 and self.msg[2] == 'all' else self.entry[0][1:])
-                    self.resp = MessageChain.create([Plain('开启成功！')])
-                elif isstartswith(self.msg[0], ['disable', '关闭插件'], full_match=1) and self.check_admin():
-                    if hasattr(self, 'group'):
-                        set_plugin_switch(self.group, f"-{'' if len(self.msg) == 2 and self.msg[1] == 'all' else self.entry[0][1:]}")
-                    elif hasattr(self, 'friend'):
-                        assert len(self.msg) >= 2 and self.msg[1].isdigit()
-                        set_plugin_switch(int(self.msg[1]), f"-{'' if len(self.msg) == 3 and self.msg[2] == 'all' else self.entry[0][1:]}")
-                    self.resp = MessageChain.create([Plain('关闭成功！')])
-            except AssertionError as e:
-                logger.info(f'参数错误 - {e}')
-                self.args_error()
-            print(self.resp)
-            if self.resp:
-                return self.resp
-            else:
-                return None
 
     async def get_resp(self):
         """程序默认调用的方法以获取要发送的信息"""
