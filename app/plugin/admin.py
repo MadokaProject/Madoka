@@ -19,11 +19,12 @@ class Module(Plugin):
     brief_help = '\r\n[√]\t白名单: admin'
     full_help = \
         '.admin\t仅主人可用！\r\n' \
-        '.admin au [qq]\t激活用户\r\n' \
-        '.admin du [qq]\t禁用用户\r\n' \
-        '.admin bu [qq]\t拉黑用户\r\n' \
+        '.admin au [qq]\t激活用户(用户可私聊使用)\r\n' \
+        '.admin du [qq]\t取消激活/禁用用户(用户不可私聊使用)\r\n' \
+        '.admin bu [qq]\t禁用用户(拉黑用户)\r\n' \
         '.admin ag [qg]\t激活群组\r\n' \
-        '.admin dg [qg]\t禁用群组'
+        '.admin dg [qg]\t禁用群组\r\n' \
+        '.admin [al/bl/gl]\t查看对应组'
     hidden = True
 
     @permission_required(level=Permission.MASTER)
@@ -42,7 +43,7 @@ class Module(Plugin):
             elif isstartswith(self.msg[0], 'du'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 BotUser(int(self.msg[1]), active=0).user_deactivate()
-                self.resp = MessageChain.create([Plain('禁用成功！')])
+                self.resp = MessageChain.create([Plain('取消激活成功！')])
                 if int(self.msg[1]) in ACTIVE_USER:
                     ACTIVE_USER.pop(int(self.msg[1]))
                 if int(self.msg[1]) in BANNED_USER:
@@ -50,7 +51,7 @@ class Module(Plugin):
             elif isstartswith(self.msg[0], 'bu'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
                 BotUser(int(self.msg[1]), active=-1).user_deactivate()
-                self.resp = MessageChain.create([Plain('拉黑成功！')])
+                self.resp = MessageChain.create([Plain('禁用成功！')])
                 BANNED_USER.append(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'ag'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
