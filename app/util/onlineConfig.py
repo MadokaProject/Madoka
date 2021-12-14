@@ -1,6 +1,6 @@
 import json
-
 from typing import Union
+
 from graia.ariadne.model import Group
 from loguru import logger
 

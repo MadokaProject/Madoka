@@ -13,6 +13,7 @@ from graia.ariadne.message.element import Plain, Source
 from graia.ariadne.model import Friend, Group, Member, MemberPerm
 from graia.broadcast.builtin.decorators import Depend
 from graia.broadcast.exceptions import ExecutionStop
+
 from app.core.config import Config
 from app.core.settings import ADMIN_USER, BANNED_USER
 from app.util.onlineConfig import set_plugin_switch

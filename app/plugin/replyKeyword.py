@@ -39,7 +39,7 @@ class Module(Plugin):
             elif isstartswith(self.msg[0], 'remove'):
                 assert len(self.msg) == 2
                 msg = '删除成功!' if await save_config('group_reply', self.group.id, self.msg[1],
-                                             model='remove') else '删除失败!该关键词不存在'
+                                                   model='remove') else '删除失败!该关键词不存在'
                 self.resp = MessageChain.create([Plain(msg)])
             elif isstartswith(self.msg[0], 'list'):
                 res = await get_config('group_reply', self.group.id)

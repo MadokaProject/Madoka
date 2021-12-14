@@ -18,8 +18,8 @@ class BotUser:
             )
             if not res[0][0]:
                 if not db.update(
-                    "INSERT INTO user (uid, points, active, admin) VALUES (%s, %s, %s, %s)",
-                    [self.qq, self.point, self.active, self.admin]
+                        "INSERT INTO user (uid, points, active, admin) VALUES (%s, %s, %s, %s)",
+                        [self.qq, self.point, self.active, self.admin]
                 ):
                     raise Exception()
             elif self.active == 1:

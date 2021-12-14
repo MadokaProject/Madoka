@@ -149,19 +149,18 @@ class AppCore:
                 logger.error(f"plugin 模块: {plugin} - {e}")
 
     def load_schedulers(self):
-        if not self.__config.DEBUG or not self.__config.ONLINE:
-            tasks = []
-            ignore = ["__init__.py", "__pycache__", "base.py"]
-            for __scheduler in os.listdir(os.path.join(app_path(), "plugin")):
-                try:
-                    if __scheduler not in ignore and not os.path.isdir(__scheduler):
-                        module = importlib.import_module(f"app.plugin.{__scheduler.split('.')[0]}")
-                        if hasattr(module, "Tasker"):
-                            obj = module.Tasker(self.__app)
-                            if obj.cron:
-                                tasks.append(TaskerProcess(self.__loop, self.__bcc, obj))
-                                logger.success("成功加载计划任务: " + module.__name__)
-                except ModuleNotFoundError as e:
-                    logger.error(f"schedule 模块: {__scheduler} - {e}")
-            asyncio.gather(*tasks)
-            asyncio.run(custom_schedule(self.__loop, self.__bcc, self.__app))
+        tasks = []
+        ignore = ["__init__.py", "__pycache__", "base.py"]
+        for __scheduler in os.listdir(os.path.join(app_path(), "plugin")):
+            try:
+                if __scheduler not in ignore and not os.path.isdir(__scheduler):
+                    module = importlib.import_module(f"app.plugin.{__scheduler.split('.')[0]}")
+                    if hasattr(module, "Tasker"):
+                        obj = module.Tasker(self.__app)
+                        if obj.cron:
+                            tasks.append(TaskerProcess(self.__loop, self.__bcc, obj))
+                            logger.success("成功加载计划任务: " + module.__name__)
+            except ModuleNotFoundError as e:
+                logger.error(f"schedule 模块: {__scheduler} - {e}")
+        asyncio.gather(*tasks)
+        asyncio.run(custom_schedule(self.__loop, self.__bcc, self.__app))

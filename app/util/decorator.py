@@ -1,4 +1,5 @@
 from functools import wraps
+
 from app.util.control import Permission
 
 
