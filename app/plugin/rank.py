@@ -41,11 +41,9 @@ class Module(Plugin):
                         index += 1
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
-                    self.resp.extend(
-                        MessageChain.create([
-                            Image(data_bytes=(await create_image(msg.get_string())).getvalue())
-                        ])
-                    )
+                    self.resp.extend(MessageChain.create([
+                        Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                    ]))
             else:
                 self.args_error()
         except AssertionError as e:
