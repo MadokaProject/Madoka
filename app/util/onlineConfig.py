@@ -4,6 +4,7 @@ from typing import Union
 from graia.ariadne.model import Group
 from loguru import logger
 
+from app.core.config import Config
 from app.core.settings import CONFIG, ACTIVE_USER, ACTIVE_GROUP
 from app.util.dao import MysqlDao
 
@@ -71,6 +72,9 @@ async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
                     ACTIVE_GROUP[uid.id] = res
                     db.update('UPDATE `group` SET permission=%s WHERE uid=%s', [','.join(f'{i}' for i in res), uid.id])
         else:
+            config = Config()
+            if uid == int(config.MASTER_QQ):
+                return False
             with MysqlDao() as db:
                 if perm in ['*', '-']:
                     db.update('UPDATE user SET permission=%s WHERE uid=%s', [perm, uid])
