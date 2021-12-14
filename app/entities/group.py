@@ -16,8 +16,8 @@ class BotGroup:
             )
             if not res[0][0]:
                 if not db.update(
-                    "INSERT INTO `group` (uid, permission, active) VALUES (%s, %s, %s)",
-                    [self.group_id, '*', self.active]
+                        "INSERT INTO `group` (uid, permission, active) VALUES (%s, %s, %s)",
+                        [self.group_id, '*', self.active]
                 ):
                     raise Exception()
 

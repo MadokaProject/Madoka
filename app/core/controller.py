@@ -103,7 +103,9 @@ class Controller:
                     resp += obj.brief_help
             elif switch_plugin:  # 插件开关
                 if __args[1] == obj.entry[0][1:]:
-                    perm = {'.enable': __args[1], '.启用': __args[1], '.disable': '-' + __args[1], '.禁用': '-' + __args[1]}[__args[0]]
+                    perm = \
+                    {'.enable': __args[1], '.启用': __args[1], '.disable': '-' + __args[1], '.禁用': '-' + __args[1]}[
+                        __args[0]]
                     if hasattr(self, 'group'):
                         resp = await Switch.plugin(self.member, perm, self.group)
                     elif len(__args) == 3:

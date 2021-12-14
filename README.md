@@ -22,7 +22,7 @@ $ sh run.sh
 ## 部署流程
 
 推荐使用官方启动器 [mirai-console-loader](https://github.com/iTXTech/mirai-console-loader) (mcl)
-自行启动 [mirai](https://github.com/mamoe/mirai) 与 [mirai-api-http](https://github.com/mamoe/mirai-api-http) 插件。
+自行启动 [mirai](https://github.com/mamoe/mirai) 与 [mirai-api-http v2](https://github.com/mamoe/mirai-api-http) 插件。
 
 ### 运行前配置
 
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键安装，手动安装如下：
 
-前往 [Plugins](https://github.com/PyIBot/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录，并在该目录的 `__init__.py` 文件中添加对应插件文件名。
+前往 [Plugins](https://github.com/PyIBot/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录后重启 PyIBot, 机器人支持热重启。
 
 > 你可自行在该目录编写其他插件，同时欢迎你将你的插件 PR 到此插件库
 
@@ -58,21 +58,14 @@ pip install -r requirements.txt
 
 ### 运行
 
-#### Linux
-
 ``` bash
-sh run.sh
-```
-
-#### Windows
-
-``` cmd
 python main.py
 ```
 
 ## 升级
 
-- 推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级。
+- 推荐使用机器人命令 `.p u` 自动升级
+- 使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级。
 - 手动升级：git pull 拉取。
 
 ## 项目版本管理
