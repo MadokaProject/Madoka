@@ -41,12 +41,10 @@ class Module(Plugin):
                     BANNED_USER.remove(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'du'):
                 assert len(self.msg) == 2 and self.msg[1].isdigit()
-                if int(self.msg[1]) not in ACTIVE_USER:
-                    self.resp = MessageChain.create([Plain('未找到该用户！')])
-                    return
                 BotUser(int(self.msg[1]), active=0).user_deactivate()
                 self.resp = MessageChain.create([Plain('禁用成功！')])
-                ACTIVE_USER.pop(int(self.msg[1]))
+                if int(self.msg[1]) in ACTIVE_USER:
+                    ACTIVE_USER.pop(int(self.msg[1]))
                 if int(self.msg[1]) in BANNED_USER:
                     BANNED_USER.remove(int(self.msg[1]))
             elif isstartswith(self.msg[0], 'bu'):
