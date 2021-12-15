@@ -141,7 +141,7 @@ class AppCore:
         self.__plugin.clear()
         for plugin in os.listdir(os.path.join(app_path(), "plugin")):
             try:
-                if plugin not in ignore and not os.path.isdir(plugin):
+                if plugin not in ignore and plugin.split('.')[-1] == 'py' and not os.path.isdir(plugin):
                     module = importlib.import_module(f"app.plugin.{plugin.split('.')[0]}")
                     if hasattr(module, 'Module'):
                         self.__plugin.append(module)
@@ -154,7 +154,7 @@ class AppCore:
         ignore = ["__init__.py", "__pycache__", "base.py"]
         for __scheduler in os.listdir(os.path.join(app_path(), "plugin")):
             try:
-                if __scheduler not in ignore and not os.path.isdir(__scheduler):
+                if __scheduler not in ignore and __scheduler.split('.')[-1] == 'py' and not os.path.isdir(__scheduler):
                     module = importlib.import_module(f"app.plugin.{__scheduler.split('.')[0]}")
                     if hasattr(module, "Tasker"):
                         obj = module.Tasker(self.__app)
