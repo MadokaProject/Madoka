@@ -8,4 +8,6 @@ class SaveMsg(Trigger):
     async def process(self):
         if not hasattr(self, 'group') or self.check_admin():
             return
+        if self.msg[0] not in '.,;!?。，；！？/\\':
+            return
         save(self.group.id, self.member.id, self.message.asDisplay())

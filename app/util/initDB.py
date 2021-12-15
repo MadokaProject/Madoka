@@ -43,7 +43,7 @@ async def InitDB():
         ignore = ["__init__.py", "__pycache__", "base.py"]
         for DB in os.listdir(os.path.join(app_path(), "plugin")):
             try:
-                if DB not in ignore and not os.path.isdir(DB):
+                if DB not in ignore and DB.split('.')[-1] == 'py' and not os.path.isdir(DB):
                     __DB = importlib.import_module(f"app.plugin.{DB.split('.')[0]}")
                     if hasattr(__DB, 'DB'):
                         await __DB.DB().process()
