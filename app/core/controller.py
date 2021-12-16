@@ -113,7 +113,7 @@ class Controller:
                     if resp:
                         await self._do_send(MessageChain.create([Plain(resp)]))
                         return
-            elif isstartswith(msg, obj.entry, full_match=1):  # 指令执行
+            elif isstartswith(msg, obj.entry):  # 指令执行
                 if obj.enable:
                     resp = await obj.get_resp()
                 else:
