@@ -101,7 +101,7 @@ class Controller:
                         {'.enable': __args[1], '.启用': __args[1], '.disable': '-' + __args[1], '.禁用': '-' + __args[1]}[
                             __args[0]]
                     break
-            elif isstartswith(msg, obj.entry):  # 指令执行
+            elif isstartswith(msg.split(' ')[0], obj.entry, full_match=1):  # 指令执行
                 if obj.enable:
                     resp = await obj.get_resp()
                 else:

@@ -51,7 +51,7 @@ class Module(Plugin):
                     user = self.member if hasattr(self, 'group') else self.friend
                     target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
                     level = int(self.msg[2])
-                    if self.member.id == target and level != 4 and Permission.require(user, 4):
+                    if user.id == target and level != 4 and Permission.require(user, 4):
                         self.resp = MessageChain.create([Plain(f'怎么有master想给自己改权限呢？{Config().BOT_NAME}很担心你呢，快去脑科看看吧！')])
                         return
                     if BotUser(target).get_level() == 0:
