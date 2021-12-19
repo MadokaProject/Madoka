@@ -2,14 +2,14 @@ from app.util.dao import MysqlDao
 
 
 class BotUser:
-    def __init__(self, qq, point=0, active=0, admin=0):
+    def __init__(self, qq, point: int = 0, active: int = 0, level: int = 1):
         self.qq = qq
         self.point = point
         self.active = active
-        self.admin = admin
+        self.level = level
         self.user_register()
 
-    def user_register(self):
+    def user_register(self) -> None:
         """注册用户"""
         with MysqlDao() as db:
             res = db.query(
@@ -18,15 +18,15 @@ class BotUser:
             )
             if not res[0][0]:
                 if not db.update(
-                        "INSERT INTO user (uid, points, active, admin) VALUES (%s, %s, %s, %s)",
-                        [self.qq, self.point, self.active, self.admin]
+                        "INSERT INTO user (uid, points, active, level) VALUES (%s, %s, %s, %s)",
+                        [self.qq, self.point, self.active, self.level]
                 ):
                     raise Exception()
             elif self.active == 1:
                 if not db.update("UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]):
                     raise Exception()
 
-    def user_deactivate(self):
+    def user_deactivate(self) -> None:
         """取消激活"""
         with MysqlDao() as db:
             res = db.query(
@@ -37,7 +37,18 @@ class BotUser:
                 if not db.update("UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]):
                     raise Exception()
 
-    def sign_in(self):
+    def get_level(self) -> int:
+        """获取用户权限等级"""
+        with MysqlDao() as db:
+            res = db.query("SELECT level FROM user WHERE uid=%s", [self.qq])
+            return int(res[0][0])
+
+    def grant_level(self, new_level: int) -> None:
+        """修改用户权限"""
+        with MysqlDao() as db:
+            db.update("UPDATE user SET level=%s WHERE uid=%s", [new_level, self.qq])
+
+    def sign_in(self) -> None:
         """签到"""
         with MysqlDao() as db:
             res = db.update(
@@ -47,7 +58,7 @@ class BotUser:
             if not res:
                 raise Exception()
 
-    def update_point(self, point):
+    def update_point(self, point) -> None:
         """修改积分
         :param point: str, 积分变动值
         """
@@ -59,7 +70,7 @@ class BotUser:
             if not res:
                 raise Exception()
 
-    def update_english_answer(self, num):
+    def update_english_answer(self, num) -> None:
         """修改英语答题榜
         :param num: str, 答题变动值
         """
@@ -144,7 +155,7 @@ class BotUser:
             )
             return res[0][0]
 
-    def moving_bricks(self):
+    def moving_bricks(self) -> None:
         """搬砖"""
         with MysqlDao() as db:
             res = db.update(
@@ -163,7 +174,7 @@ class BotUser:
             )
             return res[0][0]
 
-    def work(self):
+    def work(self) -> None:
         """打工"""
         with MysqlDao() as db:
             res = db.update(

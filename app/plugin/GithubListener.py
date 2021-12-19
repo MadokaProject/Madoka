@@ -53,7 +53,7 @@ class Module(Plugin):
                 self.resp = MessageChain.create([Plain("修改成功！")])
             elif isstartswith(self.msg[0], 'remove'):
                 assert len(self.msg) == 2
-                group_id = self.group.id
+                group_id = str(self.group.id)
                 if not REPO.__contains__(group_id) or self.msg[1] not in REPO[group_id]:
                     self.resp = MessageChain.create([Plain('删除失败，该仓库名不存在！')])
                     return

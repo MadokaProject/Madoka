@@ -5,6 +5,7 @@ from loguru import logger
 
 from app.core.settings import *
 from app.trigger.trigger import Trigger
+from app.util.control import Permission
 from app.util.dao import MysqlDao
 
 
@@ -12,7 +13,7 @@ class CSM(Trigger):
     """群管系统"""
 
     async def process(self):
-        if not hasattr(self, 'group') or self.check_admin() or self.group.accountPerm == MemberPerm.Member:
+        if not hasattr(self, 'group') or self.check_admin(Permission.GROUP_ADMIN) or self.group.accountPerm == MemberPerm.Member:
             return
         if CONFIG.__contains__(str(self.group.id)) and CONFIG[str(self.group.id)].__contains__('status') and \
                 CONFIG[str(self.group.id)]['status']:  # 默认关闭，需自行开启(.admin status)
