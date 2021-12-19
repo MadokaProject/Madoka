@@ -1,16 +1,18 @@
 <div align="center">
 
-# PyIBot
+# Madoka
 
 一个基于 Graia 和 Mirai 的快速、可配置、可自定义插件的 QQ 机器人
 
+> 只要将想要守护的事物一直守护到底就好了。
+
 [![License](https://img.shields.io/badge/license-AGPL--v3-green)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![Python](https://img.shields.io/badge/python-3.8-blue)](https://docs.python.org/zh-cn/3.8/)
-[![Release](https://img.shields.io/github/v/release/PyIBot/Application)](https://github.com/PyIBot/Application/releases/latest)
+[![Release](https://img.shields.io/github/v/release/MadokaProject/Application)](https://github.com/MadokaProject/Application/releases/latest)
 
 </div>
 
-> PyIBot 是一个非盈利的开源项目，仅供交流学习使用。请勿用于商业或非法用途，因使用而与腾讯公司产生的一切纠纷均与原作者无关。
+> Madoka 是一个非盈利的开源项目，仅供交流学习使用。请勿用于商业或非法用途，因使用而与腾讯公司产生的一切纠纷均与原作者无关。
 
 ## Build Setup
 
@@ -38,7 +40,7 @@ $ python main.py
 ### 克隆项目
 
 ``` bash
-git clone https://github.com/PyIBot/Application.git PyIBot
+git clone https://github.com/MadokaProject/Application.git Madoka
 ```
 
 ### 安装依赖
@@ -51,15 +53,15 @@ pip install -r requirements.txt
 
 ### 安装插件
 
-~~推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键安装~~，手动安装如下：
+~~推荐使用 [Web](https://github.com/MadokaProject/Web.git) 端一键安装~~，手动安装如下：
 
-前往 [Plugins](https://github.com/PyIBot/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录后执行重载插件命令 `.sys reload`
+前往 [Plugins](https://github.com/MadokaProject/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录后执行重载插件命令 `.sys reload`
 
 > 你可自行在该目录编写其他插件，同时欢迎你将你的插件 PR 到此插件库
 
 ### 升级插件
 
-~~推荐使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级~~，手动升级请重新下载覆盖原文件。
+~~推荐使用 [Web](https://github.com/MadokaProject/Web.git) 端一键升级~~，手动升级请重新下载覆盖原文件。
 
 ### 运行
 
@@ -70,7 +72,7 @@ python main.py
 ## 升级
 
 - 推荐使用机器人命令 `.p u` 自动升级
-- ~~使用 [Web](https://github.com/PyIBot/Web.git) 端一键升级。~~
+- ~~使用 [Web](https://github.com/MadokaProject/Web.git) 端一键升级。~~
 - 手动升级：git pull 拉取。
 
 ## 项目版本管理
@@ -113,10 +115,10 @@ python main.py
 
 ## 相关项目
 
-- [Application](https://github.com/PyIBot/Application.git): PyIBot 主体
-- [Plugins](https://github.com/PyIBot/Plugins.git): PyIBot 的官方插件库（你也可以提交 PR 来丰富此插件库）
-- [Web](https://github.com/PyIBot/Web.git): 机器人 Web 控制系统(计划中)
-- [Loader](https://github.com/PyIBot/Loader.git): 懒人工具(或许有？)
+- [Application](https://github.com/MadokaProject/Application.git): Madoka 主体
+- [Plugins](https://github.com/MadokaProject/Plugins.git): Madoka 的官方插件库（你也可以提交 PR 来丰富此插件库）
+- [Web](https://github.com/MadokaProject/Web.git): 机器人 Web 控制系统(计划中)
+- [Loader](https://github.com/MadokaProject/Loader.git): 懒人工具(或许有？)
 
 ## 依赖
 
@@ -124,5 +126,5 @@ python main.py
 2. [`mirai-console-loader`](https://github.com/iTXTech/mirai-console-loader): 模块化、轻量级且支持完全自定义的 `mirai` 加载器。
 3. [`mirai-console`](https://github.com/mamoe/mirai-console): 一个基于 `mirai` 开发的插件式可扩展开发平台
 4. [`mirai-api-http`](https://github.com/project-mirai/mirai-api-http): 提供与 `mirai` 交互方式的 `mirai-console` 插件
-5. [`Graia Application`](https://github.com/GraiaProject/Application): 一个设计精巧, 协议实现完备的, 基于 `mirai-api-http`
+5. [`Graia Ariadne`](https://github.com/GraiaProject/Ariadne): 一个设计精巧, 协议实现完备的, 基于 `mirai-api-http v2`
    的即时聊天软件自动化框架.

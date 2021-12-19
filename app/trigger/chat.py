@@ -37,46 +37,34 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
+        if not self.message.asDisplay() or self.msg[0][0] in '.,;!?。，；！？/\\':
+            return
         config = Config()
-        head, sep, message = self.message.asDisplay().partition(' ')
+        message = [str(item) for item in self.message.get(Plain) if str(item) is not None]
+        if not message or message[0] in '.,;!?。，；！？/\\':
+            return
         url = 'http://api.qingyunke.com/api.php'
-        if hasattr(self, 'friend'):  # 好友聊天
-            if not head or head[0] in '.,;!?。，；！？/\\' or self.friend.id in MEMBER_RUNING_LIST:
+        if hasattr(self, 'friend'):
+            if self.friend.id in MEMBER_RUNING_LIST:
                 return
-            params = {
-                'key': 'free',
-                'appid': 0,
-                'msg': head,
-            }
-            response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
-            if response['result'] == 0:
-                resp = MessageChain.create([
-                    Plain(str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
-                ])
-            else:
-                resp = MessageChain.create([
-                    Plain(random.choice(no_answer))
-                ])
-            await self.do_send(resp)
-            self.as_last = True
         elif hasattr(self, 'group'):
-            if not message or message[0] in '.,;!?。，；！？/\\':
+            if self.group.id in GROUP_RUNING_LIST or not self.message.has(At) or self.message.getFirst(
+                    At).target != int(config.LOGIN_QQ):
                 return
-            if self.message.get(At) and str(self.message.get(At)[0].dict()['target']) == config.LOGIN_QQ:  # 群聊聊天
-                params = {
-                    'key': 'free',
-                    'appid': 0,
-                    'msg': message,
-                }
-                response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
-                if response['result'] == 0:
-                    resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
-                    ])
-                else:
-                    resp = MessageChain.create([
-                        At(self.member.id), Plain(' ' + random.choice(no_answer))
-                    ])
-                await self.do_send(resp)
-                self.as_last = True
+        params = {
+            'key': 'free',
+            'appid': 0,
+            'msg': message,
+        }
+        response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
+        resp = MessageChain.create([At(self.member.id) if hasattr(self, 'group') else None])
+        if response['result'] == 0:
+            resp.extend(MessageChain.create([
+                Plain(str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
+            ]))
+        else:
+            resp.extend(MessageChain.create([
+                Plain(random.choice(no_answer))
+            ]))
+        await self.do_send(resp)
+        self.as_last = True

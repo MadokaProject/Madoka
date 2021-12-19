@@ -39,14 +39,14 @@ class Trigger:
         elif hasattr(self, 'group'):  # 发送群聊消息
             await self.app.sendGroupMessage(self.group, resp)
 
-    def check_admin(self):
+    def check_admin(self, level: int):
         """检查是否管理员"""
         if hasattr(self, 'group'):
-            if Permission.get(self.member) >= Permission.GROUP_ADMIN:
+            if Permission.require(self.member, level):
                 return True
         elif hasattr(self, 'friend'):
-            if Permission.get(self.friend.id) >= Permission.SUPER_ADMIN:
-                return False
+            if Permission.require(self.friend, level):
+                return True
         return False
 
     def not_admin(self):

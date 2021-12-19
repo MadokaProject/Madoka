@@ -9,9 +9,7 @@ class Reply(Trigger):
     """自定义消息回复"""
 
     async def process(self):
-        if not hasattr(self, 'group'):
-            return
-        if self.msg[0][0] in '.,;!?。，；！？/\\':  # 判断是否为指令
+        if not hasattr(self, 'group') or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
         res = await get_config('group_reply', self.group.id)
         message = self.message.asDisplay()

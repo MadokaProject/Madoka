@@ -17,16 +17,16 @@ for _uid, _permit in _res:
     ACTIVE_USER.update({int(_uid): str(_permit).split(',')})
 
 BANNED_USER = []
-"""用户黑名单列表"""
+"""黑名单用户列表"""
 with MysqlDao() as _db:
-    _res = _db.query('SELECT uid FROM user WHERE active=-1')
+    _res = _db.query('SELECT uid FROM user WHERE level=0')
 for _qid in _res:
     BANNED_USER.append(int(_qid))
 
 ADMIN_USER = []
-"""具有管理权限QQ列表"""
+"""具有超级管理权限以上QQ列表"""
 with MysqlDao() as _db:
-    _res = _db.query('SELECT uid FROM user WHERE admin=1')
+    _res = _db.query('SELECT uid FROM user WHERE level>3')
 for (_qid,) in _res:
     ADMIN_USER.append(int(_qid))
 

@@ -6,7 +6,7 @@ from loguru import logger
 from prettytable import PrettyTable
 
 from app.entities.user import BotUser
-from app.plugin.base import Plugin
+from app.plugin.base import Plugin, InitDB
 from app.resource.earn_quot import *
 from app.util.dao import MysqlDao
 from app.util.text2image import create_image
@@ -348,3 +348,23 @@ class Module(Plugin):
                 self.unkown_error()
         else:
             self.args_error()
+
+
+class DB(InitDB):
+
+    async def process(self):
+        with MysqlDao() as _db:
+            _db.update(
+                "create table if not exists kick( \
+                    src char(12) null comment '来源QQ', \
+                    dst char(12) null comment '目标QQ', \
+                    time datetime null comment '被踢时间', \
+                    point int null comment '消耗积分')"
+            )
+            _db.update(
+                "create table if not exists steal( \
+                    src char(12) null comment '来源QQ', \
+                    dst char(12) null comment '目标QQ', \
+                    time datetime null comment '被偷时间', \
+                    point int null comment '偷取积分')"
+            )

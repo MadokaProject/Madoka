@@ -2,7 +2,7 @@ from app.util.dao import MysqlDao
 
 
 class BotGroup:
-    def __init__(self, group_id, active=0):
+    def __init__(self, group_id: int, active: int = 0):
         self.group_id = group_id
         self.active = active
         self.group_register()
