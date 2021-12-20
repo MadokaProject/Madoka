@@ -29,7 +29,7 @@ class Module(Plugin):
         '说明:\r\nlevel 1: 普通用户\r\n' \
         'level 2: 管理员, 与群管理同级别, 能额外触发群管理命令\r\n' \
         'level 3: 超级管理员, 能触发除机器人系统控制外所有命令\r\n' \
-        '用户级别优先受该等级限制, 群管理默认为 level 2'
+        '群管理默认为 level 2,无法降级为level 1'
 
     async def process(self):
         if not self.msg:
@@ -67,13 +67,25 @@ class Module(Plugin):
                             elif result == 3:
                                 if Permission.require(user, 4):
                                     await self.grant_permission_process(target, level)
+                                    ADMIN_USER.remove(target)
+                                    if level == 2:
+                                        GROUP_ADMIN_USER.append(target)
                                 else:
                                     self.resp = MessageChain.create([Plain("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！")])
+                            elif result == 2:
+                                await self.grant_permission_process(target, level)
+                                if level == 1:
+                                    GROUP_ADMIN_USER.remove(target)
                             else:
                                 await self.grant_permission_process(target, level)
+                                if level == 2:
+                                    GROUP_ADMIN_USER.append(target)
                     elif level == 3:
                         if Permission.require(user, 4):
                             await self.grant_permission_process(target, level)
+                            if target in GROUP_ADMIN_USER:
+                                GROUP_ADMIN_USER.remove(target)
+                            ADMIN_USER.append(target)
                         else:
                             self.resp = MessageChain.create([Plain('权限不足，你必须达到等级4(master level)才可对超级管理员进行授权！')])
                     else:
@@ -97,29 +109,41 @@ class Module(Plugin):
         if isstartswith(self.msg[0], 'au'):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
-            BotUser(target, active=1)
-            self.resp = MessageChain.create([Plain('激活成功！')])
-            ACTIVE_USER.update({target: '*'})
+            if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
+                BotUser(target, active=1)
+                self.resp = MessageChain.create([Plain('激活成功！')])
+                ACTIVE_USER.update({target: '*'})
+            else:
+                self.not_admin()
         elif isstartswith(self.msg[0], 'du'):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
-            BotUser(target, active=0).user_deactivate()
-            self.resp = MessageChain.create([Plain('取消激活成功！')])
-            if target in ACTIVE_USER:
-                ACTIVE_USER.pop(target)
+            if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
+                BotUser(target, active=0).user_deactivate()
+                self.resp = MessageChain.create([Plain('取消激活成功！')])
+                if target in ACTIVE_USER:
+                    ACTIVE_USER.pop(target)
+            else:
+                self.not_admin()
         elif isstartswith(self.msg[0], 'ab'):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
-            BotUser(target).grant_level(0)
-            self.resp = MessageChain.create([Plain('禁用成功！')])
-            BANNED_USER.append(target)
+            if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
+                BotUser(target).grant_level(0)
+                self.resp = MessageChain.create([Plain('禁用成功！')])
+                BANNED_USER.append(target)
+            else:
+                self.not_admin()
         elif isstartswith(self.msg[0], 'db'):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
-            BotUser(target).grant_level(1)
-            self.resp = MessageChain.create([Plain('解除禁用成功！')])
-            if target in BANNED_USER:
-                BANNED_USER.remove(target)
+            if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
+                BotUser(target).grant_level(1)
+                self.resp = MessageChain.create([Plain('解除禁用成功！')])
+                if target in BANNED_USER:
+                    BANNED_USER.remove(target)
+            else:
+                self.not_admin()
         elif isstartswith(self.msg[0], 'ag'):
             assert len(self.msg) == 2 and self.msg[1].isdigit()
             BotGroup(int(self.msg[1]), active=1)
@@ -158,9 +182,9 @@ class DB(InitDB):
                 "create table if not exists user( \
                     id int auto_increment comment '序号' primary key, \
                     uid char(12) null comment 'QQ', \
-                    permission char not null comment '许可', \
+                    permission varchar(512) default '*' not null comment '许可', \
                     active int not null comment '状态', \
-                    level int not null comment '权限', \
+                    level int default 1 not null comment '权限', \
                     points int default 0 null comment '积分', \
                     signin_points int default 0 null comment '签到积分', \
                     english_answer int default 0 null comment '英语答题榜', \
@@ -172,6 +196,6 @@ class DB(InitDB):
                 "create table if not exists `group`( \
                     id int auto_increment comment '序号' primary key, \
                     uid char(12) null comment '群号', \
-                    permission char not null comment '许可', \
+                    permission varchar(512) not null comment '许可', \
                     active int not null comment '状态')"
             )

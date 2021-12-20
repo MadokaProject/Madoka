@@ -13,22 +13,28 @@ ACTIVE_USER = {}
 """监听好友消息列表"""
 with MysqlDao() as _db:
     _res = _db.query('SELECT uid, permission FROM user WHERE active=1')
-for _uid, _permit in _res:
-    ACTIVE_USER.update({int(_uid): str(_permit).split(',')})
+for _qid, _permit in _res:
+    ACTIVE_USER.update({int(_qid): str(_permit).split(',')})
 
 BANNED_USER = []
 """黑名单用户列表"""
 with MysqlDao() as _db:
     _res = _db.query('SELECT uid FROM user WHERE level=0')
 for _qid in _res:
-    BANNED_USER.append(int(_qid))
+    BANNED_USER.append(int(_qid[0]))
 
 ADMIN_USER = []
 """具有超级管理权限以上QQ列表"""
 with MysqlDao() as _db:
-    _res = _db.query('SELECT uid FROM user WHERE level>3')
-for (_qid,) in _res:
-    ADMIN_USER.append(int(_qid))
+    _res = _db.query('SELECT uid FROM user WHERE level>=3')
+for _qid in _res:
+    ADMIN_USER.append(int(_qid[0]))
+
+GROUP_ADMIN_USER = []
+with MysqlDao() as _db:
+    _res = _db.query('SELECT uid FROM user WHERE level=2')
+for _qid in _res:
+    GROUP_ADMIN_USER.append(int(_qid[0]))
 
 LISTEN_MC_SERVER = []
 """MC服务器自动监听列表"""
