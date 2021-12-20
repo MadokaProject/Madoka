@@ -7,7 +7,7 @@ from typing import Union
 from graia.ariadne.model import Friend, Group, Member, MemberPerm
 
 from app.core.config import Config
-from app.core.settings import ADMIN_USER, BANNED_USER
+from app.core.settings import ADMIN_USER, GROUP_ADMIN_USER, BANNED_USER
 from app.util.onlineConfig import set_plugin_switch
 
 
@@ -48,7 +48,7 @@ class Permission:
             res = cls.SUPER_ADMIN
         elif user in BANNED_USER:
             res = cls.BANNED
-        elif user_permission in [MemberPerm.Administrator, MemberPerm.Owner]:
+        elif user_permission in [MemberPerm.Administrator, MemberPerm.Owner] or user in GROUP_ADMIN_USER:
             res = cls.GROUP_ADMIN
         else:
             res = cls.DEFAULT

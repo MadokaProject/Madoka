@@ -2,11 +2,10 @@ from app.util.dao import MysqlDao
 
 
 class BotUser:
-    def __init__(self, qq, point: int = 0, active: int = 0, level: int = 1):
+    def __init__(self, qq, point: int = 0, active: int = 0):
         self.qq = qq
         self.point = point
         self.active = active
-        self.level = level
         self.user_register()
 
     def user_register(self) -> None:
@@ -18,8 +17,8 @@ class BotUser:
             )
             if not res[0][0]:
                 if not db.update(
-                        "INSERT INTO user (uid, points, active, level) VALUES (%s, %s, %s, %s)",
-                        [self.qq, self.point, self.active, self.level]
+                        "INSERT INTO user (uid, points, active) VALUES (%s, %s, %s)",
+                        [self.qq, self.point, self.active]
                 ):
                     raise Exception()
             elif self.active == 1:
@@ -41,6 +40,8 @@ class BotUser:
         """获取用户权限等级"""
         with MysqlDao() as db:
             res = db.query("SELECT level FROM user WHERE uid=%s", [self.qq])
+            if res[0][0] is None:
+                return -1
             return int(res[0][0])
 
     def grant_level(self, new_level: int) -> None:

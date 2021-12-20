@@ -9,14 +9,8 @@ from graia.ariadne.app import Ariadne
 from graia.ariadne.model import MiraiSession
 from graia.broadcast import Broadcast
 from graia.broadcast.interrupt import InterruptControl
+from graia.scheduler import GraiaScheduler
 from loguru import logger
-
-try:
-    from graia.scheduler import GraiaScheduler
-
-    _install_scheduler = True
-except (ModuleNotFoundError, ImportError):
-    _install_scheduler = False
 
 from app.core.config import Config
 from app.extend.power import power
@@ -59,8 +53,7 @@ class AppCore:
                 chat_log_config=False
             )
             self.__inc = InterruptControl(self.__bcc)
-            if _install_scheduler:
-                self.__sche = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
+            self.__sche = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
             self.__app.debug = False
             self.__config = config
             AppCore.__first_init = True

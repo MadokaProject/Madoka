@@ -112,12 +112,8 @@ class Plugin:
 
     def check_admin(self, level: int):
         """检查是否管理员"""
-        if hasattr(self, 'group'):
-            if Permission.require(self.member, level):
-                return True
-        elif hasattr(self, 'friend'):
-            if Permission.require(self.friend):
-                return True
+        if Permission.require(self.member if hasattr(self, 'group') else self.friend, level):
+            return True
         return False
 
     async def process(self):

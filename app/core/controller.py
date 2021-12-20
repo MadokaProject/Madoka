@@ -87,8 +87,7 @@ class Controller:
                 obj = plugin.Module(self.message, self.friend, self.app)
             elif hasattr(self, 'group'):
                 obj = plugin.Module(self.message, self.group, self.member, self.source, self.inc, self.app)
-            if (hasattr(self, 'group') and Permission.get(self.member) >= Permission.SUPER_ADMIN) or (
-                    hasattr(self, 'friend') and Permission.get(self.friend.id) >= Permission.SUPER_ADMIN):
+            if Permission.require(self.member if hasattr(self, 'group') else self.friend, Permission.SUPER_ADMIN):
                 obj.hidden = False  # 隐藏菜单仅超级管理员以上可见
             if send_help and not obj.hidden:  # 主菜单帮助获取
                 if not obj.enable:
