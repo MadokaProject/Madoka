@@ -40,9 +40,10 @@ class Chat(Trigger):
         if not self.message.asDisplay() or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
         config = Config()
-        message = [str(item) for item in self.message.get(Plain) if str(item) is not None]
+        message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
         if not message or message[0] in '.,;!?。，；！？/\\':
             return
+        message = ''.join(message)
         url = 'http://api.qingyunke.com/api.php'
         if hasattr(self, 'friend'):
             if self.friend.id in MEMBER_RUNING_LIST:
