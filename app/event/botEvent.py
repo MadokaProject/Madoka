@@ -174,7 +174,7 @@ class BotMute(Event):
 
     async def process(self):
         res = await get_config('bot_mute_event', self.bot_mute.operator.group.id)
-        if not res or res:
+        if res is None or res:
             try:
                 with MysqlDao() as db:
                     db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_mute.operator.group.id])

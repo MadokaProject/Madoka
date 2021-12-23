@@ -1,4 +1,3 @@
-import asyncio
 import random
 from urllib.parse import urlparse
 
@@ -89,18 +88,3 @@ async def doHttpRequest(url, method, _type='TEXT', params=None, headers=None):
         else:
             response = 'please set _type in [text, json, header]'
         return response
-
-
-if __name__ == '__main__':
-    a = asyncio.run(
-        doHttpRequest(
-            url='http://api.qingyunke.com/api.php',
-            method='GET',
-            params={
-                'key': 'free',
-                'appid': 0,
-                'msg': '你好'
-            }
-        )
-    )
-    print(a)

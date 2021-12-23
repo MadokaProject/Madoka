@@ -1,4 +1,3 @@
-import asyncio
 import json
 import socket
 import struct
@@ -202,9 +201,3 @@ class Module(Plugin):
         except Exception as e:
             logger.exception(e)
             self.unkown_error()
-
-
-if __name__ == '__main__':
-    a = Module(MessageChain.create([Plain('.mc')]))
-    asyncio.run(a.get_resp())
-    print(a.resp)
