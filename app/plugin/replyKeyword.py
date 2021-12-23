@@ -1,5 +1,3 @@
-import asyncio
-
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
@@ -57,11 +55,3 @@ class Module(Plugin):
         except Exception as e:
             logger.exception(e)
             self.unkown_error()
-
-
-if __name__ == '__main__':
-    a = Module(MessageChain.create([Plain(
-        '.reply add 123456 测试'
-    )]))
-    asyncio.run(a.get_resp())
-    print(a.resp)

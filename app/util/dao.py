@@ -42,9 +42,3 @@ class MysqlDao:
             print(e)
             raise e
         return effect_rows
-
-
-if __name__ == '__main__':
-    with MysqlDao() as db:
-        res = db.query('SELECT FROM test where id=%s', [1])
-        print(res)

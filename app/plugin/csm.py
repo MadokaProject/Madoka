@@ -1,5 +1,3 @@
-import asyncio
-
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Source
 from loguru import logger
@@ -128,11 +126,3 @@ class Module(Plugin):
         except Exception as e:
             logger.exception(e)
             self.unkown_error()
-
-
-if __name__ == '__main__':
-    a = Module(MessageChain.create([Plain(
-        '.admin ban 123'
-    )]))
-    asyncio.run(a.get_resp())
-    print(a.resp)
