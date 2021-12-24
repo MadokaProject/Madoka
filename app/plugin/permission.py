@@ -54,11 +54,11 @@ class Module(Plugin):
                     if user.id == target and level != 4 and Permission.require(user, 4):
                         self.resp = MessageChain.create([Plain(f'怎么有master想给自己改权限呢？{Config().BOT_NAME}很担心你呢，快去脑科看看吧！')])
                         return
-                    if BotUser(target).get_level() == 0:
+                    if await BotUser(target).get_level() == 0:
                         self.resp = MessageChain.create([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
                         return
                     if 1 <= level <= 2:
-                        if result := BotUser(target).get_level():
+                        if result := await BotUser(target).get_level():
                             if result == 4:
                                 if Permission.require(user, 4):
                                     self.resp = MessageChain.create([Plain('就算是master也不能修改master哦！（怎么能有两个master呢')])
@@ -119,7 +119,7 @@ class Module(Plugin):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
             if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
-                BotUser(target, active=0).user_deactivate()
+                await BotUser(target, active=0).user_deactivate()
                 self.resp = MessageChain.create([Plain('取消激活成功！')])
                 if target in ACTIVE_USER:
                     ACTIVE_USER.pop(target)
@@ -129,7 +129,7 @@ class Module(Plugin):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
             if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
-                BotUser(target).grant_level(0)
+                await BotUser(target).grant_level(0)
                 self.resp = MessageChain.create([Plain('禁用成功！')])
                 BANNED_USER.append(target)
             else:
@@ -138,7 +138,7 @@ class Module(Plugin):
             assert len(self.msg) == 2
             target = int(self.msg[1]) if hasattr(self, 'friend') else self.message.getFirst(At).target
             if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
-                BotUser(target).grant_level(1)
+                await BotUser(target).grant_level(1)
                 self.resp = MessageChain.create([Plain('解除禁用成功！')])
                 if target in BANNED_USER:
                     BANNED_USER.remove(target)
@@ -170,7 +170,7 @@ class Module(Plugin):
 
     async def grant_permission_process(self, user_id: int, new_level: int) -> None:
         """修改用户权限"""
-        BotUser(user_id).grant_level(new_level)
+        await BotUser(user_id).grant_level(new_level)
         self.resp = MessageChain.create([Plain(f'修改成功！\r\n{user_id} level: {new_level}')])
 
 
@@ -185,12 +185,10 @@ class DB(InitDB):
                     permission varchar(512) default '*' not null comment '许可', \
                     active int not null comment '状态', \
                     level int default 1 not null comment '权限', \
-                    points int default 0 null comment '积分', \
-                    signin_points int default 0 null comment '签到积分', \
+                    points int default 0 null comment '货币', \
+                    signin_points int default 0 null comment '签到货币', \
                     english_answer int default 0 null comment '英语答题榜', \
-                    last_login date comment '最后登陆', \
-                    last_moving_bricks date null comment '最后搬砖时间', \
-                    last_part_time_job date null comment '最后打工时间')"
+                    last_login date comment '最后登陆')"
             )
             _db.update(
                 "create table if not exists `group`( \

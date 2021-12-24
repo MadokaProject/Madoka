@@ -21,7 +21,7 @@ class BotGroup:
                 ):
                     raise Exception()
 
-    def group_deactivate(self):
+    async def group_deactivate(self):
         """取消激活"""
         with MysqlDao() as db:
             res = db.query(

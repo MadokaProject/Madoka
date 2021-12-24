@@ -28,6 +28,8 @@ class Config:
         self.COMMON_RETENTION = self.cf.get('log', 'commonRetention', fallback='7')
         self.ERROR_RETENTION = self.cf.get('log', 'errorRetention', fallback='30')
 
+        self.COIN_NAME = self.cf.get('coin_settings', 'coin_name', fallback='金币')
+
         self.REPO_ENABLE = True if self.cf.get('github', 'enable', fallback='False').lower() == 'true' else False
         self.REPO_TIME = self.cf.get('github', 'repo_time', fallback='*/10  * * * *')
 

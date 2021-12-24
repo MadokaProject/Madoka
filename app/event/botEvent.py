@@ -14,7 +14,6 @@ from app.core.settings import ACTIVE_GROUP, ADMIN_USER
 from app.core.settings import NUDGE_INFO
 from app.entities.group import BotGroup
 from app.event.base import Event
-from app.util.dao import MysqlDao
 from app.util.onlineConfig import get_config
 from app.util.sendMessage import safeSendGroupMessage
 
@@ -118,8 +117,7 @@ class BotLeaveKick(Event):
 
     async def process(self):
         try:
-            with MysqlDao() as db:
-                db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_leave_kick.group.id])
+            await BotGroup(self.bot_leave_kick.group.id, 0).group_deactivate()
             ACTIVE_GROUP.pop(self.bot_leave_kick.group.id)
         except Exception:
             pass
@@ -139,8 +137,7 @@ class BotLeaveActive(Event):
 
     async def process(self):
         try:
-            with MysqlDao() as db:
-                db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_leave_active.group.id])
+            await BotGroup(self.bot_leave_active.group.id, 0).group_deactivate()
             ACTIVE_GROUP.pop(self.bot_leave_active.group.id)
         except Exception:
             pass
@@ -176,8 +173,7 @@ class BotMute(Event):
         res = await get_config('bot_mute_event', self.bot_mute.operator.group.id)
         if res is None or res:
             try:
-                with MysqlDao() as db:
-                    db.update('UPDATE `group` SET active=0 WHERE uid=%s', [self.bot_mute.operator.group.id])
+                await BotGroup(self.bot_mute.operator.group.id, 0).group_deactivate()
                 ACTIVE_GROUP.pop(self.bot_mute.operator.group.id)
             except Exception:
                 pass
