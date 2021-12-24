@@ -151,7 +151,7 @@ class Module(Plugin):
             ACTIVE_GROUP.update({int(self.msg[1]): '*'})
         elif isstartswith(self.msg[0], 'dg'):
             assert len(self.msg) == 2 and self.msg[1].isdigit()
-            BotGroup(int(self.msg[1]), active=0).group_deactivate()
+            await BotGroup(int(self.msg[1]), active=0).group_deactivate()
             self.resp = MessageChain.create([Plain('禁用成功！')])
             if int(self.msg[1]) in ACTIVE_GROUP:
                 ACTIVE_GROUP.pop(int(self.msg[1]))
