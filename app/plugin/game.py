@@ -1,60 +1,47 @@
 import random
 
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image, Plain, At, Face
+from graia.ariadne.message.element import Image, Plain, At
 from loguru import logger
 from prettytable import PrettyTable
 
+from app.core.config import Config
 from app.entities.user import BotUser
-from app.plugin.base import Plugin, InitDB
-from app.resource.earn_quot import *
+from app.plugin.base import Plugin
 from app.util.dao import MysqlDao
 from app.util.text2image import create_image
 from app.util.tools import isstartswith
 
 
 class Module(Plugin):
-    entry = ['.gp', '.积分']
-    brief_help = '\r\n[√]\t积分：gp'
+    config = Config()
+    entry = ['.gp', '.货币']
+    brief_help = '\r\n[√]\t货币：gp'
     full_help = \
-        '.积分/.gp\t可以查询当前积分总量。\r\n' \
-        '.积分/.gp 签到/signin [幸运儿/lucky | 倒霉蛋/unlucky]\t每天可以签到随机获取积分。\r\n' \
-        '.积分/.gp 搬砖/bz\t每天可以搬砖随机获取积分。\r\n' \
-        '.积分/.gp 打工/work\t每天可以打工随机获取积分。\r\n' \
-        '.积分/.gp 转给/tf@XX[num]\t转给XX num积分。\r\n' \
-        '.积分/.gp 踢/kick@XX\t消耗30积分踢XX，使其掉落随机数量积分！\r\n' \
-        '.积分/.gp 偷/steal@XX\t偷XX，偷取其随机数量积分！\r\n' \
-        '.积分/.gp 排行/rank\t显示群内已注册成员积分排行榜'
-
-    num = {
-        # c: cost, p: percent, d: drops, m: max
-        'bomb': {'c': 10, 'p': 0.8, 'd': 30, 'm': 1},
-        'kick': {'c': 30, 'p': 0.8, 'd': 60, 'm': 1},
-        'steal': {'c': 50, 'p': 0.8, 'd': 100, 'm': 1},
-    }
+        '.货币/.gp\t可以查询当前货币总量。\r\n' \
+        '.货币/.gp 签到/signin [幸运儿/lucky | 倒霉蛋/unlucky]\t每天可以签到随机获取货币。\r\n' \
+        '.货币/.gp 转给/tf @user num\t转给XX num货币。\r\n' \
+        '.货币/.gp 排行/rank\t显示群内已注册成员货币排行榜'
 
     async def process(self):
-        if not self.msg:
-            """查询积分"""
-            try:
+        try:
+            config = Config()
+            if not self.msg:
+                """查询货币"""
                 user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
-                point = user.get_points()
+                point = await user.get_points()
                 if hasattr(self, 'group'):
                     self.resp = MessageChain.create([
                         At(self.member.id),
-                        Plain(' 你的积分为%d!' % int(point))
+                        Plain(f' 你的{config.COIN_NAME}为%d!' % int(point))
                     ])
                 else:
                     self.resp = MessageChain.create([
-                        Plain(' 你的积分为%d!' % int(point))
+                        Plain(f' 你的{config.COIN_NAME}为%d!' % int(point))
                     ])
-            except Exception as e:
-                print(e)
-                self.unkown_error()
-            return
-        if isstartswith(self.msg[0], ['签到', 'signin']):
-            """签到"""
-            try:
+                return
+            if isstartswith(self.msg[0], ['签到', 'signin']):
+                """签到"""
                 if len(self.msg) > 1 and self.msg[1] in ['幸运儿', 'lucky', '倒霉蛋', 'unlucky']:
                     with MysqlDao() as db:
                         res = db.query(
@@ -72,7 +59,7 @@ class Module(Plugin):
                             [Plain('群内今日签到幸运儿：\r\n' if self.msg[1] in ['幸运儿', 'lucky'] else '群内今日签到倒霉蛋：\r\n')])
                         index = 1
                         msg = PrettyTable()
-                        msg.field_names = ['序号', '群昵称', '签到积分']
+                        msg.field_names = ['序号', '群昵称', f'签到{config.COIN_NAME}']
                         for qid, signin_points in res[:10]:
                             if int(qid) not in group_user.keys() or signin_points == 0:
                                 continue
@@ -86,7 +73,7 @@ class Module(Plugin):
                     return
                 point = random.randint(1, 101)
                 user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id, point)
-                if user.get_sign_in_status():
+                if await user.get_sign_in_status():
                     if hasattr(self, 'group'):
                         self.resp = MessageChain.create([
                             At(self.member.id),
@@ -97,68 +84,53 @@ class Module(Plugin):
                             Plain(' 你今天已经签到过了！')
                         ])
                 else:
-                    user.sign_in()
+                    await user.sign_in()
                     if hasattr(self, 'group'):
                         self.resp = MessageChain.create([
                             At(self.member.id),
-                            Plain(' 签到成功，%s获得%d积分' % (
+                            Plain(f' 签到成功，%s获得%d{config.COIN_NAME}' % (
                                 '运气爆棚！' if point >= 90 else '', point
                             )),
                         ])
                     else:
                         self.resp = MessageChain.create([
-                            Plain(' 签到成功，%s获得%d积分' % (
+                            Plain(f' 签到成功，%s获得%d{config.COIN_NAME}' % (
                                 '运气爆棚！' if point >= 90 else '', point
                             )),
                         ])
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        elif isstartswith(self.msg[0], ['转给', '转账', 'tf']):
-            """转账"""
-            try:
-                if len(self.msg) == 1:
-                    self.args_error()
-                    return
-                point = int(self.msg[1])
+            elif isstartswith(self.msg[0], ['转给', '转账', 'tf']):
+                """转账"""
+                assert len(self.msg) == 3 and self.message.has(At)
+                target = self.message.getFirst(At).target
+                point = int(self.msg[2])
+                print(point)
                 if point <= 0:
                     self.args_error()
                     return
                 user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
-                if int(user.get_points()) < point:
+                if int(await user.get_points()) < point:
                     self.point_not_enough()
                     return
-                target = self.message[At][0]
-                if not target:
-                    self.args_error()
-                    return
-                user.update_point(-point)
-                user = BotUser(target.dict()['target'], point)
-                user.update_point(point)
+                await user.update_point(-point)
+                user = BotUser(target, point)
+                await user.update_point(point)
                 self.resp = MessageChain.create([
                     At(self.member.id),
                     Plain(' 已转赠给'),
-                    target,
-                    Plain(' %d积分！' % point)
+                    At(target),
+                    Plain(f' %d{config.COIN_NAME}！' % point)
                 ])
-            except ValueError as e:
-                print(e)
-                self.arg_type_error()
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        elif isstartswith(self.msg[0], ['排行', 'rank']):
-            try:
+            elif isstartswith(self.msg[0], ['排行', 'rank']):
                 with MysqlDao() as db:
                     res = db.query(
                         "SELECT uid, points FROM user ORDER BY points DESC"
                     )
                     members = await self.app.getMemberList(self.group.id)
                     group_user = {item.id: item.name for item in members}
-                    self.resp = MessageChain.create([Plain('群内积分排行：\r\n')])
+                    self.resp = MessageChain.create([Plain(f'群内{config.COIN_NAME}排行：\r\n')])
                     index = 1
                     msg = PrettyTable()
-                    msg.field_names = ['序号', '群昵称', '积分']
+                    msg.field_names = ['序号', '群昵称', f'{config.COIN_NAME}']
                     for qid, point in res:
                         if point == 0 or int(qid) not in group_user.keys():
                             continue
@@ -169,202 +141,11 @@ class Module(Plugin):
                     self.resp.extend(MessageChain.create([
                         Image(data_bytes=(await create_image(msg.get_string())).getvalue())
                     ]))
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        elif isstartswith(self.msg[0], ['踢', 'kick']):
-            """踢"""
-            try:
-                target = self.message[At]
-
-                # 判断是否有At，如果无，要求报错并返回
-                if not target:
-                    self.args_error()
-                    return
-                target = target[0]
-                the_one = BotUser(self.member.id)
-
-                # 判断积分是否足够，如果无，要求报错并返回
-                if int(the_one.get_points()) < self.num['kick']['c']:
-                    self.point_not_enough()
-                    return
-
-                # 判断被踢者是否有积分，如果无，要求回执
-                the_other = BotUser(target.dict()['target'])
-                rest = int(the_other.get_points())
-                if rest <= 0:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 对方是个穷光蛋！请不要伤害他！')
-                    ])
-                    return
-
-                # 判断踢次数上限
-                status = the_one.kick(
-                    self.member.id, target.dict()['target'],
-                    -self.num['kick']['c'],
-                    self.num['kick']['m']
-                )
-                if not status:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 你今天踢对方次数已达上限，请明天再来！')
-                    ])
-                    return
-
-                # 随机掉落积分
-                point = random.randint(0, min(int(self.num['kick']['p'] * rest), self.num['kick']['d']))
-                if point:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 花费%d积分踢了' % self.num['kick']['c']),
-                        target,
-                        Plain(' 一脚，对方掉了%d积分，对你骂骂咧咧' % point),
-                        Face(faceId=31),
-                        Plain('！')
-                    ])
-                    the_other.update_point(-point)
-                else:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 花费%d积分踢了' % self.num['kick']['c']),
-                        target,
-                        Plain(' 一脚，对方没有掉落积分，对你做了个鬼脸'),
-                        Face(faceId=286),
-                        Plain('！')
-                    ])
-
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        elif isstartswith(self.msg[0], ['偷', 'steal']):
-            try:
-                target = self.message[At]
-
-                # 判断是否有At，如果无，要求报错并返回
-                if not target:
-                    self.args_error()
-                    return
-                target = target[0]
-                the_one = BotUser(self.member.id)
-
-                # 判断被踢者是否有积分，如果无，要求回执
-                the_other = BotUser(target.dict()['target'])
-                rest = int(the_other.get_points())
-
-                if rest <= 0:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 你摸遍了他全身也没找到一点东西！')
-                    ])
-                    return
-
-                point = random.randint(0, min(int(self.num['steal']['p'] * rest), self.num['steal']['d']))
-                status = the_one.steal(self.member.id, target.dict()['target'], point, self.num['steal']['m'])
-                if not status:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 你今天偷对方次数已达上限，请明天再来！')
-                    ])
-                    return
-                if point:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 你趁'),
-                        target,
-                        Plain(' 不注意，偷了对方%d积分！' % point)
-                    ])
-                    the_other.update_point(-point)
-                else:
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain('你什么也没偷到！')
-                    ])
-
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        elif isstartswith(self.msg[0], ['搬砖', 'bz']):
-            try:
-                point = random.randint(40, 81)
-                user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id, point)
-                if user.get_moving_bricks_status():
-                    if hasattr(self, 'group'):
-                        self.resp = MessageChain.create([
-                            At(self.member.id),
-                            Plain(' '),
-                            Plain(random.choice(bricks_done))
-                        ])
-                    else:
-                        self.resp = MessageChain.create([
-                            Plain(random.choice(bricks_done))
-                        ])
-                else:
-                    user.moving_bricks()
-                    if hasattr(self, 'group'):
-                        self.resp = MessageChain.create([
-                            At(self.member.id),
-                            Plain(' 你搬了一天砖，获得%d积分！' % point),
-                            Plain(random.choice(bricks))
-                        ])
-                    else:
-                        self.resp = MessageChain.create([
-                            Plain(' 你搬了一天砖，获得%d积分！' % point),
-                            Plain(random.choice(bricks))
-                        ])
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        elif isstartswith(self.msg[0], ['打工', 'work']):
-            try:
-                point = random.randint(100, 181)
-                user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id, point)
-                if user.get_work_status():
-                    if hasattr(self, 'group'):
-                        self.resp = MessageChain.create([
-                            At(self.member.id),
-                            Plain(' '),
-                            Plain(random.choice(works_done))
-                        ])
-                    else:
-                        self.resp = MessageChain.create([
-                            Plain(random.choice(works_done))
-                        ])
-                else:
-                    user.work()
-                    if hasattr(self, 'group'):
-                        self.resp = MessageChain.create([
-                            At(self.member.id),
-                            Plain(' 你打了一天工，获得%d积分！' % point),
-                            Plain(random.choice(works))
-                        ])
-                    else:
-                        self.resp = MessageChain.create([
-                            Plain(' 你打了一天工，获得%d积分！' % point),
-                            Plain(random.choice(works))
-                        ])
-            except Exception as e:
-                logger.exception(e)
-                self.unkown_error()
-        else:
+            else:
+                self.args_error()
+        except AssertionError as e:
+            print(e)
             self.args_error()
-
-
-class DB(InitDB):
-
-    async def process(self):
-        with MysqlDao() as _db:
-            _db.update(
-                "create table if not exists kick( \
-                    src char(12) null comment '来源QQ', \
-                    dst char(12) null comment '目标QQ', \
-                    time datetime null comment '被踢时间', \
-                    point int null comment '消耗积分')"
-            )
-            _db.update(
-                "create table if not exists steal( \
-                    src char(12) null comment '来源QQ', \
-                    dst char(12) null comment '目标QQ', \
-                    time datetime null comment '被偷时间', \
-                    point int null comment '偷取积分')"
-            )
+        except Exception as e:
+            logger.exception(e)
+            self.unkown_error()
