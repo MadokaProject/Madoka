@@ -158,15 +158,15 @@ class Module(Plugin):
         elif isstartswith(self.msg[0], 'ul'):
             with MysqlDao() as db:
                 res = db.query("SELECT uid FROM user WHERE active=1")
-            self.resp = MessageChain.create([Plain('\r\n'.join([f'{qq}' for qq in res]))])
+                self.resp = MessageChain.create([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无激活用户')])
         elif isstartswith(self.msg[0], 'bl'):
             with MysqlDao() as db:
                 res = db.query("SELECT uid FROM user WHERE level=0")
-            self.resp = MessageChain.create([Plain('\r\n'.join([f'{qq}' for qq in res]))])
+            self.resp = MessageChain.create([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无黑名单用户')])
         elif isstartswith(self.msg[0], 'gl'):
             with MysqlDao() as db:
                 res = db.query("SELECT uid FROM `group` WHERE active=1")
-            self.resp = MessageChain.create([Plain('\r\n'.join([f'{group_id}' for group_id in res]))])
+            self.resp = MessageChain.create([Plain('\r\n'.join([f'{group_id[0]}' for group_id in res]) if res else '无激活群组')])
 
     async def grant_permission_process(self, user_id: int, new_level: int) -> None:
         """修改用户权限"""
