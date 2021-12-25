@@ -86,10 +86,10 @@ class Switch:
     @classmethod
     async def plugin(cls, src: Union[Member, int], perm, dst: Union[Group, int]):
         if isinstance(src, Member):
-            if Permission.require(src, Permission.GROUP_ADMIN):
+            if not Permission.require(src, Permission.GROUP_ADMIN):
                 return '你的权限不足，无权操作此命令'
         else:
-            if Permission.require(src, Permission.SUPER_ADMIN) and Permission.compare(src, dst):
+            if not Permission.require(src, Permission.SUPER_ADMIN) and not Permission.compare(src, dst):
                 return '你的权限不足，无权操作此命令'
         if await set_plugin_switch(dst, perm):
             return '操作成功'
