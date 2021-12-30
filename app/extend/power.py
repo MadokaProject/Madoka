@@ -4,7 +4,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 from loguru import logger
 
-from app.core.settings import *
+from app.core.config import Config
 
 
 async def power(app, argv):
@@ -12,7 +12,7 @@ async def power(app, argv):
     shutdown = False
     group = False
     reboot = False
-    target = await app.getFriend(ADMIN_USER[0])
+    target = await app.getFriend(int(Config().MASTER_QQ))
     try:
         opts, args = getopt.getopt(argv[1:], '-r-k-u:-g:-t:', ['reboot', 'kill', 'upgrade=', 'group=', 'target='])
     except getopt.GetoptError:
