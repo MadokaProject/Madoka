@@ -1,6 +1,7 @@
 import json
 import pymysql
 
+from app.core.config import Config
 from app.util.dao import MysqlDao
 
 ACTIVE_GROUP = {}
@@ -9,7 +10,7 @@ ACTIVE_USER = {}
 """监听好友消息列表"""
 BANNED_USER = []
 """黑名单用户列表"""
-ADMIN_USER = []
+ADMIN_USER = [int(Config().MASTER_QQ)]
 """具有超级管理权限以上QQ列表"""
 GROUP_ADMIN_USER = []
 """具有群管理权限QQ列表"""
@@ -39,7 +40,8 @@ try:
     with MysqlDao() as _db:
         _res = _db.query('SELECT uid FROM user WHERE level>=3')
     for _qid in _res:
-        ADMIN_USER.append(int(_qid[0]))
+        if int(_qid[0]) not in ADMIN_USER:
+            ADMIN_USER.append(int(_qid[0]))
 
     with MysqlDao() as _db:
         _res = _db.query('SELECT uid FROM user WHERE level=2')
