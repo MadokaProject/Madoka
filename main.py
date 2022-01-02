@@ -34,7 +34,7 @@ inc = core.get_inc()
 async def friend_message_handler(app: Ariadne, message: MessageChain, friend: Friend):
     message_text_log = message.asDisplay().replace("\n", "\\n")
     logger.info(f"收到来自好友 <{friend.nickname}> 的消息：{message_text_log}")
-    await Controller(core.get_plugin(), app, message, friend).process_event()
+    await Controller(core.get_plugin(), app, message, friend, inc).process_event()
 
 
 @bcc.receiver(GroupMessage)

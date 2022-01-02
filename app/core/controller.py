@@ -4,7 +4,6 @@ from graia.ariadne.message.element import Plain, Source
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
-from app.core.config import Config
 from app.core.settings import *
 from app.trigger import *
 from app.util.control import Permission, Switch
@@ -84,7 +83,7 @@ class Controller:
         for plugin in self.plugin:
             obj = None
             if hasattr(self, 'friend'):
-                obj = plugin.Module(self.message, self.friend, self.app)
+                obj = plugin.Module(self.message, self.friend, self.inc, self.app)
             elif hasattr(self, 'group'):
                 obj = plugin.Module(self.message, self.group, self.member, self.source, self.inc, self.app)
             if Permission.require(self.member if hasattr(self, 'group') else self.friend, Permission.SUPER_ADMIN):

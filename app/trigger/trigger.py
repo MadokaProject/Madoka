@@ -42,7 +42,7 @@ class Trigger:
     def check_admin(self, level: int):
         """检查是否管理员"""
         if Permission.require(self.member if hasattr(self, 'group') else self.friend, level):
-                return True
+            return True
         return False
 
     def not_admin(self):

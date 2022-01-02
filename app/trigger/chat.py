@@ -4,7 +4,6 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 
 from app.api.doHttp import doHttpRequest
-from app.core.config import Config
 from app.core.settings import *
 from app.trigger.trigger import Trigger
 
@@ -37,7 +36,7 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
-        if not self.message.asDisplay() or self.msg[0][0] in '.,;!?。，；！？/\\':
+        if hasattr(self, 'friend') or not self.message.asDisplay() or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
         config = Config()
         message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
