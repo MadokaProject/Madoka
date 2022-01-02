@@ -14,7 +14,6 @@ from app.util.tools import isstartswith
 
 
 class Module(Plugin):
-    config = Config()
     entry = ['.gp', '.货币']
     brief_help = '\r\n[√]\t货币：gp'
     full_help = \

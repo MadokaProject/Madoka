@@ -2,7 +2,6 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 from loguru import logger
 
-from app.core.config import Config
 from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
@@ -166,7 +165,8 @@ class Module(Plugin):
         elif isstartswith(self.msg[0], 'gl'):
             with MysqlDao() as db:
                 res = db.query("SELECT uid FROM `group` WHERE active=1")
-            self.resp = MessageChain.create([Plain('\r\n'.join([f'{group_id[0]}' for group_id in res]) if res else '无激活群组')])
+            self.resp = MessageChain.create(
+                [Plain('\r\n'.join([f'{group_id[0]}' for group_id in res]) if res else '无激活群组')])
 
     async def grant_permission_process(self, user_id: int, new_level: int) -> None:
         """修改用户权限"""
