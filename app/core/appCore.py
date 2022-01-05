@@ -142,6 +142,11 @@ class AppCore:
             except ModuleNotFoundError as e:
                 logger.error(f"plugin 模块: {plugin} - {e}")
 
+    def reload_plugin_modules(self):
+        for module in self.__plugin:
+            importlib.reload(module)
+        self.load_plugin_modules()
+
     def load_schedulers(self):
         tasks = []
         ignore = ["__init__.py", "__pycache__", "base.py"]
