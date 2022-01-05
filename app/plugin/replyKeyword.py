@@ -46,11 +46,7 @@ class Module(Plugin):
             else:
                 self.args_error()
                 return
-        except PermissionError as e:
-            print(e)
-            self.exec_permission_error()
-        except AssertionError as e:
-            print(e)
+        except AssertionError:
             self.args_error()
         except Exception as e:
             logger.exception(e)

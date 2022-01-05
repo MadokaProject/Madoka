@@ -195,8 +195,7 @@ class Module(Plugin):
             self.resp = MessageChain.create([Plain(
                 '由于目标计算机积极拒绝，无法连接。服务器可能已关闭。'
             )])
-        except ValueError as e:
-            print(e)
+        except ValueError:
             self.arg_type_error()
         except Exception as e:
             logger.exception(e)
