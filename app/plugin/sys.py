@@ -28,7 +28,7 @@ class Module(Plugin):
         try:
             if isstartswith(self.msg[0], ['重载插件', 'reload']):
                 core: AppCore = AppCore.get_core_instance()
-                core.load_plugin_modules()
+                core.reload_plugin_modules()
                 self.resp = MessageChain.create([Plain('重载成功！')])
             elif isstartswith(self.msg[0], ['禁言退群', '上线通知']):
                 if not hasattr(self, 'group'):
