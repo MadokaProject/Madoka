@@ -67,8 +67,7 @@ class Module(Plugin):
             else:
                 self.args_error()
                 return
-        except AssertionError as e:
-            print(e)
+        except AssertionError:
             self.args_error()
         except Exception as e:
             logger.exception(e)
