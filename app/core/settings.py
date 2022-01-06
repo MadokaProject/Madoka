@@ -70,7 +70,7 @@ except pymysql.ProgrammingError:
 REPO = {}
 """Github监听仓库
 
-eg: {group: {name: api}}
+eg: {group: {name: {api:api, branch:branch}}}
 """
 for _uid in CONFIG.keys():
     if CONFIG[_uid].__contains__('repo'):

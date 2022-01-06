@@ -6,7 +6,6 @@ from loguru import logger
 
 from app.core.config import Config
 from app.core.settings import LISTEN_MC_SERVER
-from app.extend.github import github_listener
 from app.extend.mc import mc_listener
 from app.util.version import check_version
 from app.util.tools import app_path
@@ -27,11 +26,6 @@ async def custom_schedule(loop, bcc, bot):
     @logger.catch
     async def version_info_listener():
         await check_version(bot, config)
-
-    @sche.schedule(timers.crontabify(config.REPO_TIME))
-    @logger.catch
-    async def github_commit_listener():
-        await github_listener(bot, config)
 
 
 async def TaskerProcess(loop, bcc, obj):
