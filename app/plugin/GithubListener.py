@@ -65,8 +65,8 @@ class Module(Plugin):
                     REPO[group_id][self.msg[3]] = REPO[group_id].pop(self.msg[1])
                 else:
                     self.msg[3] = self.msg[3] if self.msg[2] == 'api' else self.msg[3].replace('，', ',').split(',')
-                    await save_config('repo', group_id, {self.msg[1]: {self.msg[2]: self.msg[3]}}, model='add')
                     REPO[group_id][self.msg[1]][self.msg[2]] = self.msg[3]
+                    await save_config('repo', group_id, {self.msg[1]: REPO[group_id][self.msg[1]]}, model='add')
                 self.resp = MessageChain.create([Plain("修改成功！")])
             elif isstartswith(self.msg[0], 'remove'):
                 assert len(self.msg) == 2
