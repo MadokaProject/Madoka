@@ -79,7 +79,7 @@ class Module(Plugin):
                 self.resp = MessageChain.create([Plain("删除成功！")])
             elif isstartswith(self.msg[0], 'list'):
                 self.resp = MessageChain.create([Plain(
-                    '\r\n'.join([f'{name}: \r\napi: {api}\r\nbranch: {branch}' for name, api, branch in
+                    '\r\n'.join([f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}" for name, info in
                                  REPO[str(self.group.id)].items()]))])
             else:
                 self.args_error()
