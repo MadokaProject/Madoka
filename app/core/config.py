@@ -9,6 +9,11 @@ class Config:
         self.cf = configparser.ConfigParser()
         self.cf.read(os.sep.join([app_path(), 'core', 'config.ini']), encoding='utf-8')
 
+        self.INFO_NAME = 'Madoka'
+        self.INFO_VERSION = '2.0.0-rc1'
+        self.INFO_DOCS = 'https://madoka.colsrch.cn'
+        self.INFO_REPO = 'https://github.com/MadokaProject/Application'
+
         self.LOGIN_HOST = self.cf.get('bot', 'login_host', fallback='127.0.0.1')
         self.LOGIN_PORT = self.cf.get('bot', 'login_port', fallback='8080')
         self.LOGIN_QQ = self.cf.get('bot', 'login_qq')

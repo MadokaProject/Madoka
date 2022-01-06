@@ -11,6 +11,7 @@ from loguru import logger
 from app.core.appCore import AppCore
 from app.core.config import Config
 from app.core.controller import Controller
+from app.util.version import version_notice
 from app.util.other import online_notice, offline_notice
 
 config = Config()
@@ -49,6 +50,7 @@ async def group_message_handler(app: Ariadne, message: MessageChain, group: Grou
 async def init():
     await core.bot_launch_init()
     await online_notice(app, config)
+    await version_notice(app, config)
 
 
 @logger.catch
