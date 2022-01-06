@@ -1,6 +1,10 @@
 {
-  "version": "2.0.0-rc1",
+  "version": "2.0.0-rc2",
   "update_log": [
+    {
+      "version": "2.0.0-rc2",
+      "info": "新增机器人账号管理功能、版本监控功能，支持好友问答功能，关闭机器人好友聊天功能，仅在online模式监听仓库，修复重载插件的bug。"
+    },
     {
       "version": "2.0.0-rc1",
       "info": "机器人正式命名为 Madoka，请将您的git远程仓库链接修改为：https://github.com/MadokaProject/Application.git\r\n注意事项：本版本进行了大量修改及重构，不再兼容 1.x 版本，因此建议您升级到该版本。"
