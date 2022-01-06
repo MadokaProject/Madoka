@@ -15,8 +15,7 @@ from app.core.settings import REPO
 from app.util.tools import app_path
 
 
-async def github_listener(app):
-    config = Config()
+async def github_listener(app, config):
     if not config.ONLINE:  # 非 ONLINE 模式不监听仓库
         return
     if not config.REPO_ENABLE:  # 未开启仓库监听
