@@ -29,4 +29,4 @@ api.add_resource(Health, '/api/rest/health')  # 机器人健康检查
 
 
 def WebServer():
-    app.run(host='127.0.0.1', port=8080, debug=False)
+    app.run(host='0.0.0.0', port=8080, debug=False)
