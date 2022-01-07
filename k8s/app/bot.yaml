@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: madoka
+  namespace: qqbot
+  labels:
+    app: madoka
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: madoka
+  template:
+    metadata:
+      labels:
+        app: madoka
+    spec:
+      containers:
+        - name: madoka
+          image: colsrch/madoka:1.0.0
+          command:
+            - /bin/bash
+            - -c
+            - "pip3 install -r requirements.txt -r local_requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple && python3 main.py"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+            - name: code
+              mountPath: /app
+      volumes:
+        - name: code
+          hostPath:
+            path: /app/madoka
