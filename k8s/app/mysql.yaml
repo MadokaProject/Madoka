@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: mysql
+spec:
+  updateStrategy:
+    type: OnDelete
+  serviceName: mysql
+  selector:
+    matchLabels:
+      app: mysql
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+        - name: mysql
+          image: mysql:8.0.23
+          env:
+            - name: MYSQL_ROOT_PASSWORD
+              value: "123456"
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          readinessProbe:
+            tcpSocket:
+              port: 3306
+          livenessProbe:
+            tcpSocket:
+              port: 3306
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            failureThreshold: 5
+            timeoutSeconds: 1
+          volumeMounts:
+            - name: data
+              mountPath: /var/lib/mysql
+            - name: config
+              mountPath: /etc/mysql/conf.d/docker.cnf
+      volumes:
+        - name: data
+          hostPath:
+            path: /app/mysql/data/
+            type: DirectoryOrCreate
+        - name: config
+          hostPath:
+            path: /app/mysql/config/docker.cnf
+            type: FileOrCreate
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+spec:
+  ports:
+    - port: 3306
+      targetPort: 3306
+      nodePort: 31000
+  type: NodePort
+  selector:
+    app: mysql

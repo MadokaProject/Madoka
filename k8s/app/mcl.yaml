@@ -1,0 +1,67 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mcl
+  namespace: qqbot
+  labels:
+    app: mcl
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mcl
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        app: mcl
+    spec:
+      nodeSelector:
+        kubernetes.io/role: master
+      tolerations:
+        - key: "node.kubernetes.io/unschedulable"
+          operator: "Exists"
+          effect: "NoSchedule"
+      containers:
+        - name: mcl
+          image: colsrch/mcl:1.0.1
+          volumeMounts:
+            - mountPath: /app/bots/2817736127/device.json
+              name: config
+              subPath: device.json
+            - mountPath: /app/config/Console/AutoLogin.yml
+              name: config
+              subPath: AutoLogin.yml
+            - mountPath: /app/config/net.mamoe.mirai-api-http/setting.yml
+              name: config
+              subPath: setting.yml
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "200Mi"
+            limits:
+              cpu: "1"
+              memory: "1Gi"
+      volumes:
+        - name: config
+          configMap:
+            name: mcl-config
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mcl
+  namespace: qqbot
+  labels:
+    app: mcl
+spec:
+  ports:
+    - port: 8080
+      targetPort: 8080
+      protocol: TCP
+      nodePort: 30000
+  type: NodePort
+  selector:
+    app: mcl

@@ -4,3 +4,4 @@ app/core/config.ini
 venv/*
 app/tmp/*
 .vscode/*
+k8s/config
