@@ -36,7 +36,7 @@ async def check_version(app: Ariadne, config: Config):
         if compare_version(remote_version, config.INFO_VERSION):
             log_msg = ''
             for log in remote_update_logs:
-                if log['version'] > config.INFO_VERSION:
+                if compare_version(log['version'], config.INFO_VERSION):
                     log_msg += f"{log['version']}: {log['info']}\r\n"
                 else:
                     break
