@@ -2,6 +2,7 @@ import asyncio
 import importlib
 import os
 import sys
+import threading
 import traceback
 from asyncio.events import AbstractEventLoop
 
@@ -17,6 +18,7 @@ from app.extend.power import power
 from app.extend.schedule import custom_schedule, TaskerProcess
 from app.util.initDB import InitDB
 from app.util.tools import app_path
+from webapp.main import WebServer
 from .Exceptions import *
 
 
@@ -125,6 +127,7 @@ class AppCore:
                 logger.info(f"群ID: {str(group.id).ljust(14)}群名: {group.name}")
 
             importlib.__import__("app.core.eventCore")
+            threading.Thread(daemon=True, target=WebServer).start()
         except:
             logger.error(traceback.format_exc())
             exit()
