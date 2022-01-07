@@ -29,6 +29,13 @@ spec:
             limits:
               cpu: "1"
               memory: "2Gi"
+          livenessProbe:
+            httpGet:
+              path: /api/rest/health
+              port: 8080
+            initialDelaySeconds: 120
+            periodSeconds: 5
+            failureThreshold: 3
           volumeMounts:
             - name: code
               mountPath: /app
