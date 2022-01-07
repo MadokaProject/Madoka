@@ -7,8 +7,8 @@ from loguru import logger
 from app.core.config import Config
 from app.core.settings import LISTEN_MC_SERVER
 from app.extend.mc import mc_listener
-from app.util.version import check_version
 from app.util.tools import app_path
+from app.util.version import check_version
 
 
 async def custom_schedule(loop, bcc, bot):

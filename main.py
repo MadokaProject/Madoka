@@ -11,8 +11,8 @@ from loguru import logger
 from app.core.appCore import AppCore
 from app.core.config import Config
 from app.core.controller import Controller
-from app.util.version import version_notice
 from app.util.other import online_notice, offline_notice
+from app.util.version import version_notice
 
 config = Config()
 
