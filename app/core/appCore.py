@@ -6,6 +6,7 @@ import threading
 import traceback
 from asyncio.events import AbstractEventLoop
 
+from graia.ariadne.adapter import DefaultAdapter
 from graia.ariadne.app import Ariadne
 from graia.ariadne.model import MiraiSession
 from graia.broadcast import Broadcast
@@ -27,8 +28,9 @@ class AppCore:
     __first_init: bool = False
     __app: Ariadne = None
     __loop: AbstractEventLoop = None
-    __bcc = None
-    __inc = None
+    __bcc: Broadcast = None
+    __inc: InterruptControl = None
+    __scheduler: GraiaScheduler = None
     __plugin = []
     __thread_pool = None
     __config: Config = None
@@ -42,20 +44,26 @@ class AppCore:
 
     def __init__(self, config: Config):
         if not self.__first_init:
+            logger.info("Madoka is starting")
             logger.info("Initializing")
             self.__loop = asyncio.get_event_loop()
             self.__bcc = Broadcast(loop=self.__loop)
             self.__app = Ariadne(
                 broadcast=self.__bcc,
-                connect_info=MiraiSession(
-                    host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}',
-                    verify_key=config.VERIFY_KEY,
-                    account=config.LOGIN_QQ
+                connect_info=DefaultAdapter(
+                    broadcast=self.__bcc,
+                    mirai_session=MiraiSession(
+                        host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}',
+                        verify_key=config.VERIFY_KEY,
+                        account=config.LOGIN_QQ
+                    ),
+                    log=config.HEARTBEAT_LOG
                 ),
+                max_retry=5,
                 chat_log_config=False
             )
             self.__inc = InterruptControl(self.__bcc)
-            self.__sche = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
+            self.__scheduler = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
             self.__app.debug = False
             self.__config = config
             AppCore.__first_init = True
@@ -160,9 +168,9 @@ class AppCore:
                     if hasattr(module, "Tasker"):
                         obj = module.Tasker(self.__app)
                         if obj.cron:
-                            tasks.append(TaskerProcess(self.__loop, self.__bcc, obj))
+                            tasks.append(TaskerProcess(self.__scheduler, obj))
                             logger.success("成功加载计划任务: " + module.__name__)
             except ModuleNotFoundError as e:
                 logger.error(f"schedule 模块: {__scheduler} - {e}")
         asyncio.gather(*tasks)
-        asyncio.run(custom_schedule(self.__loop, self.__bcc, self.__app))
+        asyncio.run(custom_schedule(self.__scheduler, self.__app))

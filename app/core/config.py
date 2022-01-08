@@ -23,6 +23,7 @@ class Config:
         self.MASTER_NAME = self.cf.get('bot', 'master_name')
         self.DEBUG = True if self.cf.get('bot', 'debug', fallback='False').lower() == 'true' else False
         self.ONLINE = True if self.cf.get('bot', 'online', fallback='True').lower() == 'true' else False
+        self.HEARTBEAT_LOG = False if self.cf.get('bot', 'heartbeat_log', fallback='False').lower() == 'false' else True
 
         self.MYSQL_HOST = self.cf.get('mysql', 'host', fallback='127.0.0.1')
         self.MYSQL_PORT = self.cf.getint('mysql', 'port', fallback=3306)
