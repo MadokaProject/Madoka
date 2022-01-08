@@ -18,12 +18,6 @@ spec:
       labels:
         app: mcl
     spec:
-      nodeSelector:
-        kubernetes.io/role: master
-      tolerations:
-        - key: "node.kubernetes.io/unschedulable"
-          operator: "Exists"
-          effect: "NoSchedule"
       containers:
         - name: mcl
           image: colsrch/mcl:1.0.1

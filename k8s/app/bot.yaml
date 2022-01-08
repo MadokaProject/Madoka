@@ -1,11 +1,14 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: madoka
   namespace: qqbot
   labels:
     app: madoka
 spec:
+  serviceName: madoka
+  updateStrategy:
+    type: OnDelete
   replicas: 1
   selector:
     matchLabels:
@@ -41,5 +44,18 @@ spec:
               mountPath: /app
       volumes:
         - name: code
-          hostPath:
-            path: /app/madoka
+          persistentVolumeClaim:
+            claimName: madoka-code
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: madoka-code
+  namespace: qqbot
+spec:
+  storageClassName: nfs-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
