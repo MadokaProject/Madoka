@@ -145,14 +145,16 @@ class Module(Plugin):
                 assert len(self.msg) == 3 and self.message.has(At)
                 target = self.message.getFirst(At).target
                 point = int(self.msg[2])
-                if Permission.require(self.member, Permission.MASTER):
-                    await BotUser(target).update_point(point)
-                    self.resp = MessageChain.create([
-                        At(self.member.id),
-                        Plain(' 已充值给'),
-                        At(target),
-                        Plain(f' %d{config.COIN_NAME}！' % point)
-                    ])
+                if not Permission.require(self.member, Permission.MASTER):
+                    self.not_admin()
+                    return
+                await BotUser(target).update_point(point)
+                self.resp = MessageChain.create([
+                    At(self.member.id),
+                    Plain(' 已充值给'),
+                    At(target),
+                    Plain(f' %d{config.COIN_NAME}！' % point)
+                ])
             else:
                 self.args_error()
         except AssertionError:
