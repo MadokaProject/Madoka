@@ -8,8 +8,8 @@ from prettytable import PrettyTable
 from app.core.config import Config
 from app.entities.user import BotUser
 from app.plugin.base import Plugin
-from app.util.dao import MysqlDao
 from app.util.control import Permission
+from app.util.dao import MysqlDao
 from app.util.text2image import create_image
 from app.util.tools import isstartswith
 
