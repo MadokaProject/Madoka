@@ -11,5 +11,8 @@ configMapGenerator:
       - config/device.json
       - config/setting.yml
     name: mcl-config
+  - files:
+      - config/docker.cnf
+    name: mysql-config
 generatorOptions:
   disableNameSuffixHash: true

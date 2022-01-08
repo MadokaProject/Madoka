@@ -17,6 +17,9 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0.23
+          securityContext:
+            runAsUser: 1000
+            privileged: true
           env:
             - name: MYSQL_ROOT_PASSWORD
               value: "123456"
@@ -42,15 +45,27 @@ spec:
               mountPath: /var/lib/mysql
             - name: config
               mountPath: /etc/mysql/conf.d/docker.cnf
+              subPath: docker.cnf
       volumes:
         - name: data
-          hostPath:
-            path: /app/mysql/data/
-            type: DirectoryOrCreate
+          persistentVolumeClaim:
+            claimName: mysql-data
         - name: config
-          hostPath:
-            path: /app/mysql/config/docker.cnf
-            type: FileOrCreate
+          configMap:
+            name: mysql-config
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mysql-data
+  namespace: qqbot
+spec:
+  storageClassName: nfs-data
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 1Gi
 ---
 apiVersion: v1
 kind: Service
