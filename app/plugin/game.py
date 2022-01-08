@@ -104,7 +104,6 @@ class Module(Plugin):
                 assert len(self.msg) == 3 and self.message.has(At)
                 target = self.message.getFirst(At).target
                 point = int(self.msg[2])
-                print(point)
                 if point <= 0:
                     self.args_error()
                     return
@@ -146,9 +145,6 @@ class Module(Plugin):
                 assert len(self.msg) == 3 and self.message.has(At)
                 target = self.message.getFirst(At).target
                 point = int(self.msg[2])
-                if point <= 0:
-                    self.args_error()
-                    return
                 if Permission.require(self.member, Permission.MASTER):
                     await BotUser(target).update_point(point)
                     self.resp = MessageChain.create([
