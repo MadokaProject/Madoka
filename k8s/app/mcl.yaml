@@ -21,6 +21,7 @@ spec:
       containers:
         - name: mcl
           image: colsrch/mcl:latest
+          imagePullPolicy: Always
           volumeMounts:
             - mountPath: /app/bots/2817736127/device.json
               name: config
