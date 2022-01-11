@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: mcl
-          image: colsrch/mcl:1.0.1
+          image: colsrch/mcl:latest
           volumeMounts:
             - mountPath: /app/bots/2817736127/device.json
               name: config
