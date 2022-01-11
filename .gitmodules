@@ -1,0 +1,8 @@
+[submodule ".\\k8s\\images\\madoka"]
+	path = .\\k8s\\images\\madoka
+	url = https://github.com/MadokaProject/deploy-madoka.git
+	branch = madoka
+[submodule ".\\k8s\\images\\mcl"]
+	path = .\\k8s\\images\\mcl
+	url = https://github.com/MadokaProject/deploy-madoka.git
+	branch = mcl

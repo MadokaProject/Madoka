@@ -20,7 +20,7 @@ spec:
     spec:
       containers:
         - name: madoka
-          image: colsrch/madoka:1.0.0
+          image: colsrch/madoka:latest
           command:
             - /bin/bash
             - -c

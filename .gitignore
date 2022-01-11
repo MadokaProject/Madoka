@@ -5,3 +5,4 @@ venv/*
 app/tmp/*
 .vscode/*
 k8s/config
+k8s/
