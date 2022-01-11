@@ -20,6 +20,7 @@ spec:
     spec:
       containers:
         - name: madoka
+          imagePullPolicy: Always
           image: colsrch/madoka:latest
           command:
             - /bin/bash

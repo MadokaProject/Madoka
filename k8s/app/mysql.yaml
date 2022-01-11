@@ -17,6 +17,7 @@ spec:
       containers:
         - name: mysql
           image: mysql:8.0.23
+          imagePullPolicy: Always
           securityContext:
             runAsUser: 1000
             privileged: true
