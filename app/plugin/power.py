@@ -53,6 +53,7 @@ class Module(Plugin):
                                 Plain("升级超时！")
                             ])
                         logger.warning('升级超时！')
+                        return
                 elif isstartswith(self.msg[0], 'r'):
                     restart('-r', *shell)
                 await self.app.stop()
