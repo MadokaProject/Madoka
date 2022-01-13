@@ -8,8 +8,12 @@ from app.api.doHttp import doHttpRequest
 from app.core.config import Config
 
 
-def compare_version(native_version: str, remote_version: str):
-    """比较版本号"""
+def compare_version(remote_version: str, native_version: str) -> bool:
+    """比较版本号
+
+    :param remote_version: 远程版本号
+    :param native_version: 本地版本号
+    """
     native_version = native_version.split('-')
     remote_version = remote_version.split('-')
     if len(remote_version) == 1:
