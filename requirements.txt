@@ -4,7 +4,7 @@ graia-broadcast==0.14.5
 graia-scheduler==0.0.6
 jsonpath==0.82
 loguru~=0.5.3
-pillow==8.4.0
+pillow==9.0.0
 prettytable==2.4.0
 pymysql==1.0.2
 cryptography~=36.0.1

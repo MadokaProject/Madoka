@@ -10,7 +10,7 @@ class Config:
         self.cf.read(os.sep.join([app_path(), 'core', 'config.ini']), encoding='utf-8')
 
         self.INFO_NAME = 'Madoka'
-        self.INFO_VERSION = '2.0.0-rc2'
+        self.INFO_VERSION = '2.0.0-rc3'
         self.INFO_DOCS = 'https://madoka.colsrch.cn'
         self.INFO_REPO = 'https://github.com/MadokaProject/Application'
 
