@@ -12,7 +12,7 @@ class Config:
         self.INFO_NAME = 'Madoka'
         self.INFO_VERSION = '2.0.0-rc3'
         self.INFO_DOCS = 'https://madoka.colsrch.cn'
-        self.INFO_REPO = 'https://github.com/MadokaProject/Application'
+        self.INFO_REPO = 'https://github.com/MadokaProject/Madoka'
 
         self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='127.0.0.1')
         self.LOGIN_PORT = self.cf.get('bot', 'port', fallback='8080')

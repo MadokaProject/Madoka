@@ -32,7 +32,7 @@ def compare_version(remote_version: str, native_version: str) -> bool:
 async def check_version(app: Ariadne, config: Config):
     """检查版本信息"""
     try:
-        remote_version_url = 'https://cdn.jsdelivr.net/gh/MadokaProject/Application@master/app/util/version.json'
+        remote_version_url = 'https://cdn.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json'
         remote_info = await doHttpRequest(remote_version_url, method='get', _type='json')
         remote_version = remote_info['version']
         remote_update_logs = remote_info['update_log']
