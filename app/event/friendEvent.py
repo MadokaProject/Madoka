@@ -24,7 +24,7 @@ class NewFriendRequest(Event):
                 Plain("收到添加好友事件\r\n"),
                 Plain(f"QQ: {self.new_friend.supplicant}\r\n"),
                 Plain(f"昵称: {self.new_friend.nickname}\r\n"),
-                Plain(f"来自群: {group_name}({sourceGroup})\r\n") if sourceGroup else Plain("来自群搜索\r\n"),
+                Plain(f"来自群: {group_name}({sourceGroup})\r\n") if sourceGroup else Plain("来自好友搜索\r\n"),
                 Plain("状态: 已通过申请\r\n"),
                 Plain(self.new_friend.message) if self.new_friend.message else Plain("无附加信息")
             ]))
