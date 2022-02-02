@@ -14,8 +14,7 @@ class Module(Plugin):
     brief_help = '\r\n[√]\t群自定义回复: reply'
     full_help = \
         '.回复/.reply\t仅管理员可用\r\n' \
-        '.回复/.reply 添加/add [keyword] [text]\t添加自定义回复\r\n' \
-        '.回复/.reply 修改/modify [keyword] [text]\t修改自定义回复\r\n' \
+        '.回复/.reply 添加/add [keyword] [text]\t添加/修改自定义回复\r\n' \
         '.回复/.reply 删除/remove [keyword]\t删除自定义回复\r\n' \
         '.回复/.reply 列出/list\t列出自定义回复'
 
@@ -31,8 +30,8 @@ class Module(Plugin):
                 ])
                 return
             if isstartswith(self.msg[0], ['添加', 'add']):
-                assert len(self.msg) == 3
-                await save_config('group_reply', self.group.id, {self.msg[1]: self.msg[2]}, model='add')
+                assert len(self.msg) >= 3
+                await save_config('group_reply', self.group.id, {self.msg[1]: self.msg[2:]}, model='add')
                 self.resp = MessageChain.create([Plain('添加/修改成功！')])
             elif isstartswith(self.msg[0], 'remove'):
                 assert len(self.msg) == 2
