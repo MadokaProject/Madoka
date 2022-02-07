@@ -71,7 +71,7 @@ class MemberLeaveKick(Event):
         msg = [
             Image(data_bytes=await avater_blackandwhite(self.member_leave_kick.member.id)),
             Plain(f"\n{self.member_leave_kick.member.name} 被 "),
-            At(self.member_leave_kick.operator.id if self.member_leave_kick.operator else Config().BOT_NAME),
+            At(self.member_leave_kick.operator.id) if self.member_leave_kick.operator else Plain(Config().BOT_NAME),
             Plain(" 踢出本群"),
         ]
         res = await get_config('member_kick', self.member_leave_kick.member.group.id)

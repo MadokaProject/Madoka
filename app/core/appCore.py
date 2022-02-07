@@ -14,13 +14,13 @@ from graia.broadcast.interrupt import InterruptControl
 from graia.scheduler import GraiaScheduler
 from loguru import logger
 
+from app.core.Exceptions import *
 from app.core.config import Config
 from app.extend.power import power
 from app.extend.schedule import custom_schedule, TaskerProcess
 from app.util.initDB import InitDB
 from app.util.tools import app_path
 from webapp.main import WebServer
-from .Exceptions import *
 
 
 class AppCore:
@@ -136,6 +136,7 @@ class AppCore:
 
             importlib.__import__("app.core.eventCore")
             threading.Thread(daemon=True, target=WebServer).start()
+            logger.info("WebServer is starting")
         except:
             logger.error(traceback.format_exc())
             exit()
