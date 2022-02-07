@@ -75,7 +75,7 @@ class MemberLeaveKick(Event):
             Plain(" 踢出本群"),
         ]
         res = await get_config('member_kick', self.member_leave_kick.member.group.id)
-        if res and res['active']:
+        if res:
             await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain.create(msg))
 
 
@@ -89,7 +89,7 @@ class MemberLeaveQuit(Event):
             Plain(f"\n{self.member_leave_quit.member.name} 退出本群"),
         ]
         res = await get_config('member_quit', self.member_leave_quit.member.group.id)
-        if res and res['active']:
+        if res:
             await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain.create(msg))
 
 
