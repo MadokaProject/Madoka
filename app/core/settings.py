@@ -7,7 +7,7 @@ from app.util.dao import MysqlDao
 
 ACTIVE_GROUP = {}
 """监听群聊消息列表"""
-ACTIVE_USER = {}
+ACTIVE_USER = {int(Config().MASTER_QQ): '*'}
 """监听好友消息列表"""
 BANNED_USER = []
 """黑名单用户列表"""

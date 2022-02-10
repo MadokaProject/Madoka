@@ -38,8 +38,7 @@ class MemberCardChange(Event):
                     self.member_card_change.member.group.id, MessageChain.create([Plain("请不要修改我的群名片")])
                 )
         else:
-            res = await get_config('member_card_change', self.member_leave_kick.member.group.id)
-            if res and res['active']:
+            if await get_config('member_card_change', self.member_card_change.member.group.id):
                 await safeSendGroupMessage(self.member_card_change.member.group, MessageChain.create([
                     At(self.member_card_change.member.id),
                     Plain(f" 的群名片由 {self.member_card_change.origin} 被修改为 {self.member_card_change.current}")
@@ -74,8 +73,7 @@ class MemberLeaveKick(Event):
             At(self.member_leave_kick.operator.id) if self.member_leave_kick.operator else Plain(Config().BOT_NAME),
             Plain(" 踢出本群"),
         ]
-        res = await get_config('member_kick', self.member_leave_kick.member.group.id)
-        if res:
+        if await get_config('member_kick', self.member_leave_kick.member.group.id):
             await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain.create(msg))
 
 
@@ -88,8 +86,7 @@ class MemberLeaveQuit(Event):
             Image(data_bytes=await avater_blackandwhite(self.member_leave_quit.member.id)),
             Plain(f"\n{self.member_leave_quit.member.name} 退出本群"),
         ]
-        res = await get_config('member_quit', self.member_leave_quit.member.group.id)
-        if res:
+        if await get_config('member_quit', self.member_leave_quit.member.group.id):
             await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain.create(msg))
 
 
