@@ -39,6 +39,10 @@ class Config:
         self.REPO_ENABLE = True if self.cf.get('github', 'enable', fallback='False').lower() == 'true' else False
         self.REPO_TIME = self.cf.get('github', 'time', fallback='*/10  * * * *')
 
+        self.WEBSERVER_HOST = self.cf.get('webserver', 'host', fallback='0.0.0.0')
+        self.WEBSERVER_PORT = self.cf.get('webserver', 'port', fallback=8080)
+        self.WEBSERVER_DEBUG = self.cf.getboolean('webserver', 'debug', fallback=False)
+
     def change_debug(self):
         if not self.ONLINE:
             return

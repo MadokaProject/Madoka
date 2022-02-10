@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_restful import Api
 from logging.config import dictConfig
 
+from app.core.config import Config
 from webapp.api.rest.health import Health
 
 dictConfig({
@@ -29,4 +30,5 @@ api.add_resource(Health, '/api/rest/health')  # 机器人健康检查
 
 
 def WebServer():
-    app.run(host='0.0.0.0', port=8080, debug=False)
+    config = Config()
+    app.run(host=config.WEBSERVER_HOST, port=config.WEBSERVER_PORT, debug=config.WEBSERVER_DEBUG)
