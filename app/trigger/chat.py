@@ -44,27 +44,23 @@ class Chat(Trigger):
             return
         message = ''.join(message)
         url = 'http://api.qingyunke.com/api.php'
-        if hasattr(self, 'friend'):
-            if self.friend.id in MEMBER_RUNING_LIST:
-                return
-        elif hasattr(self, 'group'):
-            if self.group.id in GROUP_RUNING_LIST or not self.message.has(At) or self.message.getFirst(
-                    At).target != int(config.LOGIN_QQ):
-                return
+        if self.group.id in GROUP_RUNING_LIST or not self.message.has(At) or self.message.getFirst(At).target != int(
+                config.LOGIN_QQ):
+            return
         params = {
             'key': 'free',
             'appid': 0,
             'msg': message,
         }
         response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
-        resp = MessageChain.create([At(self.member.id) if hasattr(self, 'group') else None])
+        resp = MessageChain.create([At(self.member.id)])
         if response['result'] == 0:
             resp.extend(MessageChain.create([
-                Plain(str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
+                Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
             ]))
         else:
             resp.extend(MessageChain.create([
-                Plain(random.choice(no_answer))
+                Plain(' ' + random.choice(no_answer))
             ]))
         await self.do_send(resp)
         self.as_last = True
