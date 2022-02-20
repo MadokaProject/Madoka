@@ -59,11 +59,9 @@ class Module(Plugin):
                               self.folder_path + f'{plugin_name}.py'):
             return False
         for url in url_lists:
-            __url = url.split('/')
-            Path(self.folder_path + plugin_name + ''.join(f'/{i}' for i in __url[:-1])).mkdir(parents=True,
-                                                                                              exist_ok=True)
-            filename = __url[-1]
-            filepath = self.folder_path + f'{plugin_name}/' + filename
+            Path(self.folder_path + plugin_name + ''.join(f'/{i}' for i in url.split('/')[:-1])).mkdir(parents=True,
+                                                                                                       exist_ok=True)
+            filepath = self.folder_path + f'{plugin_name}/' + url
             if not await download(self.base_url + f'{plugin_name}/{url}', filepath):
                 return False
         return True
