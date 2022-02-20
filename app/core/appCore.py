@@ -13,6 +13,7 @@ from graia.broadcast import Broadcast
 from graia.broadcast.interrupt import InterruptControl
 from graia.scheduler import GraiaScheduler
 from loguru import logger
+from pathlib import Path
 
 from app.core.Exceptions import *
 from app.core.config import Config
@@ -181,6 +182,7 @@ class AppCore:
         ignore = ["__init__.py", "__pycache__"]
         self.__plugin.clear()
         load_basic_plugin()
+        Path(app_path() + "/plugin/extension").mkdir(exist_ok=True)
         load_extension_plugin()
 
     def reload_plugin_modules(self, plugin=None) -> str:
