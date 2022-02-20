@@ -2,7 +2,6 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
-from app.core.appCore import AppCore
 from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.decorator import permission_required
@@ -16,8 +15,7 @@ class Module(Plugin):
     full_help = \
         '.系统/.sys\t仅限主人可用！\r\n' \
         '.系统/.sys 禁言退群 [0 / 1]\t设置机器人被禁言是否退群\r\n' \
-        '.系统/.sys 上线通知 [0 / 1]\t设置机器人上线是否发送通知\r\n' \
-        '.系统/.sys 重载插件/reload\t重新加载插件'
+        '.系统/.sys 上线通知 [0 / 1]\t设置机器人上线是否发送通知'
     hidden = True
 
     @permission_required(level=Permission.MASTER)
@@ -26,11 +24,7 @@ class Module(Plugin):
             self.print_help()
             return
         try:
-            if isstartswith(self.msg[0], ['重载插件', 'reload']):
-                core: AppCore = AppCore.get_core_instance()
-                core.reload_plugin_modules()
-                self.resp = MessageChain.create([Plain('重载成功！')])
-            elif isstartswith(self.msg[0], ['禁言退群', '上线通知']):
+            if isstartswith(self.msg[0], ['禁言退群', '上线通知']):
                 if not hasattr(self, 'group'):
                     self.resp = MessageChain.create([Plain('请在群聊内使用该命令!')])
                     return

@@ -16,7 +16,7 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.gp', '.货币']
-    brief_help = '\r\n[√]\t货币：gp'
+    brief_help = '\r\n[√]\t经济系统：gp'
     full_help = \
         '.货币/.gp\t可以查询当前货币总量。\r\n' \
         '.货币/.gp 签到/signin [幸运儿/lucky | 倒霉蛋/unlucky]\t每天可以签到随机获取货币\r\n' \

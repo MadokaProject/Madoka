@@ -65,6 +65,8 @@ async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
                 if perm in ['*', '-']:
                     db.update('UPDATE `group` SET permission=%s WHERE uid=%s', [perm, uid.id])
                     ACTIVE_GROUP[uid.id] = perm
+                    if perm == '-':
+                        await set_plugin_switch(uid, 'plugin')
                 else:
                     res = str(db.query('SELECT permission FROM `group` WHERE uid=%s', [uid.id])[0][0]).split(',')
                     res = [i for i in res if i not in [perm.strip('-'), f"-{perm.strip('-')}", '-']]

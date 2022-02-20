@@ -142,36 +142,85 @@ class AppCore:
             exit()
 
     def load_plugin_modules(self):
-        ignore = ["__init__.py", "__pycache__", "base.py"]
-        self.__plugin.clear()
-        for plugin in os.listdir(os.path.join(app_path(), "plugin")):
-            try:
-                if plugin not in ignore and plugin.split('.')[-1] == 'py' and not os.path.isdir(plugin):
-                    module = importlib.import_module(f"app.plugin.{plugin.split('.')[0]}")
-                    if hasattr(module, 'Module'):
-                        self.__plugin.append(module)
-                        logger.success("成功加载插件: " + module.__name__)
-            except ModuleNotFoundError as e:
-                logger.error(f"plugin 模块: {plugin} - {e}")
+        """加载全部插件"""
+        def load_basic_plugin():
+            """加载基础插件"""
+            basic = [
+                'sys',
+                'power',
+                'accountManager',
+                'madoka_manager',
+                'csm',
+                'permission',
+                'replyKeyword',
+                'GroupJoin',
+                'GithubListener',
+                'mcinfo',
+                'game',
+                'rank'
+            ]
+            for plugin in basic:
+                try:
+                    module = importlib.import_module(f"app.plugin.basic.{plugin}")
+                    self.__plugin.append(module)
+                    logger.success("成功加载系统插件: " + module.__name__)
+                except ModuleNotFoundError as e:
+                    logger.error(f"plugin 模块: {plugin} - {e}")
 
-    def reload_plugin_modules(self):
+        def load_extension_plugin():
+            """加载扩展插件"""
+            for plugin in os.listdir(os.path.join(app_path(), "plugin/extension")):
+                try:
+                    if plugin not in ignore and plugin.split('.')[-1] == 'py' and not os.path.isdir(plugin):
+                        module = importlib.import_module(f"app.plugin.extension.{plugin.split('.')[0]}")
+                        if hasattr(module, 'Module'):
+                            self.__plugin.append(module)
+                            logger.success("成功加载插件: " + module.__name__)
+                except ModuleNotFoundError as e:
+                    logger.error(f"plugin 模块: {plugin} - {e}")
+        ignore = ["__init__.py", "__pycache__"]
+        self.__plugin.clear()
+        load_basic_plugin()
+        load_extension_plugin()
+
+    def reload_plugin_modules(self, plugin=None) -> str:
+        """重载插件
+
+        :param plugin: 指定插件名
+        """
+        if not plugin:
+            for module in self.__plugin:
+                importlib.reload(module)
+            return '重载成功'
         for module in self.__plugin:
-            importlib.reload(module)
-        self.load_plugin_modules()
+            if plugin == str(module.__name__).split('.')[-1]:
+                importlib.reload(module)
+                return f'{plugin} 重载成功'
+        return '重载失败，无此插件！'
+
+    def load_plugin(self, plugin):
+        """加载插件"""
+        self.__plugin.append(plugin)
+
+    def unload_plugin(self, plugin):
+        for __plugin in self.__plugin:
+            if plugin == __plugin.__name__:
+                self.__plugin.remove(__plugin)
 
     def load_schedulers(self):
         tasks = []
         ignore = ["__init__.py", "__pycache__", "base.py"]
-        for __scheduler in os.listdir(os.path.join(app_path(), "plugin")):
-            try:
-                if __scheduler not in ignore and __scheduler.split('.')[-1] == 'py' and not os.path.isdir(__scheduler):
-                    module = importlib.import_module(f"app.plugin.{__scheduler.split('.')[0]}")
-                    if hasattr(module, "Tasker"):
-                        obj = module.Tasker(self.__app)
-                        if obj.cron:
-                            tasks.append(TaskerProcess(self.__scheduler, obj))
-                            logger.success("成功加载计划任务: " + module.__name__)
-            except ModuleNotFoundError as e:
-                logger.error(f"schedule 模块: {__scheduler} - {e}")
+        for __dir in ['basic', 'extension']:
+            for __scheduler in os.listdir(os.path.join(app_path(), f"plugin/{__dir}")):
+                try:
+                    if __scheduler not in ignore and __scheduler.split('.')[-1] == 'py' and not os.path.isdir(__scheduler):
+                        module = importlib.import_module(f"app.plugin.{__dir}.{__scheduler.split('.')[0]}")
+                        if hasattr(module, "Tasker"):
+                            obj = module.Tasker(self.__app)
+                            if obj.cron:
+                                tasks.append(TaskerProcess(self.__scheduler, obj))
+                                logger.success("成功加载计划任务: " + module.__name__)
+                except ModuleNotFoundError as e:
+                    logger.error(f"schedule 模块: {__scheduler} - {e}")
         asyncio.gather(*tasks)
         asyncio.run(custom_schedule(self.__scheduler, self.__app))
