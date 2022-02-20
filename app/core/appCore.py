@@ -200,16 +200,40 @@ class AppCore:
                 return f'{plugin} 重载成功'
         return '重载失败，无此插件！'
 
-    def load_plugin(self, plugin):
+    async def load_plugin(self, plugin):
         """加载插件"""
-        self.__plugin.append(plugin)
+        try:
+            plugin = importlib.import_module('app.plugin.extension.' + plugin)
+            if hasattr(plugin, 'Module'):
+                self.__plugin.append(plugin)
+                logger.success("成功加载插件: " + plugin.__name__)
+                return "加载插件成功: " + plugin.__name__
+            else:
+                return '这或许不是一个插件？'
+        except ModuleNotFoundError as e:
+            logger.error(f"插件加载失败: {e}")
+            return f'插件加载失败: {e}'
 
     def unload_plugin(self, plugin):
+        """卸载插件"""
+        plugin = 'app.plugin.extension.' + plugin
+        if plugin in sys.modules.keys():
+            sys.modules.pop(plugin)
+            for __plugin in self.__plugin:
+                if plugin == __plugin.__name__:
+                    self.__plugin.remove(__plugin)
+            return '卸载插件成功: ' + plugin
+        return '该插件未加载'
+
+    async def fild_plugin(self, plugin) -> bool:
+        """查找插件是否加载"""
         for __plugin in self.__plugin:
             if plugin == __plugin.__name__:
-                self.__plugin.remove(__plugin)
+                return True
+        return False
 
     def load_schedulers(self):
+        """加载计划任务"""
         tasks = []
         ignore = ["__init__.py", "__pycache__", "base.py"]
         for __dir in ['basic', 'extension']:

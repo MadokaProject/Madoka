@@ -1,9 +1,6 @@
-import importlib
-import importlib.util
 import json
 import os
 import shutil
-import sys
 import urllib.request
 from pathlib import Path
 
@@ -59,9 +56,9 @@ class Module(Plugin):
                               self.folder_path + f'{plugin_name}.py'):
             return False
         for url in url_lists:
-            Path(self.folder_path + plugin_name + ''.join(f'/{i}' for i in url.split('/')[:-1])).mkdir(parents=True,
-                                                                                                       exist_ok=True)
-            filepath = self.folder_path + f'{plugin_name}/' + url
+            Path(self.folder_path + plugin_name + '_res' + ''.join(f'/{i}' for i in url.split('/')[:-1])).mkdir(
+                parents=True, exist_ok=True)
+            filepath = self.folder_path + f'{plugin_name}_res/' + url
             if not await download(self.base_url + f'{plugin_name}/{url}', filepath):
                 return False
         return True
@@ -88,7 +85,8 @@ class Module(Plugin):
     async def master_admin_process(self):
         if isstartswith(self.msg[0], ['安装', 'install']):
             assert len(self.msg) == 2
-            if importlib.util.find_spec(f'app.plugin.extension.{self.msg[1]}'):
+            core: AppCore = AppCore.get_core_instance()
+            if await core.fild_plugin(f'app.plugin.extension.{self.msg[1]}'):
                 self.resp = MessageChain.create([Plain('该插件已安装')])
                 return
             plugin_list = await self.get_plugin_list()
@@ -99,9 +97,10 @@ class Module(Plugin):
                     url_list.append('requirements.txt')
                 if await self.get_plugin_by_url(self.msg[1], url_list):
                     if plugin_list[self.msg[1]]['pypi']:
-                        pip(['install', '-r', f'{self.folder_path}{self.msg[1]}/requirements.txt'])
+                        pip(['install', '-r', f'{self.folder_path}{self.msg[1]}_res/requirements.txt'])
+                    await core.load_plugin(self.msg[1])
                     self.resp = MessageChain.create([Plain('插件安装成功: ' + self.msg[1])])
-                    logger.success('插件安装成功' + plugin_list[self.msg[1]]['name'])
+                    logger.success('插件安装成功: ' + self.msg[1])
                 else:
                     self.resp = MessageChain.create([Plain('插件安装失败，请重试: ' + self.msg[1])])
                     logger.error('插件安装失败，请重试' + plugin_list[self.msg[1]]['name'])
@@ -113,13 +112,10 @@ class Module(Plugin):
             if not Path(self.folder_path + f'{self.msg[1]}.py').exists():
                 self.resp = MessageChain.create([Plain('该插件不存在: ' + self.msg[1])])
                 return
-            plugin = f'app.plugin.extension.{self.msg[1]}'
-            if plugin in sys.modules.keys():
-                sys.modules.pop(plugin)
-                core: AppCore = AppCore.get_core_instance()
-                core.unload_plugin(plugin)
+            core: AppCore = AppCore.get_core_instance()
+            core.unload_plugin(self.msg[1])
             Path(self.folder_path + f'{self.msg[1]}.py').unlink()
-            __dir = Path(self.folder_path + self.msg[1])
+            __dir = Path(self.folder_path + self.msg[1] + '_res')
             if __dir.exists():
                 shutil.rmtree(__dir)
             self.resp = MessageChain.create([Plain('插件删除成功: ' + self.msg[1])])
@@ -144,26 +140,12 @@ class Module(Plugin):
             ])
         elif isstartswith(self.msg[0], ['加载', 'load']):
             assert len(self.msg) == 2
-            if importlib.util.find_spec(f'app.plugin.extension.{self.msg[1]}'):
-                self.resp = MessageChain.create([Plain('该插件已加载')])
             core: AppCore = AppCore.get_core_instance()
-            plugin = importlib.import_module(f'app.plugin.extension.{self.msg[1]}')
-            if hasattr(plugin, 'Module'):
-                core.load_plugin(plugin)
-                self.resp = MessageChain.create([Plain("加载插件成功: " + plugin.__name__)])
-                logger.success("成功加载插件: " + plugin.__name__)
-            else:
-                self.resp = MessageChain.create([Plain('这不是一个插件？')])
+            self.resp = MessageChain.create([Plain(await core.load_plugin(self.msg[1]))])
         elif isstartswith(self.msg[0], ['卸载', 'unload']):
             assert len(self.msg) == 2
-            plugin = f'app.plugin.extension.{self.msg[1]}'
-            if plugin in sys.modules.keys():
-                sys.modules.pop(plugin)
-                core: AppCore = AppCore.get_core_instance()
-                core.unload_plugin(plugin)
-                self.resp = MessageChain.create([Plain('卸载插件成功: ' + self.msg[1])])
-            else:
-                self.resp = MessageChain.create([Plain('该插件未加载')])
+            core: AppCore = AppCore.get_core_instance()
+            self.resp = MessageChain.create([Plain(core.unload_plugin(self.msg[1]))])
         elif isstartswith(self.msg[0], ['重载', 'reload']):
             plugin = self.msg[1] if len(self.msg) == 2 else None
             core: AppCore = AppCore.get_core_instance()
