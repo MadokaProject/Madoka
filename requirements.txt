@@ -15,3 +15,4 @@ python-dateutil~=2.8.2
 flask~=2.0.2
 flask-cors~=3.0.10
 flask-restful~=0.3.9
+pip~=21.2.2
