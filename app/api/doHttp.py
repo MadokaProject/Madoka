@@ -57,12 +57,12 @@ class RandomUserAgentMiddleware(object):
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
-async def doHttpRequest(url, method, _type='TEXT', params=None, headers=None, data=None):
+async def doHttpRequest(url, method='GET', _type='TEXT', params=None, headers=None, data=None):
     """通用Http异步请求函数
 
     :param url: str 请求的网址*
-    :param method: str 请求方法*
-    :param _type: str 返回类型 [text(default),json,header]
+    :param method: str 请求方法
+    :param _type: str 返回类型 [text(default),json,header, byte]
     :param params: dict param 请求参数
     :param headers: dict 请求头(可自动生成)
     :param data: body 请求参数
@@ -86,6 +86,8 @@ async def doHttpRequest(url, method, _type='TEXT', params=None, headers=None, da
             response = await r.json()
         elif _type in ['HEADER', 'header']:
             response = r.headers
+        elif _type in ['BYTE', 'byte']:
+            response = await r.read()
         else:
-            response = 'please set _type in [text, json, header]'
+            response = 'please set _type in [text, json, header, byte]'
         return response
