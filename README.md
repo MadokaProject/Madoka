@@ -28,52 +28,7 @@ $ python main.py
 
 ## 部署流程
 
-推荐使用官方启动器 [mirai-console-loader](https://github.com/iTXTech/mirai-console-loader) (mcl)
-自行启动 [mirai](https://github.com/mamoe/mirai) 与 [mirai-api-http v2](https://github.com/mamoe/mirai-api-http) 插件。
-
-### 运行前配置
-
-本应用与数据库相关联，使用前请创建一个数据库如 `qqbot` ，并补全 `app/core/env.config.ini` → `app/core/config.ini` 文件
-
-> 请注意你需要拥有 MySQL 数据库服务，否则无法正常使用本应用
-
-### 克隆项目
-
-``` bash
-git clone https://github.com/MadokaProject/Application.git Madoka
-```
-
-### 安装依赖
-
-建议使用 Virtualenv 或 Conda 等虚拟环境工具
-
-``` bash
-pip install -r requirements.txt
-```
-
-### 安装插件
-
-~~推荐使用 [Web](https://github.com/MadokaProject/Web.git) 端一键安装~~，手动安装如下：
-
-前往 [Plugins](https://github.com/MadokaProject/Plugins.git) 仓库下载所需插件至 `app/plugin` 目录后执行重载插件命令 `.sys reload`
-
-> 你可自行在该目录编写其他插件，同时欢迎你将你的插件 PR 到此插件库
-
-### 升级插件
-
-~~推荐使用 [Web](https://github.com/MadokaProject/Web.git) 端一键升级~~，手动升级请重新下载覆盖原文件。
-
-### 运行
-
-``` bash
-python main.py
-```
-
-## 升级
-
-- 推荐使用机器人命令 `.p u` 自动升级
-- ~~使用 [Web](https://github.com/MadokaProject/Web.git) 端一键升级。~~
-- 手动升级：git pull 拉取。
+请查看 [**文档**](https://madoka.colsrch.cn): https://madoka.colsrch.cn
 
 ## 项目版本管理
 
@@ -115,7 +70,7 @@ python main.py
 
 ## 相关项目
 
-- [Application](https://github.com/MadokaProject/Application.git): Madoka 主体
+- [Madoka](https://github.com/MadokaProject/Madoka.git): Madoka 主体
 - [Plugins](https://github.com/MadokaProject/Plugins.git): Madoka 的官方插件库（你也可以提交 PR 来丰富此插件库）
 - [Web](https://github.com/MadokaProject/Web.git): 机器人 Web 控制系统(计划中)
 - [Loader](https://github.com/MadokaProject/Loader.git): 懒人工具(或许有？)

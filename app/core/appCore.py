@@ -8,12 +8,15 @@ from asyncio.events import AbstractEventLoop
 
 from graia.ariadne.adapter import DefaultAdapter
 from graia.ariadne.app import Ariadne
+from graia.ariadne.console import Console
 from graia.ariadne.model import MiraiSession
 from graia.broadcast import Broadcast
 from graia.broadcast.interrupt import InterruptControl
 from graia.scheduler import GraiaScheduler
 from loguru import logger
 from pathlib import Path
+from prompt_toolkit.formatted_text import HTML
+from prompt_toolkit.styles import Style
 
 from app.core.Exceptions import *
 from app.core.config import Config
@@ -28,6 +31,7 @@ class AppCore:
     __instance = None
     __first_init: bool = False
     __app: Ariadne = None
+    __console: Console = None
     __loop: AbstractEventLoop = None
     __bcc: Broadcast = None
     __inc: InterruptControl = None
@@ -67,6 +71,17 @@ class AppCore:
             self.__scheduler = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
             self.__app.debug = False
             self.__config = config
+            self.__console = Console(
+                broadcast=self.__bcc,
+                prompt=HTML('<split_1></split_1><madoka> Madoka </madoka><split_2></split_2> '),
+                style=Style(
+                    [
+                        ('split_1', 'fg:#61afef'),
+                        ('madoka', 'bg:#61afef fg:#ffffff'),
+                        ('split_2', 'fg:#61afef'),
+                    ]
+                )
+            )
             AppCore.__first_init = True
             logger.info("Initialize end")
         else:
@@ -94,6 +109,12 @@ class AppCore:
     def get_app(self) -> Ariadne:
         if self.__app:
             return self.__app
+        else:
+            raise AppCoreNotInitialized()
+
+    def get_console(self) -> Console:
+        if self.__console:
+            return self.__console
         else:
             raise AppCoreNotInitialized()
 
@@ -128,6 +149,7 @@ class AppCore:
 
     async def bot_launch_init(self):
         try:
+            threading.Thread(daemon=True, target=WebServer).start()
             await InitDB()
             self.__loop.create_task(power(self.__app, sys.argv))
             group_list = await self.__app.getGroupList()
@@ -135,9 +157,9 @@ class AppCore:
             for group in group_list:
                 logger.info(f"群ID: {str(group.id).ljust(14)}群名: {group.name}")
 
+            logger.success("WebServer is starting")
             importlib.__import__("app.core.eventCore")
-            threading.Thread(daemon=True, target=WebServer).start()
-            logger.info("WebServer is starting")
+            importlib.__import__("app.core.console")
         except:
             logger.error(traceback.format_exc())
             exit()
