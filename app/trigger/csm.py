@@ -13,6 +13,9 @@ class CSM(Trigger):
     """群管系统"""
 
     async def process(self):
+        # 判断是否为黑名单用户
+        if (getattr(self, 'friend', None) or getattr(self, 'member', None)).id in BANNED_USER:
+            self.as_last = True
         if not hasattr(self, 'group') or self.check_admin(
                 Permission.GROUP_ADMIN) or self.group.accountPerm == MemberPerm.Member:
             return
