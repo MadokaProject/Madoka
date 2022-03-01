@@ -147,7 +147,7 @@ class Module(Plugin):
                 msg.add_row([index + 1, plugin['name'], name, plugin['author'], plugin['version']])
             msg.align = 'c'
             self.resp = MessageChain.create([
-                Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                Image(data_bytes=await create_image(msg.get_string()))
             ])
         elif isstartswith(self.msg[0], ['本地插件', 'list'], full_match=1):
             msg = PrettyTable()
@@ -157,7 +157,7 @@ class Module(Plugin):
                 msg.add_row([index + 1, name.__name__.split('.')[-1]])
             msg.align = 'c'
             self.resp = MessageChain.create([
-                Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                Image(data_bytes=await create_image(msg.get_string()))
             ])
         elif isstartswith(self.msg[0], ['加载', 'load']):
             assert len(self.msg) == 2
