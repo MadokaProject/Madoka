@@ -12,18 +12,22 @@ from app.util.tools import isstartswith, restart
 
 class Module(Plugin):
     entry = ['.power', '.电源', '.p']
-    brief_help = '\r\n[√]\t电源：p'
-    full_help = \
-        '.电源/.p\t仅限主人使用！\r\n' \
-        '.电源/.p k\t关闭机器人\r\n' \
-        '.电源/.p r\t重启机器人\r\n' \
-        '.电源/.p u [timeout]\t升级机器人(默认超时时间为10秒)\r\n'
+    brief_help = '电源'
+    full_help = {
+        '仅限主人使用!': '',
+        'k': '关闭机器人',
+        'r': '重启机器人',
+        'u': {
+            '升级机器人': '',
+            '[timeout]': '超时时间(秒)[Default: 10]'
+        }
+    }
     hidden = True
 
     @permission_required(level=Permission.MASTER)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if isstartswith(self.msg[0], ['k', 'u', 'r']):

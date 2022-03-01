@@ -12,23 +12,36 @@ from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.text2image import create_image
 from app.util.tools import isstartswith
+from .game_res.sign_image_generator import get_sign_image
 
 
 class Module(Plugin):
-    entry = ['.gp', '.货币']
-    brief_help = '\r\n[√]\t经济系统：gp'
-    full_help = \
-        '.货币/.gp\t可以查询当前货币总量。\r\n' \
-        '.货币/.gp 签到/signin [幸运儿/lucky | 倒霉蛋/unlucky]\t每天可以签到随机获取货币\r\n' \
-        '.货币/.gp 转给/tf @user num\t转给XX num货币\r\n' \
-        '.货币/.gp 充值/pay @user num\t充值XX num货币\r\n' \
-        '.货币/.gp 排行/rank\t显示群内已注册成员货币排行榜'
+    entry = ['.gp']
+    brief_help = '经济系统'
+    full_help = {
+        '无参数': '查询当前资金总量。',
+        '签到, signin': {
+            '每日签到随机获取一定资金': '',
+            '[幸运儿, lucky | 倒霉蛋, unlucky]': '查看当日幸运儿 or 倒霉蛋'
+        },
+        '转给, 转账, tf': {
+            '转给XX num金额': '',
+            '[@user]': '@群成员',
+            '[num]': '转账金额'
+        },
+        '充值, pay': {
+            '为指定成员充值num金额(仅主人可用)': '',
+            '[@user]': '@群成员',
+            '[num]': '充值金额'
+        },
+        '排行, rank': '显示群内已注册成员资金排行榜'
+    }
 
     async def process(self):
         try:
             config = Config()
             if not self.msg:
-                """查询货币"""
+                """查询资金"""
                 user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
                 point = await user.get_points()
                 if hasattr(self, 'group'):
@@ -69,7 +82,7 @@ class Module(Plugin):
                         msg.align = 'r'
                         msg.align['群昵称'] = 'l'
                         self.resp.extend(MessageChain.create([
-                            Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                            Image(data_bytes=await create_image(msg.get_string()))
                         ]))
                     return
                 point = random.randint(1, 101)
@@ -107,7 +120,7 @@ class Module(Plugin):
                 if point <= 0:
                     self.args_error()
                     return
-                user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
+                user = BotUser(self.member.id)
                 if int(await user.get_points()) < point:
                     self.point_not_enough()
                     return
@@ -139,7 +152,7 @@ class Module(Plugin):
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
                     self.resp.extend(MessageChain.create([
-                        Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                        Image(data_bytes=await create_image(msg.get_string()))
                     ]))
             elif isstartswith(self.msg[0], ['充值', 'pay']):
                 assert len(self.msg) == 3 and self.message.has(At)

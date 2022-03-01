@@ -1,12 +1,13 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, Source
+from graia.ariadne.message.element import Plain, Source, Image
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
 from app.core.settings import *
 from app.trigger import *
 from app.util.control import Permission
+from app.util.text2image import create_image
 from app.util.tools import isstartswith
 
 
@@ -33,7 +34,8 @@ class Controller:
     async def process_event(self):
         msg = self.message.asDisplay()
         send_help = False  # 是否为主菜单帮助
-        resp = '[√]\t帮助：help'
+        resp = None
+        i = 1
 
         # 判断是否在权限允许列表
         if hasattr(self, 'friend'):
@@ -69,6 +71,10 @@ class Controller:
         # 判断是否为主菜单帮助
         if isstartswith(msg, ['.help', '.帮助']):
             send_help = True
+            resp = (
+                    f"{config.BOT_NAME} 群菜单 / {self.group.id}\n{self.group.name}\n"
+                    + "========================================================"
+            )
 
         # 加载插件
         for plugin in self.plugin:
@@ -81,9 +87,15 @@ class Controller:
                 obj.hidden = False  # 隐藏菜单仅超级管理员以上可见
             if send_help and not obj.hidden:  # 主菜单帮助获取
                 if not obj.enable:
-                    resp += obj.brief_help.replace('√', '×')
+                    statu = "【  关闭  】"
                 else:
-                    resp += obj.brief_help
+                    statu = "            "
+                if i < 10:
+                    si = " " + str(i)
+                else:
+                    si = str(i)
+                resp += f"\n{si}  {statu}  {obj.brief_help}: {obj.entry[0][1:]}"
+                i += 1
             elif isstartswith(msg.split(' ')[0], obj.entry, full_match=1):  # 指令执行
                 if obj.enable:
                     resp = await obj.get_resp()
@@ -96,7 +108,14 @@ class Controller:
 
         # 主菜单帮助发送
         if send_help:
-            await self._do_send(MessageChain.create([Plain(resp)]))
+            resp += (
+                    "\n========================================================"
+                    + "\n详细功能帮助菜单请发送 .<功能> help, 例如: .gp help"
+                    + "\n管理员可通过插件管理工具开关功能"
+                    + "\n所有功能均需添加前缀 ."
+                    + "\n源码: github.com/MadokaProject/Madoka"
+            )
+            await self._do_send(MessageChain.create([Image(data_bytes=await create_image(resp, 80))]))
 
     async def _do_send(self, resp):
         """发送消息"""

@@ -141,12 +141,20 @@ class StatusPing:
 
 class Module(Plugin):
     entry = ['.mc', '.mcinfo', '.info']
-    brief_help = '\r\n[√]\tMC状态：mc'
-    full_help = \
-        '.mc/.info/.mcinfo [ip] [port] [timeout]\r\n' \
-        'ip: MC服务器域名或IP\r\n' \
-        'port: MC服务器端口号\r\n' \
-        'timeout: 设置超时时间'
+    brief_help = 'MC状态'
+    full_help = {
+        '无参数': '检测默认MC服务器',
+        '[ip]': 'MC服务器域名或IP',
+        '[port]': 'MC服务器端口号',
+        '[timeout]': '设置超时时间',
+        'set': {
+            '设置默认MC服务器(仅主人可用)': '',
+            '[ip]': 'MC服务器域名或IP',
+            '[port]': 'MC服务器端口号',
+            '[timeout]': '设置超时时间'
+        },
+        'ld': '查看默认服务器’'
+    }
 
     @permission_required(level=Permission.MASTER)
     async def set_default_mc(self, ip='127.0.0.1', port=25565):

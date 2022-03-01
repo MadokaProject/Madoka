@@ -87,30 +87,3 @@ async def to_thread(func, /, *args, **kwargs):
     ctx = contextvars.copy_context()
     func_call = functools.partial(ctx.run, func, *args, **kwargs)
     return await loop.run_in_executor(None, func_call)
-
-
-if __name__ == '__main__':
-    __commands = {
-        "mute": {
-            "禁言指定群成员": '',
-            "-g, --group": "指定群",
-            "-q, --qq": "指定群成员",
-            "-t, --time": "禁言时间(分钟)",
-            "all": {
-                "全体禁言": '',
-                "-g, --group": "指定群"
-            }
-        },
-        "unmute": {
-            "取消禁言指定群成员": '',
-            "-g, --group": "指定群",
-            "-q, --qq": "指定群成员",
-            "all": {
-                "取消全体禁言": '',
-                "-g, --group": "指定群"
-            }
-        },
-        "-h, --help": "获取帮助菜单"
-    }
-    __command = ['mute', 'all', '-g', '123456', '-q', '1234567', '-t', '10', 'abc', '--name', 'colsrch']
-    print(command_parse(__command)['-ge'])

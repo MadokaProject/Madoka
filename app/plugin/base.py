@@ -1,11 +1,12 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, Source
+from graia.ariadne.message.element import Plain, Source, Image
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
 from app.util.control import Permission
 from app.util.permission import *
+from app.util.text2image import create_image
 from app.util.tools import *
 
 
@@ -16,8 +17,8 @@ class Plugin:
     :param full_help: 完整帮助，显示在插件帮助菜单
     """
     entry = ['.plugin']
-    brief_help = entry[0] + 'this is a brief help.'
-    full_help = 'this is a detail help.'
+    brief_help = 'this is a brief help.'
+    full_help = {'command': 'this is a detail help.'}
     enable = True
     hidden = False
 
@@ -51,19 +52,24 @@ class Plugin:
         elif hasattr(self, 'friend'):
             return self.friend.id
 
-    def _pre_check(self):
+    async def _pre_check(self):
         """此方法检查是否为插件帮助指令"""
         if self.msg:
             if isstartswith(self.msg[0], ['help', '帮助']):
-                self.resp = MessageChain.create([Plain(
-                    self.full_help
-                )])
+                await self.print_help()
 
-    def print_help(self):
-        """回送插件详细帮助"""
-        self.resp = MessageChain.create([Plain(
-            self.full_help
-        )])
+    async def print_help(self, full_help=None, usage=None):
+        """回送插件详细帮助
+
+        :param full_help: 自定义菜单，一般用于子菜单帮助回送
+        :param usage: 自定义 Usage, 一般用于子菜单帮助回送
+        """
+        if not full_help:
+            full_help = self.full_help
+        if not usage:
+            usage = f"{format(f'{self.entry} [OPTION]', '<30')} {self.brief_help}\n"
+        full_help.update({'help': '获取帮助菜单'})
+        self.resp = MessageChain.create([Image(data_bytes=await create_image(f"Usage: {usage}{command_help_parse(full_help)}", 100))])
 
     def unkown_error(self):
         """未知错误默认回复消息"""
@@ -122,7 +128,7 @@ class Plugin:
 
     async def get_resp(self):
         """程序默认调用的方法以获取要发送的信息"""
-        self._pre_check()
+        await self._pre_check()
         if not self.resp:
             await self.process()
         if self.resp:
