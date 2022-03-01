@@ -39,10 +39,10 @@ class Controller:
 
         # 判断是否在权限允许列表
         if hasattr(self, 'friend'):
-            if self.friend.id not in ACTIVE_USER or self.friend.id in BANNED_USER:
+            if self.friend.id not in ACTIVE_USER:
                 return
         elif hasattr(self, 'group'):
-            if self.group.id not in ACTIVE_GROUP or self.member.id in BANNED_USER:
+            if self.group.id not in ACTIVE_GROUP:
                 return
 
         # 自定义预触发器
@@ -61,6 +61,10 @@ class Controller:
         if config.ONLINE and config.DEBUG:
             return
 
+        # 判断是否为黑名单用户
+        if (getattr(self, 'friend', None) or getattr(self, 'member', None)).id in BANNED_USER:
+            return
+
         if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
             return
 
@@ -71,10 +75,16 @@ class Controller:
         # 判断是否为主菜单帮助
         if isstartswith(msg, ['.help', '.帮助']):
             send_help = True
-            resp = (
-                    f"{config.BOT_NAME} 群菜单 / {self.group.id}\n{self.group.name}\n"
-                    + "========================================================"
-            )
+            if hasattr(self, 'group'):
+                resp = (
+                        f"{config.BOT_NAME} 群菜单 / {self.group.id}\n{self.group.name}\n"
+                        + "========================================================"
+                )
+            else:
+                resp = (
+                        f"{config.BOT_NAME} 好友菜单 / {self.friend.id}\n{self.friend.nickname}\n"
+                        + "========================================================"
+                )
 
         # 加载插件
         for plugin in self.plugin:
