@@ -22,7 +22,7 @@ async def console_handler(
 ):
     if param := params.result.asDisplay():
         send_help = False  # 是否为主菜单帮助
-        resp = 'Usage:\t[COMMAND] [OPTION]'
+        resp = 'Usage: [COMMAND] [OPTION]'
         param = parse_args(param, keep_head=True)
         # 判断是否为主菜单帮助
         if isstartswith(param[0], 'help', full_match=True):

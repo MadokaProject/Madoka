@@ -1,6 +1,6 @@
 aiohttp~=3.8.1
-graia-ariadne==0.6.0.post1
-graia-broadcast==0.15.6
+graia-ariadne==0.6.1
+graia-broadcast==0.16.1
 graia-scheduler==0.0.6
 jsonpath==0.82
 loguru~=0.6.0
