@@ -1,15 +1,30 @@
 from app.console.base import ConsoleController
-from app.util.tools import isstartswith
+from app.util.tools import isstartswith, command_parse
 
 
 class CSM(ConsoleController):
     entry = 'csm'
     brief_help = '群管'
     full_help = {
-        'mute [GROUP] [QQ] [TIME]': '禁言指定群成员[TIME]分钟',
-        'unmute [GROUP] [QQ]': '取消禁言指定群成员',
-        'muteall [GROUP]': '开启全员禁言',
-        'unmuteall [GROUP]': '关闭全员禁言'
+        "mute": {
+            "禁言指定群成员": '',
+            "-g, --group": "指定群",
+            "-q, --qq": "指定群成员",
+            "-t, --time": "禁言时间(分钟)",
+            "all": {
+                "全体禁言": '',
+                "-g, --group": "指定群"
+            }
+        },
+        "unmute": {
+            "取消禁言指定群成员": '',
+            "-g, --group": "指定群",
+            "-q, --qq": "指定群成员",
+            "all": {
+                "取消全体禁言": '',
+                "-g, --group": "指定群"
+            }
+        }
     }
 
     async def process(self):
@@ -18,40 +33,75 @@ class CSM(ConsoleController):
             return
         try:
             if isstartswith(self.param[0], 'mute', full_match=True):
-                assert len(self.param) == 4 and self.param[1].isdigit() and self.param[2].isdigit() and self.param[3].isdigit()
-                if await self.app.getGroup(int(self.param[1])):
-                    if await self.app.getMember(int(self.param[1]), int(self.param[2])):
-                        await self.app.muteMember(int(self.param[1]), int(self.param[2]), int(self.param[3]) * 60)
-                        self.resp = '禁言成功!'
-                    else:
-                        self.resp = '未找到该群成员!'
-                else:
-                    self.resp = '未找到该群组!'
-            elif isstartswith(self.param[0], 'unmute', full_match=True):
-                assert len(self.param) == 3 and self.param[1].isdigit() and self.param[2].isdigit()
-                if await self.app.getGroup(int(self.param[1])):
-                    if await self.app.getMember(int(self.param[1]), int(self.param[2])):
-                        await self.app.unmuteMember(int(self.param[1]), int(self.param[2]))
-                        self.resp = '取消禁言成功!'
-                    else:
-                        self.resp = '未找到该群成员!'
-                else:
-                    self.resp = '未找到该群组!'
-            elif isstartswith(self.param[0], ['muteall', 'unmuteall'], full_match=True):
-                assert len(self.param) == 2 and self.param[1].isdigit()
-                if await self.app.getGroup(int(self.param[1])):
-                    if self.param[0] == 'muteall':
-                        await self.app.muteAll(int(self.param[1]))
+                commands = command_parse(self.param[1:])
+                if commands.__contains__('all'):
+                    for i in [['-g', '--group']]:
+                        for j in i:
+                            if commands['all'].__contains__(j):
+                                group = int(commands['all'][j])
+                                break
+                        else:
+                            raise KeyError(i)
+                    if await self.app.getGroup(group):
+                        await self.app.muteAll(group)
                         self.resp = '全员禁言成功!'
                     else:
-                        await self.app.unmuteAll(int(self.param[1]))
-                        self.resp = '取消全员禁言成功!'
+                        self.resp = '未找到该群组'
                 else:
-                    self.resp = '未找到该群组'
+                    param = []
+                    for i in [['-g', '--group'], ['-q', '-qq'], ['-t', '--time']]:
+                        for j in i:
+                            if commands.__contains__(j):
+                                param.append(int(commands[j]))
+                                break
+                        else:
+                            raise KeyError(i)
+                    if await self.app.getGroup(param[0]):
+                        if await self.app.getMember(param[0], param[1]):
+                            await self.app.muteMember(param[0], param[1], param[2] * 60)
+                            self.resp = '禁言成功!'
+                        else:
+                            self.resp = '未找到该群成员!'
+                    else:
+                        self.resp = '未找到该群组!'
+            elif isstartswith(self.param[0], 'unmute', full_match=True):
+                commands = command_parse(self.param[1:])
+                if commands.__contains__('all'):
+                    for i in [['-g', '--group']]:
+                        for j in i:
+                            if commands['all'].__contains__(j):
+                                group = int(commands['all'][j])
+                                break
+                        else:
+                            raise KeyError(i)
+                    if await self.app.getGroup(group):
+                        await self.app.unmuteAll(group)
+                        self.resp = '取消全员禁言成功!'
+                    else:
+                        self.resp = '未找到该群组'
+                else:
+                    param = []
+                    for i in [['-g', '--group'], ['-q', '-qq']]:
+                        for j in i:
+                            if commands.__contains__(j):
+                                param.append(int(commands[j]))
+                                break
+                        else:
+                            raise KeyError(i)
+                    if await self.app.getGroup(param[0]):
+                        if await self.app.getMember(param[0], param[1]):
+                            await self.app.unmuteMember(param[0], param[1])
+                            self.resp = '禁言成功!'
+                        else:
+                            self.resp = '未找到该群成员!'
+                    else:
+                        self.resp = '未找到该群组!'
             else:
                 self.args_error()
         except PermissionError:
             self.exec_permission_error()
+        except KeyError:
+            self.args_error('too few arguments')
         except AssertionError:
             self.args_error()
         except Exception as e:
