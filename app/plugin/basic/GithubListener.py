@@ -23,20 +23,33 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.github']
-    brief_help = '\r\n[√]\tGithub监听: github'
-    full_help = \
-        '.github\t仅管理可用\r\n' \
-        '.github add [repo_name] [repo_api] [branch(可选)]\t添加监听仓库，可指定监听的分支（,分隔）\r\n' \
-        '.github modify [repo_name] [name|api|branch] [value]\t修改监听仓库配置\r\n' \
-        '.github remove [repo_name]\t删除监听仓库\r\n' \
-        '.github list\t列出所有监听仓库\r\n' \
-        'branch参数可为：\r\n*：监听所有分支\r\n' \
-        '分支名：指定监听的分支，用“,”分隔'
+    brief_help = 'Github监听'
+    full_help = {
+        '仅管理可用': '',
+        'add': {
+            '添加监听仓库': '',
+            '[repo_name]': '自定义仓库名',
+            '[repo_api]': 'Github仓库Api地址',
+            '[branch]': '指定监听的分支(使用 , 分隔)[默认监听全部分支]'
+        },
+        'modify': {
+            '修改监听仓库配置': '',
+            '[repo_name]': '设置的仓库名',
+            '[name | api | branch]': '指定要修改的内容',
+            '[value]': '修改的内容'
+        },
+        'remove': {
+            '删除监听仓库': '',
+            '[repo_name]': '设置的仓库名'
+        },
+        'list': '列出所有监听仓库',
+        'branch参数可为：\n*：监听所有分支\n<分支名>：指定监听的分支，用 , 分隔': ''
+    }
 
     @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if isstartswith(self.msg[0], 'add'):

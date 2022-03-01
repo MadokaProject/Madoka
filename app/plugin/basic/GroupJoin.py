@@ -11,18 +11,22 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.join', '.入群欢迎']
-    brief_help = '\r\n[√]\t入群欢迎: join'
-    full_help = \
-        '.入群欢迎/.join\t仅管理可用\r\n' \
-        '.入群欢迎/.join 设置/set [文本]\t设置入群欢迎消息\r\n' \
-        '.入群欢迎/.join 查看/view\t查看入群欢迎消息\r\n' \
-        '.入群欢迎/.join 开启/enable\t开启入群欢迎\r\n' \
-        '.入群欢迎/.join 关闭/disable\t关闭入群欢迎'
+    brief_help = '入群欢迎'
+    full_help = {
+        '仅管理可用!': '',
+        '设置, set': {
+            '设置入群欢迎消息': '',
+            '[文本]': '欢迎消息'
+        },
+        '查看, view': '查看入群欢迎消息',
+        '开启, enable': '开启入群欢迎',
+        '关闭, disable': '关闭入群欢迎'
+    }
 
     @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if not hasattr(self, 'group'):

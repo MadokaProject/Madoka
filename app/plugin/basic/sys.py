@@ -11,17 +11,24 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.sys', '.系统']
-    brief_help = '\r\n[√]\t系统: sys'
-    full_help = \
-        '.系统/.sys\t仅限主人可用！\r\n' \
-        '.系统/.sys 禁言退群 [0 / 1]\t设置机器人被禁言是否退群\r\n' \
-        '.系统/.sys 上线通知 [0 / 1]\t设置机器人上线是否发送通知'
+    brief_help = '系统'
+    full_help = {
+        '仅限主人可用!': '',
+        '禁言退群': {
+            '设置机器人禁言是否退群': '',
+            '[0 / 1]': '开关'
+        },
+        '上线通知': {
+            '设置机器人上线是否通知该群': '',
+            '[0 / 1]': '开关'
+        }
+    }
     hidden = True
 
     @permission_required(level=Permission.MASTER)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if isstartswith(self.msg[0], ['禁言退群', '上线通知']):

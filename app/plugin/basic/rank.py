@@ -11,14 +11,15 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.rank', '.排行']
-    brief_help = '\r\n[√]\t排行：rank'
-    full_help = \
-        '.排行/.rank\t可以查询各类榜单。\r\n' \
-        '.排行/.rank 发言榜/msg\t显示群内成员发言排行榜'
+    brief_help = '排行'
+    full_help = {
+        '可以查询各类榜单': '',
+        '发言榜, msg': '显示群内成员发言排行榜'
+    }
 
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if isstartswith(self.msg[0], ['发言榜', 'msg']):
@@ -42,7 +43,7 @@ class Module(Plugin):
                     msg.align = 'r'
                     msg.align['群昵称'] = 'l'
                     self.resp.extend(MessageChain.create([
-                        Image(data_bytes=(await create_image(msg.get_string())).getvalue())
+                        Image(data_bytes=await create_image(msg.get_string()))
                     ]))
             else:
                 self.args_error()

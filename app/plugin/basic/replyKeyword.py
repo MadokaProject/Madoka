@@ -11,17 +11,25 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.reply', '.回复']
-    brief_help = '\r\n[√]\t群自定义回复: reply'
-    full_help = \
-        '.回复/.reply\t仅管理员可用\r\n' \
-        '.回复/.reply 添加/add [keyword] [text]\t添加/修改自定义回复\r\n' \
-        '.回复/.reply 删除/remove [keyword]\t删除自定义回复\r\n' \
-        '.回复/.reply 列出/list\t列出自定义回复'
+    brief_help = '群自定义回复'
+    full_help = {
+        '仅管理员可用!': '',
+        '添加, add': {
+            '添加或修改自定义回复': '',
+            '[keyword]': '触发关键词(存在时为修改回复内容)',
+            '[text]': '回复内容'
+        },
+        '删除, remove': {
+            '删除自定义回复': '',
+            '[keyword]': '触发关键词'
+        },
+        '列出, list': '列出自定义回复'
+    }
 
     @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if not hasattr(self, 'group'):

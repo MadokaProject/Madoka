@@ -21,18 +21,39 @@ from app.util.tools import isstartswith, app_path
 
 class Module(Plugin):
     entry = ['.plugin', '.插件']
-    brief_help = '\r\n[√]\t插件管理: plugin'
-    full_help = \
-        '.插件/.plugin\t插件管理工具\r\n' \
-        '.插件/.plugin 开启/open [plugin]\t开启插件\r\n' \
-        '.插件/.plugin 关闭/close [plugin]\t关闭插件\r\n' \
-        '.插件/.plugin 安装/install [plugin]\t安装插件\r\n' \
-        '.插件/.plugin 删除/remove [plugin]\t删除插件\r\n' \
-        '.插件/.plugin 插件大全/listall\t列出插件库所有插件\r\n' \
-        '.插件/.plugin 本地插件/list\t列出本地插件\r\n' \
-        '.插件/.plugin 加载/load [plugin]\t加载插件\r\n' \
-        '.插件/.plugin 卸载/unload [plugin]\t卸载插件\r\n' \
-        '.插件/.plugin 重载/reload [plugin]\t重载(所有|指定)插件'
+    brief_help = '插件管理'
+    full_help = {
+        '开启, open': {
+            '开启插件': '',
+            '[plugin]': '插件英文名'
+        },
+        '关闭, close': {
+            '关闭插件': '',
+            '[plugin]': '插件英文名'
+        },
+        '安装, install': {
+            '安装插件': '',
+            '[plugin]': '插件英文名'
+        },
+        '删除, remove': {
+            '删除插件': '',
+            '[plugin]': '插件英文名'
+        },
+        '插件大全, listall': '列出插件库所有插件',
+        '本地插件, list': '列出本地插件',
+        '加载, load': {
+            '加载插件': '',
+            '[plugin]': '插件英文名'
+        },
+        '卸载, unload': {
+            '卸载插件': '',
+            '[plugin]': '插件英文名'
+        },
+        '重载, reload': {
+            '重载插件': '',
+            '[plugin]': '插件英文名(不指定时重载所有插件)'
+        }
+    }
     base_url = "https://madokaproject.coding.net/p/p/d/plugins/git/raw/master/"
     folder_path = os.path.join(app_path(), f'plugin/extension/')
 
@@ -66,7 +87,7 @@ class Module(Plugin):
     @permission_required(level=Permission.GROUP_ADMIN)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             await self.master_admin_process()

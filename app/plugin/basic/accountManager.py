@@ -9,20 +9,27 @@ from app.util.tools import isstartswith
 
 
 class Module(Plugin):
-    entry = ['.account', '.账号管理', '.am']
-    brief_help = '\r\n[√]\t账号管理: am'
-    full_help = \
-        '.账号管理/.am\t仅限主人可用！\r\n' \
-        '.账号管理/.am 列出群组/gl\t列出机器人的群组列表\r\n' \
-        '.账号管理/.am 列出好友/ul\t列出机器人的好友列表\r\n' \
-        '.账号管理/.am 退出群组/dg [num]\t退出指定群组\r\n' \
-        '.账号管理/.am 删除好友/du [num]\t删除指定好友'
+    entry = ['.am', '.account', '.账号管理']
+    brief_help = '账号管理'
+    full_help = {
+        '仅主人可用': '',
+        '列出群组, gl': '列出机器人的群组列表',
+        '列出好友, ul': '列出机器人的好友列表',
+        '退出群组, dg': {
+            '退出指定群组': '',
+            '[num]': '群号码'
+        },
+        '删除好友, du': {
+            '删除指定好友': '',
+            '[num]': 'QQ号码'
+        }
+    }
     hidden = True
 
     @permission_required(level=Permission.MASTER)
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if isstartswith(self.msg[0], ['列出群组', 'gl']):

@@ -14,25 +14,50 @@ from app.util.tools import isstartswith
 
 class Module(Plugin):
     entry = ['.perm', '.授权']
-    brief_help = '\r\n[√]\t授权: perm'
-    full_help = \
-        '.授权/.perm\t仅管理以上可用！\r\n' \
-        '.授权/.perm au @user\t激活用户(用户可私聊使用)\r\n' \
-        '.授权/.perm du @user\t取消激活(用户不可私聊使用)\r\n' \
-        '.授权/.perm ab @user\t加入黑名单\r\n' \
-        '.授权/.perm db @user\t移出黑名单\r\n' \
-        '.授权/.perm ag [group_id]\t激活群组\r \n' \
-        '.授权/.perm dg [group_id]\t禁用群组\r\n' \
-        '.授权/.perm [al/bl/gl]\t查看对应组\r\n' \
-        '.授权/.perm grant @user [1-3]\t调整用户权限等级\r\n' \
-        '说明:\r\nlevel 1: 普通用户\r\n' \
-        'level 2: 管理员, 与群管理同级别, 能额外触发群管理命令\r\n' \
-        'level 3: 超级管理员, 能触发除机器人系统控制外所有命令\r\n' \
-        '群管理默认为 level 2,无法降级为level 1'
+    brief_help = '授权'
+    full_help = {
+        '仅管理以上可用!': '',
+        'au': {
+            '激活用户(激活后用户可私聊使用)': '',
+            '[@user]': '@群成员 或 私聊发送QQ号码'
+        },
+        'du': {
+            '取消激活用户': '',
+            '[@user]': '@群成员 或 私聊发送QQ号码'
+        },
+        'ab': {
+            '加入黑名单': '',
+            '[@user]': '@群成员 或 私聊发送QQ号码'
+        },
+        'db': {
+            '移出黑名单': '',
+            '[@user]': '@群成员 或 私聊发送QQ号码'
+        },
+        'ag': {
+            '激活群组': '',
+            '[group_id]': '群号码'
+        },
+        'dg': {
+            '禁用群组': '',
+            '[group_id]': '群号码'
+        },
+        'al': '查看用户白名单',
+        'bl': '查看用户黑名单',
+        'gl': '查看群组白名单',
+        'grant': {
+            '调整用户权限等级': '',
+            '[@user]': '@群成员',
+            '[1-3]': '权限等级',
+            'level 1: 普通用户': '',
+            'level 2: 管理员, 与群管理同级别, 能额外触发群管理命令': '',
+            'level 3: 超级管理员, 能触发除机器人系统控制外所有命令': '',
+            '群管理默认为 level 2,且无法降级为level 1': ''
+        }
+    }
 
     async def process(self):
         if not self.msg:
-            self.print_help()
+            await self.print_help()
             return
         try:
             if isstartswith(self.msg[0], ['au', 'du', 'ab', 'db', 'ag', 'dg', 'ul', 'bl', 'gl']):
