@@ -12,7 +12,6 @@ from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.text2image import create_image
 from app.util.tools import isstartswith
-from .game_res.sign_image_generator import get_sign_image
 
 
 class Module(Plugin):
