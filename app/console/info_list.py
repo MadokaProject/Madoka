@@ -8,7 +8,6 @@ class InfoList(ConsoleController):
     entry = 'list'
     brief_help = '查看好友/群组信息'
     full_help = {
-        'list [OPTION]': '',
         '-g, --group': '查看群组信息',
         '-f, --friend': '查看好友信息'
     }

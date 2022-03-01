@@ -1,7 +1,6 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.console import Console
 from graia.ariadne.message.parser.twilight import MatchResult
-from typing import Dict
 
 from app.util.tools import *
 
@@ -33,20 +32,38 @@ class ConsoleController:
         if self.param:
             if isstartswith(self.param[0], ['-h', '--help']):
                 self.print_help()
+            elif isstartswith(self.param[-1], ['-h', '--help']):
+                full_help = self.full_help
+                usage = self.entry
+                try:
+                    for i in self.param[:-1]:
+                        full_help = full_help[i]
+                        usage += f' {i}'
+                    usage += ' [OPTION]'
+                    self.print_help(full_help, usage)
+                except KeyError:
+                    self.args_error()
 
-    def print_help(self):
-        """回送详细帮助"""
-        self.full_help.update({'-h, --help': '获取帮助菜单'})
-        msg = '\n'.join(f"\t{format(command, '<30')}{desc}" for command, desc in self.full_help.items())
-        self.resp = 'Usage:' + msg
+    def print_help(self, full_help=None, usage=None):
+        """回送详细帮助
+
+        :param full_help: 自定义菜单，一般用于子菜单帮助回送
+        :param usage: 自定义 Usage, 一般用于子菜单帮助回送
+        """
+        if not full_help:
+            full_help = self.full_help
+        if not usage:
+            usage = f"{format(f'{self.entry} [OPTION]', '<30')}{self.brief_help}\n"
+        full_help.update({'-h, --help': '获取帮助菜单'})
+        self.resp = f"Usage: {usage}{command_help_parse(full_help)}"
 
     def unkown_error(self, msg=None):
         """未知错误默认回复消息"""
         self.resp = '未知错误，请联系管理员处理！\n' + msg or ''
 
-    def args_error(self):
+    def args_error(self, msg=None):
         """参数错误默认回复消息"""
-        self.resp = '输入的参数错误！'
+        self.resp = msg or '输入的参数错误！'
 
     def arg_type_error(self):
         """类型错误默认回复消息"""
