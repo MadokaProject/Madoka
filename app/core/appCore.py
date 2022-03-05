@@ -54,7 +54,6 @@ class AppCore:
         'mcinfo',
         'game',
         'rank'
-        'test'
     ]
 
     def __new__(cls, config: Config):
