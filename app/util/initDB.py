@@ -7,7 +7,7 @@ from app.util.dao import MysqlDao
 from app.util.tools import app_path
 
 
-async def InitDB():
+async def InitDB(__basic: list):
     """初始化数据表"""
 
     async def InitSysDB() -> None:
@@ -39,20 +39,31 @@ async def InitDB():
                     primary key (name, uid))"
             )
 
-    async def InitPluginDB():
+    async def InitBasicPluginDB():
+        """初始化基础插件数据表"""
+        for plugin in __basic:
+            try:
+                __DB = importlib.import_module(f"app.plugin.basic.{plugin}")
+                if hasattr(__DB, 'DB'):
+                    await __DB.DB().process()
+            except ModuleNotFoundError as __e:
+                logger.error(f"初始化基础插件数据表失败: {plugin} - {__e}")
+
+    async def InitExtensionPluginDB():
         ignore = ["__init__.py", "__pycache__", "base.py"]
-        for DB in os.listdir(os.path.join(app_path(), "plugin")):
+        for DB in os.listdir(os.path.join(app_path(), "plugin/extension")):
             try:
                 if DB not in ignore and DB.split('.')[-1] == 'py' and not os.path.isdir(DB):
-                    __DB = importlib.import_module(f"app.plugin.{DB.split('.')[0]}")
+                    __DB = importlib.import_module(f"app.plugin.extension.{DB.split('.')[0]}")
                     if hasattr(__DB, 'DB'):
                         await __DB.DB().process()
             except ModuleNotFoundError as __e:
-                logger.error(f"初始化插件数据表失败: {DB} - {__e}")
+                logger.error(f"初始化扩展插件数据表失败: {DB} - {__e}")
 
     try:
         await InitSysDB()
-        await InitPluginDB()
+        await InitBasicPluginDB()
+        await InitExtensionPluginDB()
         logger.success('初始化数据库成功')
     except Exception as e:
         logger.error('初始化数据库失败: ' + str(e))

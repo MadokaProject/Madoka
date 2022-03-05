@@ -41,6 +41,21 @@ class AppCore:
     __config: Config = None
     __launched: bool = False
     __group_handler_chain = {}
+    __basic = [
+        'sys',
+        'power',
+        'accountManager',
+        'madoka_manager',
+        'csm',
+        'permission',
+        'replyKeyword',
+        'GroupJoin',
+        'GithubListener',
+        'mcinfo',
+        'game',
+        'rank'
+        'test'
+    ]
 
     def __new__(cls, config: Config):
         if not cls.__instance:
@@ -64,7 +79,6 @@ class AppCore:
                     ),
                     log=config.HEARTBEAT_LOG
                 ),
-                max_retry=5,
                 chat_log_config=False
             )
             self.__inc = InterruptControl(self.__bcc)
@@ -150,7 +164,7 @@ class AppCore:
     async def bot_launch_init(self):
         try:
             threading.Thread(daemon=True, target=WebServer).start()
-            await InitDB()
+            await InitDB(self.__basic)
             self.__loop.create_task(power(self.__app, sys.argv))
             group_list = await self.__app.getGroupList()
             logger.info("本次启动活动群组如下：")
@@ -168,21 +182,7 @@ class AppCore:
         """加载全部插件"""
         def load_basic_plugin():
             """加载基础插件"""
-            basic = [
-                'sys',
-                'power',
-                'accountManager',
-                'madoka_manager',
-                'csm',
-                'permission',
-                'replyKeyword',
-                'GroupJoin',
-                'GithubListener',
-                'mcinfo',
-                'game',
-                'rank'
-            ]
-            for plugin in basic:
+            for plugin in self.__basic:
                 try:
                     module = importlib.import_module(f"app.plugin.basic.{plugin}")
                     self.__plugin.append(module)
