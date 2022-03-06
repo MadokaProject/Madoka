@@ -18,7 +18,7 @@ def repeated(uid, qid, num):
             [uid, num]
         )
         if len(res) != num:
-            raise Exception()
+            raise Exception('消息数量不足, 无法进行复读判断')
         if res[0][0].startswith('[图片]'):
             return False
         for i in range(len(res) - 1):
