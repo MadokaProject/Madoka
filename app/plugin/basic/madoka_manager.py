@@ -129,7 +129,7 @@ class Module(Plugin):
                         pip(['install', '-r', f'{self.folder_path}{plugin}_res/requirements.txt'])
                     await core.load_plugin(plugin)
                     logger.success('插件安装成功: ' + plugin)
-                    return MessageChain.create([Plain(('插件安装成功: ' if upgrade else '插件升级成功: ') + plugin)])
+                    return MessageChain.create([Plain(('插件升级成功: ' if upgrade else '插件安装成功: ') + plugin)])
                 else:
                     logger.error('插件安装失败，请重试' + plugin_list[plugin]['name'])
                     return MessageChain.create([Plain('插件安装失败，请重试: ' + plugin)])

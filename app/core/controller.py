@@ -134,7 +134,7 @@ class Controller:
         if send_help:
             resp += (
                     "\n========================================================"
-                    + "\n详细功能帮助菜单请发送 .<功能> help, 例如: .gp help"
+                    + "\n详细功能帮助菜单请发送 .<功能> --help, -h, 例如: .gp --help"
                     + "\n管理员可通过插件管理工具开关功能"
                     + "\n所有功能均需添加前缀 ."
                     + "\n源码: github.com/MadokaProject/Madoka"
