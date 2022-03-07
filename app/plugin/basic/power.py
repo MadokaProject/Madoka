@@ -46,7 +46,7 @@ class Module(Plugin):
                     shell = [f'-g {self.group.id}', f'-t {self.member.id}']
                 elif hasattr(self, 'friend'):
                     shell = f'-t {self.friend.id}'
-                if other_args.__contains__('u'):
+                if subcommand.__contains__('u'):
                     timeout = 10
                     if other_args.__contains__('timeout') and other_args['timeout'] > 0:
                         timeout = other_args['timeout']
@@ -63,11 +63,11 @@ class Module(Plugin):
                             return MessageChain.create([At(self.member.id), Plain(" 升级超时！")])
                         else:
                             return MessageChain.create([Plain("升级超时！")])
-                elif other_args.__contains__('r'):
+                elif subcommand.__contains__('r'):
                     con.stop()
                     restart('-r', *shell)
-                con.stop()
                 await self.app.stop()
+                con.stop()
             return self.args_error()
         except Exception as e:
             logger.exception(e)
