@@ -5,12 +5,14 @@ from pathlib import Path
 
 import aiohttp.client
 import requests
+from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar, AnyUrl
 from graia.ariadne.context import enter_context
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.api.doHttp import doHttpRequest
+from app.core.command_manager import CommandManager
 from app.core.config import Config
 from app.core.settings import REPO
 from app.plugin.base import Plugin, Scheduler
@@ -18,90 +20,84 @@ from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.onlineConfig import save_config
 from app.util.tools import app_path
-from app.util.tools import isstartswith
 
 
 class Module(Plugin):
-    entry = ['.github']
+    entry = 'github'
     brief_help = 'Github监听'
-    full_help = {
-        '仅管理可用': '',
-        'add': {
-            '添加监听仓库': '',
-            '[repo_name]': '自定义仓库名',
-            '[repo_api]': 'Github仓库Api地址',
-            '[branch]': '指定监听的分支(使用 , 分隔)[默认监听全部分支]'
-        },
-        'modify': {
-            '修改监听仓库配置': '',
-            '[repo_name]': '设置的仓库名',
-            '[name | api | branch]': '指定要修改的内容',
-            '[value]': '修改的内容'
-        },
-        'remove': {
-            '删除监听仓库': '',
-            '[repo_name]': '设置的仓库名'
-        },
-        'list': '列出所有监听仓库',
-        'branch参数可为：\n*：监听所有分支\n<分支名>：指定监听的分支，用 , 分隔': ''
-    }
+    manager: CommandManager = CommandManager.get_command_instance()
 
     @permission_required(level=Permission.GROUP_ADMIN)
-    async def process(self):
-        if not self.msg:
-            await self.print_help()
-            return
+    @manager(Alconna(
+        headers=manager.headers,
+        command=entry,
+        options=[
+            Subcommand('add', help_text='添加监听仓库', args=Args['repo': str, 'api': AnyUrl], options=[
+                Option('--branch', alias='-b', args=Args['branch': str: '*'], help_text='指定监听的分支,使用 , 分隔, 默认监听全部分支')
+            ]),
+            Subcommand('modify', help_text='修改监听仓库配置', args=Args['repo': str], options=[
+                Option('--name', alias='-n', args=Args['name': str], help_text='修改仓库名'),
+                Option('--api', alias='-a', args=Args['api': AnyUrl], help_text='修改监听API'),
+                Option('--branch', alias='-b', args=Args['branch': str: '*'], help_text='修改监听的分支, 使用 , 分隔, *: 监听所有分支')
+            ]),
+            Subcommand('remove', help_text='删除监听仓库', args=Args['repo': str]),
+            Subcommand('list', help_text='列出当前群组所有监听仓库')
+        ],
+        help_text='Github监听, 仅管理可用'
+    ))
+    async def process(self, command: Arpamar, alc: Alconna):
+        subcommand = command.subcommands
+        other_args = command.other_args
+        if not subcommand:
+            return await self.print_help(alc.get_help())
         try:
-            if isstartswith(self.msg[0], 'add'):
-                assert len(self.msg) >= 3
+            if subcommand.__contains__('add'):
+                branch = other_args['branch'].replace('，', ',').split(',') if other_args.__contains__('branch') else [
+                    '*']
                 group_id = str(self.group.id)
-                if REPO.__contains__(group_id) and self.msg[1] in REPO[group_id]:
-                    self.resp = MessageChain.create([Plain('添加失败，该仓库名已存在！')])
-                    return
-                repo_info = {self.msg[1]: {'api': self.msg[2],
-                                           'branch': self.msg[3].replace('，', ',').split(',') if len(
-                                               self.msg) == 4 else ['*']}}
+                if REPO.__contains__(group_id) and other_args['repo'] in REPO[group_id]:
+                    return MessageChain.create([Plain('添加失败，该仓库名已存在!')])
+                repo_info = {other_args['repo']: {'api': other_args['api'], 'branch': branch}}
                 if await save_config('repo', group_id, repo_info, model='add'):
-                    self.resp = MessageChain.create([Plain("添加成功！")])
                     if not REPO.__contains__(group_id):
                         REPO.update({group_id: {}})
                     REPO[group_id].update(repo_info)
-            elif isstartswith(self.msg[0], 'modify'):
-                assert len(self.msg) == 4 and self.msg[2] in ['name', 'api', 'branch']
+                    return MessageChain.create([Plain("添加成功!")])
+            elif subcommand.__contains__('modify'):
                 group_id = str(self.group.id)
-                if not REPO.__contains__(group_id) or self.msg[1] not in REPO[group_id]:
-                    self.resp = MessageChain.create([Plain('修改失败，该仓库名不存在！')])
-                    return
-                if self.msg[2] == 'name':
-                    await save_config('repo', group_id, self.msg[1], model='remove')
-                    await save_config('repo', group_id, {self.msg[3]: REPO[group_id][self.msg[1]]}, model='add')
-                    REPO[group_id][self.msg[3]] = REPO[group_id].pop(self.msg[1])
-                else:
-                    self.msg[3] = self.msg[3] if self.msg[2] == 'api' else self.msg[3].replace('，', ',').split(',')
-                    REPO[group_id][self.msg[1]][self.msg[2]] = self.msg[3]
-                    await save_config('repo', group_id, {self.msg[1]: REPO[group_id][self.msg[1]]}, model='add')
-                self.resp = MessageChain.create([Plain("修改成功！")])
-            elif isstartswith(self.msg[0], 'remove'):
-                assert len(self.msg) == 2
+                repo = other_args['repo']
+                if not other_args:
+                    return self.args_error()
+                if not REPO.__contains__(group_id) or repo not in REPO[group_id]:
+                    return MessageChain.create([Plain('修改失败，该仓库名不存在!')])
+                if other_args.__contains__('name'):
+                    await save_config('repo', group_id, repo, model='remove')
+                    await save_config('repo', group_id, {other_args['name']: REPO[group_id][repo]},
+                                      model='add')
+                    REPO[group_id][other_args['name']] = REPO[group_id].pop(repo)
+                    repo = other_args['name']
+                if other_args.__contains__('api'):
+                    REPO[group_id][repo]['api'] = other_args['api']
+                    await save_config('repo', group_id, {repo: REPO[group_id][repo]}, model='add')
+                if other_args.__contains__('branch'):
+                    REPO[group_id][repo]['branch'] = other_args['branch'].replace('，', ',').split(',')
+                    await save_config('repo', group_id, {repo: REPO[group_id][repo]}, model='add')
+                return MessageChain.create([Plain("修改成功!")])
+            elif subcommand.__contains__('remove'):
                 group_id = str(self.group.id)
-                if not REPO.__contains__(group_id) or self.msg[1] not in REPO[group_id]:
-                    self.resp = MessageChain.create([Plain('删除失败，该仓库名不存在！')])
-                    return
-                await save_config('repo', group_id, self.msg[1], model='remove')
-                REPO[group_id].pop(self.msg[1])
-                self.resp = MessageChain.create([Plain("删除成功！")])
-            elif isstartswith(self.msg[0], 'list'):
-                self.resp = MessageChain.create([Plain(
-                    '\r\n'.join([f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}" for name, info in
-                                 REPO[str(self.group.id)].items()]))])
-            else:
-                self.args_error()
-                return
-        except AssertionError:
-            self.args_error()
+                if not REPO.__contains__(group_id) or other_args['repo'] not in REPO[group_id]:
+                    return MessageChain.create([Plain('删除失败，该仓库名不存在!')])
+                await save_config('repo', group_id, other_args['repo'], model='remove')
+                REPO[group_id].pop(other_args['repo'])
+                return MessageChain.create([Plain("删除成功！")])
+            elif subcommand.__contains__('list'):
+                return MessageChain.create([Plain('\r\n'.join([
+                    f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}" for name, info in
+                    REPO[str(self.group.id)].items()]))])
+            return self.args_error()
         except Exception as e:
             logger.exception(e)
-            self.unkown_error()
+            return self.unkown_error()
 
 
 class Tasker(Scheduler):

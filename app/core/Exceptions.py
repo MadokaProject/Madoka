@@ -1,3 +1,13 @@
+class CommandManagerInitialized(Exception):
+    """命令管理器未初始化"""
+    pass
+
+
+class CommandManagerAlreadyInitialized(Exception):
+    """命令管理器重复初始化"""
+    pass
+
+
 class AppCoreNotInitialized(Exception):
     """核心模块未初始化"""
     pass

@@ -10,7 +10,7 @@ def permission_required(level: int = Permission.GROUP_ADMIN):
             if Permission.require(args[0].member if hasattr(args[0], 'group') else args[0].friend, level):
                 return await func(*args, **kwargs)
             else:
-                args[0].not_admin()
+                return args[0].not_admin()
 
         return with_wrapper
 

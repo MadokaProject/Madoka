@@ -17,7 +17,6 @@ class MysqlDao:
             self.cur = self.db.cursor()
             return self
         except Exception as e:
-            print(e)
             raise e
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -29,7 +28,6 @@ class MysqlDao:
             self.cur.execute(sql, args=args)
             query_result = self.cur.fetchall()
         except Exception as e:
-            print(e)
             raise e
         return query_result
 
@@ -39,6 +37,5 @@ class MysqlDao:
             self.db.commit()
         except Exception as e:
             self.db.rollback()
-            print(e)
             raise e
         return effect_rows

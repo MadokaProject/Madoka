@@ -4,10 +4,12 @@ import struct
 import time
 
 import jsonpath
+from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
+from app.core.command_manager import CommandManager
 from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.dao import MysqlDao
@@ -140,21 +142,53 @@ class StatusPing:
 
 
 class Module(Plugin):
-    entry = ['.mc', '.mcinfo', '.info']
+    entry = 'mc'
     brief_help = 'MC状态'
-    full_help = {
-        '无参数': '检测默认MC服务器',
-        '[ip]': 'MC服务器域名或IP',
-        '[port]': 'MC服务器端口号',
-        '[timeout]': '设置超时时间',
-        'set': {
-            '设置默认MC服务器(仅主人可用)': '',
-            '[ip]': 'MC服务器域名或IP',
-            '[port]': 'MC服务器端口号',
-            '[timeout]': '设置超时时间'
-        },
-        'ld': '查看默认服务器’'
-    }
+    manager: CommandManager = CommandManager.get_command_instance()
+
+    @manager(Alconna(
+        headers=manager.headers,
+        command=entry,
+        options=[
+            Subcommand('view', help_text='查看默认服务器'),
+            Subcommand('set', help_text='设置默认MC服务器(仅主人可用)', options=[
+                Option('--ip', alias='-i', help_text='域名或IP', args=Args['ip': str: '127.0.0.1']),
+                Option('--port', alias='-p', help_text='端口号', args=Args['port': int: 25565])
+            ]),
+            Option('--ip', alias='-i', help_text='域名或IP', args=Args['ip': str: '127.0.0.1']),
+            Option('--port', alias='-p', help_text='端口号', args=Args['port': int: 25565]),
+            Option('--timeout', alias='-t', help_text='超时时间', args=Args['timeout': int: 10])
+        ],
+        help_text='检测MC服务器信息'
+    ))
+    async def process(self, command: Arpamar, alc: Alconna):
+        try:
+            with MysqlDao() as db:
+                res = db.query('SELECT ip,port FROM mc_server WHERE `default`=1')
+            default = [res[0][0], res[0][1]]
+            subcommand = command.subcommands
+            other_args = command.other_args
+            if subcommand.__contains__('set'):
+                ip = other_args['ip'] if other_args.__contains__('ip') else '127.0.0.1'
+                port = other_args['port'] if other_args.__contains__('port') else 25565
+                return await self.set_default_mc(ip, port)
+            elif subcommand.__contains__('view'):
+                return MessageChain.create([Plain(f'默认服务器: {default[0]}:{default[1]}')])
+            else:
+                if other_args:
+                    ip = other_args['ip'] if other_args.__contains__('ip') else '127.0.0.1'
+                    port = other_args['port'] if other_args.__contains__('port') else 25565
+                    timeout = other_args['timeout'] if other_args.__contains__('timeout') else 10
+                    default = [ip, port, timeout]
+                return MessageChain.create([Plain(StatusPing(*default).get_status(str_format=True))])
+        except EnvironmentError as e:
+            logger.warning(e)
+            return MessageChain.create([Plain('由于目标计算机积极拒绝，无法连接。服务器可能已关闭。')])
+        except ValueError:
+            return self.arg_type_error()
+        except Exception as e:
+            logger.exception(e)
+            return self.unkown_error()
 
     @permission_required(level=Permission.MASTER)
     async def set_default_mc(self, ip='127.0.0.1', port=25565):
@@ -177,34 +211,4 @@ class Module(Plugin):
                     'INSERT INTO mc_server (ip, port, `default`, listen, delay) VALUES (%s, %s, 1, 0, 60)',
                     [default_ip, default_port]
                 )
-        self.resp = MessageChain.create([Plain('设置成功！')])
-
-    async def process(self):
-        try:
-            with MysqlDao() as db:
-                res = db.query('SELECT ip,port FROM mc_server WHERE `default`=1')
-            default = [res[0][0], res[0][1]]
-            if self.msg:
-                if self.msg[0].startswith('set'):
-                    await self.set_default_mc(*self.msg[1:])
-                    return
-                elif self.msg[0].startswith('ld'):
-                    self.resp = MessageChain.create([
-                        Plain(f'默认服务器: {default[0]}:{default[1]}\r\n')
-                    ])
-                    return
-                else:
-                    default = self.msg
-            self.resp = MessageChain.create([Plain(
-                StatusPing(*default).get_status(str_format=True))
-            ])
-        except EnvironmentError as e:
-            print(e)
-            self.resp = MessageChain.create([Plain(
-                '由于目标计算机积极拒绝，无法连接。服务器可能已关闭。'
-            )])
-        except ValueError:
-            self.arg_type_error()
-        except Exception as e:
-            logger.exception(e)
-            self.unkown_error()
+        return MessageChain.create([Plain('设置成功!')])
