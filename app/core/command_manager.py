@@ -62,8 +62,8 @@ class CommandManager:
 
     def __call__(self, alc: Alconna):
         def decorator(func):
-            namespace = inspect.getfile(func).split('\\')[-3:-1]
-            alc.reset_namespace(f'{namespace[0]}.{namespace[1]}')
+            namespace = inspect.getfile(func).replace('\\', '/').split('/')
+            alc.reset_namespace(f'{namespace[-3]}.{namespace[-2]}')
             self.register(alc, func.__name__)
 
             @functools.wraps(func)
