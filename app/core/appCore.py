@@ -5,6 +5,7 @@ import sys
 import threading
 import traceback
 from asyncio.events import AbstractEventLoop
+from pathlib import Path
 
 from graia.ariadne.adapter import DefaultAdapter
 from graia.ariadne.app import Ariadne
@@ -14,11 +15,11 @@ from graia.broadcast import Broadcast
 from graia.broadcast.interrupt import InterruptControl
 from graia.scheduler import GraiaScheduler
 from loguru import logger
-from pathlib import Path
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
 from app.core.Exceptions import *
+from app.core.command_manager import CommandManager, command_manager
 from app.core.config import Config
 from app.extend.power import power
 from app.extend.schedule import custom_schedule, TaskerProcess
@@ -36,6 +37,7 @@ class AppCore:
     __bcc: Broadcast = None
     __inc: InterruptControl = None
     __scheduler: GraiaScheduler = None
+    __manager = None
     __plugin = []
     __thread_pool = None
     __config: Config = None
@@ -95,6 +97,7 @@ class AppCore:
                     ]
                 )
             )
+            self.__manager = command_manager
             AppCore.__first_init = True
             logger.info("Initialize end")
         else:
@@ -133,6 +136,12 @@ class AppCore:
 
     def get_inc(self):
         return self.__inc
+
+    def get_manager(self) -> CommandManager:
+        if self.__manager:
+            return self.__manager
+        else:
+            raise CommandManagerInitialized
 
     def get_plugin(self) -> list:
         if self.__plugin:
@@ -179,6 +188,7 @@ class AppCore:
 
     def load_plugin_modules(self):
         """加载全部插件"""
+
         def load_basic_plugin():
             """加载基础插件"""
             for plugin in self.__basic:
@@ -200,23 +210,26 @@ class AppCore:
                             logger.success("成功加载插件: " + module.__name__)
                 except ModuleNotFoundError as e:
                     logger.error(f"plugin 模块: {plugin} - {e}")
+
         ignore = ["__init__.py", "__pycache__"]
         self.__plugin.clear()
         load_basic_plugin()
         Path(app_path() + "/plugin/extension").mkdir(exist_ok=True)
         load_extension_plugin()
 
-    def reload_plugin_modules(self, plugin=None) -> str:
+    def reload_plugin_modules(self, plugin='all_plugin') -> str:
         """重载插件
 
         :param plugin: 指定插件名
         """
-        if not plugin:
+        if plugin == 'all_plugin':
             for module in self.__plugin:
+                self.__manager.delete(module)
                 importlib.reload(module)
             return '重载成功'
         for module in self.__plugin:
             if plugin == str(module.__name__).split('.')[-1]:
+                self.__manager.delete(module)
                 importlib.reload(module)
                 return f'{plugin} 重载成功'
         return '重载失败，无此插件！'
@@ -224,16 +237,20 @@ class AppCore:
     async def load_plugin(self, plugin):
         """加载插件"""
         try:
-            plugin = importlib.import_module('app.plugin.extension.' + plugin)
-            if hasattr(plugin, 'Module'):
-                self.__plugin.append(plugin)
-                logger.success("成功加载插件: " + plugin.__name__)
-                return "加载插件成功: " + plugin.__name__
+            plugin = 'app.plugin.extension.' + plugin
+            if not await self.fild_plugin(plugin):
+                plugin = importlib.import_module(plugin)
+                if hasattr(plugin, 'Module'):
+                    self.__plugin.append(plugin)
+                    logger.success("成功加载插件: " + plugin.__name__)
+                    return "加载扩展插件成功: " + plugin.__name__
+                else:
+                    return '这或许不是一个插件？'
             else:
-                return '这或许不是一个插件？'
+                return '该扩展插件已加载!'
         except ModuleNotFoundError as e:
-            logger.error(f"插件加载失败: {e}")
-            return f'插件加载失败: {e}'
+            logger.error(f"扩展插件加载失败: {e}")
+            return f'扩展插件加载失败: {e}'
 
     def unload_plugin(self, plugin):
         """卸载插件"""
@@ -242,9 +259,10 @@ class AppCore:
             sys.modules.pop(plugin)
             for __plugin in self.__plugin:
                 if plugin == __plugin.__name__:
+                    self.__manager.delete(__plugin)
                     self.__plugin.remove(__plugin)
-            return '卸载插件成功: ' + plugin
-        return '该插件未加载'
+            return '卸载扩展插件成功: ' + plugin
+        return '该扩展插件未加载'
 
     async def fild_plugin(self, plugin) -> bool:
         """查找插件是否加载"""
@@ -260,7 +278,8 @@ class AppCore:
         for __dir in ['basic', 'extension']:
             for __scheduler in os.listdir(os.path.join(app_path(), f"plugin/{__dir}")):
                 try:
-                    if __scheduler not in ignore and __scheduler.split('.')[-1] == 'py' and not os.path.isdir(__scheduler):
+                    if __scheduler not in ignore and __scheduler.split('.')[-1] == 'py' and not os.path.isdir(
+                            __scheduler):
                         module = importlib.import_module(f"app.plugin.{__dir}.{__scheduler.split('.')[0]}")
                         if hasattr(module, "Tasker"):
                             obj = module.Tasker(self.__app)

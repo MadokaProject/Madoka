@@ -1,4 +1,5 @@
 import threading
+
 from flask_restful import Resource
 
 from webapp.util.tools import GET_RET_JSON

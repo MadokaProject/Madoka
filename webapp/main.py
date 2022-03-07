@@ -1,7 +1,8 @@
+from logging.config import dictConfig
+
 from flask import Flask
 from flask_cors import CORS
 from flask_restful import Api
-from logging.config import dictConfig
 
 from app.core.config import Config
 from webapp.api.rest.health import Health

@@ -21,8 +21,7 @@ class BotGroup:
                 ):
                     raise Exception()
             elif self.active == 1:
-                if not db.update("UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id]):
-                    raise Exception()
+                db.update("UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id])
 
     async def group_deactivate(self):
         """取消激活"""
@@ -32,5 +31,4 @@ class BotGroup:
                 [self.group_id]
             )
             if res[0][0]:
-                if not db.update("UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id]):
-                    raise Exception()
+                db.update("UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id])

@@ -11,7 +11,9 @@ from app.console import *
 from app.core.appCore import AppCore
 from app.util.tools import parse_args, isstartswith
 
-con: Console = AppCore.get_console(AppCore.get_core_instance())
+core: AppCore = AppCore.get_core_instance()
+con: Console = core.get_console()
+manager = core.get_manager()
 
 
 @con.register([Twilight(['params' @ WildcardMatch()])])
@@ -20,10 +22,10 @@ async def console_handler(
         console: Console,
         params: MatchResult,
 ):
-    if param := params.result.asDisplay():
+    if params := params.result.asDisplay():
         send_help = False  # 是否为主菜单帮助
         resp = 'Usage: [COMMAND] [OPTION]'
-        param = parse_args(param, keep_head=True)
+        param = parse_args(params, keep_head=True)
         # 判断是否为主菜单帮助
         if isstartswith(param[0], 'help', full_match=True):
             send_help = True
@@ -33,7 +35,18 @@ async def console_handler(
             if send_help:
                 resp += f"\n\t{format(obj.entry, '<30')}\t{obj.brief_help}"
             elif isstartswith(param[0], obj.entry, full_match=True):
-                resp = await obj.get_resp()
+                namespace = obj.__module__.split('.')
+                alc_s = manager.get_commands()[f'{namespace[-3]}.{namespace[-2]}']
+                for alc in alc_s.keys():
+                    result = alc.parse(params)
+                    if result.head_matched:
+                        if result.matched:
+                            resp = await getattr(obj, alc_s[alc])(result)
+                        elif result.error_data or result.error_info:
+                            resp = '参数错误!'
+                        else:
+                            resp = None
+                        break
                 await _do_send(resp)
                 return
 

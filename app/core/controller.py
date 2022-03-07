@@ -4,6 +4,7 @@ from graia.ariadne.message.element import Plain, Source, Image
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
+from app.core.command_manager import CommandManager
 from app.core.settings import *
 from app.trigger import *
 from app.util.control import Permission
@@ -28,6 +29,8 @@ class Controller:
                 self.source = arg  # 消息标识
             elif isinstance(arg, InterruptControl):
                 self.inc = arg  # 中断器
+            elif isinstance(arg, CommandManager):
+                self.manager = arg
             elif isinstance(arg, Ariadne):
                 self.app = arg  # 程序执行主体
 
@@ -65,7 +68,7 @@ class Controller:
         if (getattr(self, 'friend', None) or getattr(self, 'member', None)).id in BANNED_USER:
             return
 
-        if msg[0] not in '.,;!?。，；！？/\\':  # 判断是否为指令
+        if msg[0] not in self.manager.headers:  # 判断是否为指令
             return
 
         # 指令规范化
@@ -104,11 +107,22 @@ class Controller:
                     si = " " + str(i)
                 else:
                     si = str(i)
-                resp += f"\n{si}  {statu}  {obj.brief_help}: {obj.entry[0][1:]}"
+                resp += f"\n{si}  {statu}  {obj.brief_help}: {obj.entry}"
                 i += 1
-            elif isstartswith(msg.split(' ')[0], obj.entry, full_match=1):  # 指令执行
+            elif isstartswith(msg.split()[0][1:], obj.entry, full_match=1):  # 指令执行
                 if obj.enable:
-                    resp = await obj.get_resp()
+                    namespace = plugin.__name__.split('.')
+                    alc_s = self.manager.get_commands()[f'{namespace[-3]}.{namespace[-2]}']
+                    for alc in alc_s.keys():
+                        result = alc.parse(self.message)
+                        if result.head_matched:
+                            if result.matched:
+                                resp = await getattr(obj, alc_s[alc])(result, alc)
+                            elif result.error_data or result.error_info:
+                                resp = MessageChain.create(Plain('参数错误!'))
+                            else:
+                                resp = MessageChain.create([Image(data_bytes=await create_image(alc.get_help(), 80))])
+                            break
                 else:
                     resp = MessageChain.create([
                         Plain('此功能未开启！')

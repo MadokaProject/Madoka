@@ -1,6 +1,6 @@
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, Source, Image
+from graia.ariadne.message.element import Plain, Image, Source
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
@@ -14,11 +14,9 @@ class Plugin:
     """插件继承此父类，并重写下面四个参数
     :param entry: 程序入口点参数
     :param brief_help: 简短帮助，显示在主帮助菜单
-    :param full_help: 完整帮助，显示在插件帮助菜单
     """
-    entry = ['.plugin']
+    entry = 'plugin'
     brief_help = 'this is a brief help.'
-    full_help = {'command': 'this is a detail help.'}
     enable = True
     hidden = False
 
@@ -29,11 +27,11 @@ class Plugin:
         for arg in args:
             if isinstance(arg, Friend):
                 self.friend: Friend = arg  # 消息来源 好友
-                if not check_permit(arg.id, 'friend', self.entry[0][1:]):
+                if not check_permit(arg.id, 'friend', self.entry):
                     self.enable = False
             elif isinstance(arg, Group):
                 self.group: Group = arg  # 消息来源 群聊
-                if not check_permit(arg.id, 'group', self.entry[0][1:]):
+                if not check_permit(arg.id, 'group', self.entry):
                     self.enable = False
             elif isinstance(arg, Member):
                 self.member: Member = arg  # 群聊消息发送者
@@ -43,7 +41,6 @@ class Plugin:
                 self.inc = arg
             elif isinstance(arg, Ariadne):
                 self.app: Ariadne = arg  # 程序执行主体
-        self.resp = None
 
     def get_qid(self):
         """获取发言人QQ号"""
@@ -52,67 +49,60 @@ class Plugin:
         elif hasattr(self, 'friend'):
             return self.friend.id
 
-    async def _pre_check(self):
-        """此方法检查是否为插件帮助指令"""
-        if self.msg:
-            if isstartswith(self.msg[0], ['help', '帮助']):
-                await self.print_help()
+    @staticmethod
+    async def print_help(help_doc: str):
+        return MessageChain.create([Image(data_bytes=await create_image(help_doc, 80))])
 
-    async def print_help(self, full_help=None, usage=None):
-        """回送插件详细帮助
-
-        :param full_help: 自定义菜单，一般用于子菜单帮助回送
-        :param usage: 自定义 Usage, 一般用于子菜单帮助回送
-        """
-        if not full_help:
-            full_help = self.full_help
-        if not usage:
-            usage = f"{format(f'{self.entry} [OPTION]', '<30')} {self.brief_help}\n"
-        full_help.update({'help': '获取帮助菜单'})
-        self.resp = MessageChain.create([Image(data_bytes=await create_image(f"Usage: {usage}{command_help_parse(full_help)}", 100))])
-
-    def unkown_error(self):
+    @staticmethod
+    def unkown_error():
         """未知错误默认回复消息"""
-        self.resp = MessageChain.create([Plain(
+        return MessageChain.create([Plain(
             '未知错误，请联系管理员处理！'
         )])
 
-    def args_error(self):
+    @staticmethod
+    def args_error():
         """参数错误默认回复消息"""
-        self.resp = MessageChain.create([Plain(
+        return MessageChain.create([Plain(
             '输入的参数错误！'
         )])
 
-    def index_error(self):
+    @staticmethod
+    def index_error():
         """索引错误默认回复消息"""
-        self.resp = MessageChain.create([Plain(
+        return MessageChain.create([Plain(
             '索引超出范围！'
         )])
 
-    def arg_type_error(self):
+    @staticmethod
+    def arg_type_error():
         """类型错误默认回复消息"""
-        self.resp = MessageChain.create([Plain(
+        return MessageChain.create([Plain(
             '参数类型错误！'
         )])
 
-    def exec_permission_error(self):
+    @staticmethod
+    def exec_permission_error():
         """权限不够回复消息"""
-        self.resp = MessageChain.create([Plain(
+        return MessageChain.create([Plain(
             '没有相应操作权限！'
         )])
 
-    def point_not_enough(self):
-        self.resp = MessageChain.create([Plain(
+    @staticmethod
+    def point_not_enough():
+        return MessageChain.create([Plain(
             '你的积分不足哦！'
         )])
 
-    def not_admin(self):
-        self.resp = MessageChain.create([Plain(
+    @staticmethod
+    def not_admin():
+        return MessageChain.create([Plain(
             '你的权限不足，无权操作此命令！'
         )])
 
-    def exec_success(self):
-        self.resp = MessageChain.create([Plain(
+    @staticmethod
+    def exec_success():
+        return MessageChain.create([Plain(
             '指令执行成功！'
         )])
 
@@ -121,20 +111,6 @@ class Plugin:
         if Permission.require(self.member if hasattr(self, 'group') else self.friend, level):
             return True
         return False
-
-    async def process(self):
-        """子类必须重写此方法，此方法用于修改要发送的信息内容"""
-        raise NotImplementedError
-
-    async def get_resp(self):
-        """程序默认调用的方法以获取要发送的信息"""
-        await self._pre_check()
-        if not self.resp:
-            await self.process()
-        if self.resp:
-            return self.resp
-        else:
-            return None
 
 
 class Scheduler:
