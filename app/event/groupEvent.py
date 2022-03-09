@@ -38,7 +38,8 @@ class MemberCardChange(Event):
                     self.member_card_change.member.group.id, MessageChain.create([Plain("请不要修改我的群名片")])
                 )
         else:
-            if await get_config('member_card_change', self.member_card_change.member.group.id):
+            if await get_config('member_card_change', self.member_card_change.member.group.id) and \
+                    self.member_card_change.current not in [None, '']:
                 await safeSendGroupMessage(self.member_card_change.member.group, MessageChain.create([
                     At(self.member_card_change.member.id),
                     Plain(f" 的群名片由 {self.member_card_change.origin} 被修改为 {self.member_card_change.current}")

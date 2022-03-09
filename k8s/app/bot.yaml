@@ -43,6 +43,10 @@ spec:
           volumeMounts:
             - name: code
               mountPath: /app
+              subPath: Madoka
+            - name: code
+              mountPath: /root/.ssh
+              subPath: .ssh
       volumes:
         - name: code
           persistentVolumeClaim:
