@@ -1,18 +1,18 @@
 import configparser
-import os
 
-from app.util.tools import app_path
+from pathlib import Path
 
 
 class Config:
+    INFO_NAME = 'Madoka'
+    INFO_VERSION = '2.0.0-rc4'
+    INFO_DOCS = 'https://madoka.colsrch.cn'
+    INFO_REPO = 'https://github.com/MadokaProject/Madoka'
+    CONFIG_FILE = Path(__file__).parent.joinpath('config.ini')
+
     def __init__(self):
         self.cf = configparser.ConfigParser()
-        self.cf.read(os.sep.join([app_path(), 'core', 'config.ini']), encoding='utf-8')
-
-        self.INFO_NAME = 'Madoka'
-        self.INFO_VERSION = '2.0.0-rc4'
-        self.INFO_DOCS = 'https://madoka.colsrch.cn'
-        self.INFO_REPO = 'https://github.com/MadokaProject/Madoka'
+        self.cf.read(self.CONFIG_FILE, encoding='utf-8')
 
         self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='127.0.0.1')
         self.LOGIN_PORT = self.cf.get('bot', 'port', fallback='8080')
@@ -52,5 +52,9 @@ class Config:
         else:
             self.cf.set('bot', 'debug', 'true')
             self.DEBUG = True
-        with open(os.sep.join([app_path(), 'core', 'config.ini']), 'w+') as fb:
+        with open(self.CONFIG_FILE, 'w+') as fb:
             self.cf.write(fb)
+
+
+if __name__ == '__main__':
+    print(Config.INFO_VERSION)

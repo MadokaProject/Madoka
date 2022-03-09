@@ -25,10 +25,10 @@ class Module(Plugin):
             Subcommand('revoke', args=Args['id': int], help_text='撤回消息, id=消息ID, 自最后一条消息起算'),
             Subcommand('mute', args=Args['at': At: ''], help_text='禁言指定群成员', options=[
                 Option('--time', alias='-t', args=Args['time': int:10], help_text='禁言时间(分)'),
-                Option('--all', alias='-A', help_text='开启全员禁言')
+                Option('--all', alias='-a', help_text='开启全员禁言')
             ]),
-            Subcommand('unmute', args=Args['at': At], help_text='取消禁言指定群成员', options=[
-                Option('--all', alias='-A', help_text='关闭全员禁言')
+            Subcommand('unmute', args=Args['at': At: ''], help_text='取消禁言指定群成员', options=[
+                Option('--all', alias='-a', help_text='关闭全员禁言')
             ]),
             Subcommand('func', args=Args['status': bool], help_text='功能开关', options=[
                 Option('--card', alias='-C', help_text='成员名片修改通知'),
