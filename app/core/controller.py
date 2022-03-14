@@ -1,3 +1,5 @@
+import sys
+
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Source, Image
@@ -9,7 +11,7 @@ from app.core.settings import *
 from app.trigger import *
 from app.util.control import Permission
 from app.util.text2image import create_image
-from app.util.tools import isstartswith
+from app.util.tools import isstartswith, Autonomy
 
 
 class Controller:
@@ -113,16 +115,21 @@ class Controller:
                 if obj.enable:
                     namespace = plugin.__name__.split('.')
                     alc_s = self.manager.get_commands()[f'{namespace[-3]}.{namespace[-2]}']
+                    current = sys.stdout
+                    alc_help = Autonomy()
+                    sys.stdout = alc_help
                     for alc in alc_s.keys():
                         result = alc.parse(self.message)
                         if result.head_matched:
+                            sys.stdout = current
                             if result.matched:
                                 resp = await getattr(obj, alc_s[alc])(result, alc)
                             elif result.error_data or result.error_info:
                                 resp = MessageChain.create(Plain('参数错误!'))
                             else:
-                                resp = MessageChain.create([Image(data_bytes=await create_image(alc.get_help(), 80))])
+                                resp = MessageChain.create([Image(data_bytes=await create_image(alc_help.buff, 80))])
                             break
+                    sys.stdout = current
                 else:
                     resp = MessageChain.create([
                         Plain('此功能未开启！')

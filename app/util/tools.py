@@ -50,3 +50,21 @@ async def to_thread(func, /, *args, **kwargs):
     ctx = contextvars.copy_context()
     func_call = functools.partial(ctx.run, func, *args, **kwargs)
     return await loop.run_in_executor(None, func_call)
+
+
+class Autonomy:
+    """重定向输出到变量"""
+
+    def __init__(self):
+        self._buff = ""
+
+    def write(self, out_stream):
+        """
+        :param out_stream:
+        :return:str
+        """
+        self._buff += out_stream
+
+    @property
+    def buff(self):
+        return self._buff
