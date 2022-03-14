@@ -1,6 +1,6 @@
 aiohttp~=3.8.1
-arclet-alconna==0.7.4.2
-graia-ariadne==0.6.6
+arclet-alconna==0.7.5
+graia-ariadne==0.6.10
 graia-broadcast==0.16.1
 graia-scheduler==0.0.6
 jsonpath==0.82
