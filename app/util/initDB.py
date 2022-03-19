@@ -33,7 +33,7 @@ async def InitDB(__basic: list):
             )
             db.update(
                 "create table if not exists config ( \
-                    name varchar(30) not null comment '配置名', \
+                    name varchar(256) not null comment '配置名', \
                     uid char(10) not null comment '群组', \
                     value varchar(500) not null comment '参数', \
                     primary key (name, uid))"
