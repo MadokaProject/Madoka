@@ -186,7 +186,6 @@ class DB(InitDB):
             )
             _db.update(
                 "create table if not exists `group`( \
-                    id int auto_increment comment 'ID' primary key, \
                     uid char(12) null comment '群号', \
                     permission varchar(512) not null comment '许可', \
                     active int not null comment '状态')"
