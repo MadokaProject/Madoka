@@ -2,6 +2,7 @@ from app.util.dao import MysqlDao
 
 
 def save(group_id, member_id, content):
+    """保存消息"""
     with MysqlDao() as db:
         res = db.update(
             'INSERT INTO msg (uid, qid, datetime, content) VALUES (%s, %s, NOW(), %s)',
@@ -12,6 +13,7 @@ def save(group_id, member_id, content):
 
 
 def repeated(uid, qid, num):
+    """复读判断"""
     with MysqlDao() as db:
         res = db.query(
             'SELECT content FROM msg WHERE uid=%s ORDER BY id DESC LIMIT %s',
