@@ -9,6 +9,11 @@ font = ImageFont.truetype(font_file, 32)
 
 
 async def create_image(text: str, cut=64) -> bytes:
+    """文本转图片
+
+    :param text: 文本
+    :param cut: 自动断行长度
+    """
     imageio = BytesIO()
     cut_str = '\n'.join(get_cut_str(text.replace('\t', '    '), cut))
     textx, texty = font.getsize_multiline(cut_str)

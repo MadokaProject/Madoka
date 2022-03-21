@@ -46,6 +46,7 @@ def app_path():
 
 
 async def to_thread(func, /, *args, **kwargs):
+    """3.9后新增的方法"""
     loop = asyncio.get_running_loop()
     ctx = contextvars.copy_context()
     func_call = functools.partial(ctx.run, func, *args, **kwargs)

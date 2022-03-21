@@ -4,6 +4,10 @@ from app.util.control import Permission
 
 
 def permission_required(level: int = Permission.GROUP_ADMIN):
+    """插件鉴权
+
+    :param level: 允许的权限
+    """
     def decorator(func):
         @wraps(func)
         async def with_wrapper(*args, **kwargs):

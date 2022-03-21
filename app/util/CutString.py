@@ -3,9 +3,11 @@ import string
 
 
 def get_cut_str(str, cut):
-    '''
-    自动断行，用于 Pillow 等不会自动换行的场景
-    '''
+    """自动断行，用于 Pillow 等不会自动换行的场景
+
+    :param str: 文本
+    :param cut: 断行长度
+    """
     punc = """，,、。.？?）》】“"‘'；;：:！!·`~%^& """
     si = 0
     i = 0
