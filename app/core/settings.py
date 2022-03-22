@@ -5,15 +5,25 @@ import pymysql
 from app.core.config import Config
 from app.util.dao import MysqlDao
 
-ACTIVE_GROUP = {}
+
+def get_config(sql) -> list:
+    try:
+        with MysqlDao() as __db:
+            return __db.query(sql)
+    except pymysql.ProgrammingError:
+        return []
+
+
+ACTIVE_GROUP = {int(__gid): str(__permit).split(',') for __gid, __permit in
+                get_config('SELECT uid, permission FROM `group` WHERE active=1')}
 """监听群聊消息列表"""
 ACTIVE_USER = {int(Config().MASTER_QQ): '*'}
 """监听好友消息列表"""
-BANNED_USER = []
+BANNED_USER = [int(__qid[0]) for __qid in get_config('SELECT uid FROM user WHERE level=0')]
 """黑名单用户列表"""
 ADMIN_USER = [int(Config().MASTER_QQ)]
 """具有超级管理权限以上QQ列表"""
-GROUP_ADMIN_USER = []
+GROUP_ADMIN_USER = [int(__qid[0]) for __qid in get_config('SELECT uid FROM user WHERE level=2')]
 """具有群管理权限QQ列表"""
 LISTEN_MC_SERVER = []
 """MC服务器自动监听列表"""
@@ -22,59 +32,11 @@ CONFIG = {}
 
 eg: {group: {name: json.loads(value)}}
 """
-try:
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT uid, permission FROM `group` WHERE active=1')
-    for _gid, _permit in _res:
-        ACTIVE_GROUP.update({int(_gid): str(_permit).split(',')})
-
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT uid, permission FROM user WHERE active=1')
-    for _qid, _permit in _res:
-        ACTIVE_USER.update({int(_qid): str(_permit).split(',')})
-
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT uid FROM user WHERE level=0')
-    for _qid in _res:
-        BANNED_USER.append(int(_qid[0]))
-
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT uid FROM user WHERE level>=3')
-    for _qid in _res:
-        if int(_qid[0]) not in ADMIN_USER:
-            ADMIN_USER.append(int(_qid[0]))
-
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT uid FROM user WHERE level=2')
-    for _qid in _res:
-        GROUP_ADMIN_USER.append(int(_qid[0]))
-
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT ip,port,report,delay FROM mc_server WHERE listen=1')
-    for (_ip, _port, _report, _delay) in _res:
-        LISTEN_MC_SERVER.append(
-            [[_ip, int(_port)], [i for i in str(_report).split(',')], _delay]
-        )
-
-    with MysqlDao() as _db:
-        _res = _db.query('SELECT name, uid, value FROM config')
-    for (_name, _uid, _value) in _res:
-        if not CONFIG.__contains__(_uid):
-            CONFIG.update({_uid: {}})
-        CONFIG[_uid].update({
-            _name: json.loads(_value)
-        })
-except pymysql.ProgrammingError:
-    pass
-
 REPO = {}
 """Github监听仓库
 
 eg: {group: {name: {api:api, branch:branch}}}
 """
-for _uid in CONFIG.keys():
-    if CONFIG[_uid].__contains__('repo'):
-        REPO.update({_uid: CONFIG[_uid]['repo']})
 
 # 戳一戳记录
 NUDGE_INFO = {}
@@ -86,3 +48,24 @@ GROUP_RUNING_LIST = []
 """在游戏的群"""
 GROUP_GAME_PROCESS = {}
 """成员答题限次"""
+
+for __qid, __permit in get_config('SELECT uid, permission FROM user WHERE active=1'):
+    ACTIVE_USER.update({int(__qid): str(__permit).split(',')})
+
+for __qid in get_config('SELECT uid FROM user WHERE level>=3'):
+    if int(__qid[0]) not in ADMIN_USER:
+        ADMIN_USER.append(int(__qid[0]))
+
+for (__ip, __port, __report, __delay) in get_config('SELECT ip,port,report,delay FROM mc_server WHERE listen=1'):
+    LISTEN_MC_SERVER.append(
+        [[__ip, int(__port)], [i for i in str(__report).split(',')], __delay]
+    )
+
+for (__name, __uid, __value) in get_config('SELECT name, uid, value FROM config'):
+    if not CONFIG.__contains__(__uid):
+        CONFIG.update({__uid: {}})
+    CONFIG[__uid].update({__name: json.loads(__value)})
+
+for __uid in CONFIG.keys():
+    if CONFIG[__uid].__contains__('repo'):
+        REPO.update({__uid: CONFIG[__uid]['repo']})
