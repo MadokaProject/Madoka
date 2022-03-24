@@ -123,7 +123,18 @@ class Module(Plugin):
             elif subcommand['user'].__contains__('list'):
                 with MysqlDao() as db:
                     res = db.query("SELECT uid FROM user WHERE active=1")
-                return MessageChain.create([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无激活用户')])
+                msg = '用户白名单'
+                if res:
+                    friends = {i.id: i.nickname for i in await self.app.getFriendList()}
+                    for qq in res:
+                        qq = int(qq[0])
+                        if qq in friends.keys():
+                            msg += f'\n{friends[qq]}: {qq}'
+                        else:
+                            msg += f'\n未知用户昵称: {qq}'
+                else:
+                    msg = '无激活用户'
+                return MessageChain.create([Plain(msg)])
         elif subcommand.__contains__('blacklist'):
             if subcommand['blacklist'].__contains__('add'):
                 target = other_args['qq'].target if isinstance(other_args['qq'], At) else other_args['qq']
@@ -157,8 +168,18 @@ class Module(Plugin):
             elif subcommand['group'].__contains__('list'):
                 with MysqlDao() as db:
                     res = db.query("SELECT uid FROM `group` WHERE active=1")
-                return MessageChain.create(
-                    [Plain('\r\n'.join([f'{group_id[0]}' for group_id in res]) if res else '无白名单群组')])
+                msg = '群组白名单'
+                if res:
+                    groups = {i.id: {'name': i.name, 'perm': i.accountPerm.value} for i in await self.app.getGroupList()}
+                    for group_id in res:
+                        group_id = int(group_id[0])
+                        if group_id in groups.keys():
+                            msg += f"\n{groups[group_id]['name']}: {group_id} - {GROUP_PERM[groups[group_id]['perm']]}"
+                        else:
+                            msg += f"\n未知群: {group_id} - 未加入该群"
+                else:
+                    msg = '无白名单群组'
+                return MessageChain.create([Plain(msg)])
         return self.args_error()
 
     @classmethod
