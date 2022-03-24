@@ -14,6 +14,12 @@ def get_config(sql) -> list:
         return []
 
 
+GROUP_PERM = {
+    'OWNER': '群主',
+    'ADMINISTRATOR': '管理员',
+    'MEMBER': '普通成员'
+}
+"""描述对象在群内的权限对应名称"""
 ACTIVE_GROUP = {int(__gid): str(__permit).split(',') for __gid, __permit in
                 get_config('SELECT uid, permission FROM `group` WHERE active=1')}
 """监听群聊消息列表"""

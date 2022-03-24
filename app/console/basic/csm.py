@@ -23,11 +23,10 @@ class CSM(ConsoleController):
         help_text='群管助手'
     ))
     async def process(self, command: Arpamar):
-        subcommand = command.subcommands
         other_args = command.other_args
         try:
-            if subcommand.__contains__('mute'):
-                if other_args.__contains__('all'):
+            if command.has('mute'):
+                if command.has('all'):
                     if await self.app.getGroup(other_args['group']):
                         await self.app.muteAll(other_args['group'])
                         return '全员禁言成功!'
@@ -43,8 +42,8 @@ class CSM(ConsoleController):
                     else:
                         return '未找到该群组!'
                 return self.args_error()
-            elif subcommand.__contains__('unmute'):
-                if other_args.__contains__('all'):
+            elif command.has('unmute'):
+                if command.has('all'):
                     if await self.app.getGroup(other_args['group']):
                         await self.app.unmuteAll(other_args['group'])
                         return '取消全员禁言成功!'

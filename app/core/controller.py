@@ -124,10 +124,10 @@ class Controller:
                             sys.stdout = current
                             if result.matched:
                                 resp = await getattr(obj, alc_s[alc])(result, alc)
-                            elif result.error_data or result.error_info:
-                                resp = MessageChain.create(Plain('参数错误!'))
-                            else:
+                            elif alc_help.buff:
                                 resp = MessageChain.create([Image(data_bytes=await create_image(alc_help.buff, 80))])
+                            else:
+                                resp = MessageChain.create(Plain('参数错误!'))
                             break
                     sys.stdout = current
                 else:
