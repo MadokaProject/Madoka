@@ -67,26 +67,26 @@ class Module(Plugin):
                                     return MessageChain.create([Plain('master level 不可更改！若想进行修改请直接修改配置文件！')])
                             elif result == 3:
                                 if Permission.require(user, 4):
-                                    await self.grant_permission_process(target, level)
                                     ADMIN_USER.remove(target)
                                     if level == 2:
                                         GROUP_ADMIN_USER.append(target)
+                                    return await self.grant_permission_process(target, level)
                                 else:
                                     return MessageChain.create([Plain("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！")])
                             elif result == 2:
-                                await self.grant_permission_process(target, level)
                                 if level == 1:
                                     GROUP_ADMIN_USER.remove(target)
+                                return await self.grant_permission_process(target, level)
                             else:
-                                await self.grant_permission_process(target, level)
                                 if level == 2:
                                     GROUP_ADMIN_USER.append(target)
+                                return await self.grant_permission_process(target, level)
                     elif level == 3:
                         if Permission.require(user, 4):
-                            await self.grant_permission_process(target, level)
                             if target in GROUP_ADMIN_USER:
                                 GROUP_ADMIN_USER.remove(target)
                             ADMIN_USER.append(target)
+                            return await self.grant_permission_process(target, level)
                         else:
                             return MessageChain.create([Plain('权限不足，你必须达到等级4(master level)才可对超级管理员进行授权！')])
                     else:
