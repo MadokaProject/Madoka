@@ -19,13 +19,14 @@ class Stop(ConsoleController):
         if command.options:
             await self.app.stop()
             self.console.stop()
-        res: str = await self.console.prompt(
-            l_prompt=[('class:warn', ' Are you sure to stop? '), ('', ' (y/n) ')],
-            style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
-        )
-        if res.lower() in ('y', 'yes'):
-            await self.app.stop()
-            self.console.stop()
+        else:
+            res: str = await self.console.prompt(
+                l_prompt=[('class:warn', ' Are you sure to stop? '), ('', ' (y/n) ')],
+                style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
+            )
+            if res.lower() in ('y', 'yes'):
+                await self.app.stop()
+                self.console.stop()
 
 
 class Upgrade(ConsoleController):
@@ -64,9 +65,10 @@ class Reboot(ConsoleController):
     async def process(self, command: Arpamar):
         if command.options:
             restart('-r')
-        res: str = await self.console.prompt(
-            l_prompt=[('class:warn', ' Are you sure to reboot? '), ('', ' (y/n) ')],
-            style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
-        )
-        if res.lower() in ('y', 'yes'):
-            restart('-r')
+        else:
+            res: str = await self.console.prompt(
+                l_prompt=[('class:warn', ' Are you sure to reboot? '), ('', ' (y/n) ')],
+                style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
+            )
+            if res.lower() in ('y', 'yes'):
+                restart('-r')
