@@ -55,6 +55,12 @@ GROUP_RUNING_LIST = []
 GROUP_GAME_PROCESS = {}
 """成员答题限次"""
 
+# 签到模块
+IntimacyLevel = [0, 10000, 15500, 20500, 26000, 31750, 37500, 43500, 49750, 56500]
+"""描述各个好感度等级所需要的好感度"""
+IntimacyGet = [200, 350, 575, 912, 1418, 2177, 3315]
+"""获取的好感度"""
+
 for __qid, __permit in get_config('SELECT uid, permission FROM user WHERE active=1'):
     ACTIVE_USER.update({int(__qid): str(__permit).split(',')})
 

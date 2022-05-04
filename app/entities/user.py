@@ -1,3 +1,6 @@
+import warnings
+
+from app.entities.game import BotGame
 from app.util.dao import MysqlDao
 
 
@@ -51,6 +54,7 @@ class BotUser:
 
     async def sign_in(self) -> None:
         """签到"""
+        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
         with MysqlDao() as db:
             res = db.update(
                 "UPDATE user SET points=points+%s, signin_points=%s, last_login=CURDATE() WHERE uid=%s",
@@ -63,6 +67,7 @@ class BotUser:
         """修改积分
         :param point: str, 积分变动值
         """
+        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
         with MysqlDao() as db:
             res = db.update(
                 "UPDATE user SET points=points+%s WHERE uid=%s",
@@ -75,16 +80,12 @@ class BotUser:
         """修改英语答题榜
         :param num: str, 答题变动值
         """
-        with MysqlDao() as db:
-            res = db.update(
-                "UPDATE user SET english_answer=english_answer+%s WHERE uid=%s",
-                [num, self.qq]
-            )
-            if not res:
-                raise Exception()
+        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
+        return await BotGame(self.qq).update_english_answer(num)
 
     async def get_sign_in_status(self) -> bool:
         """查询签到状态"""
+        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
         with MysqlDao() as db:
             res = db.query(
                 "SELECT COUNT(*) FROM user WHERE uid=%s AND last_login=CURDATE()",
@@ -92,8 +93,9 @@ class BotUser:
             )
             return res[0][0]
 
-    async def get_points(self) -> bool:
+    async def get_points(self) -> int:
         """查询积分"""
+        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
         with MysqlDao() as db:
             res = db.query(
                 "SELECT points FROM user WHERE uid=%s",
@@ -102,7 +104,5 @@ class BotUser:
             return res[0][0]
 
     async def reduce_gold(self, gold: int) -> bool:
-        if await self.get_points() < gold:
-            return False
-        await self.update_point(-gold)
-        return True
+        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
+        return await BotGame(self.qq).reduce_coin(gold)
