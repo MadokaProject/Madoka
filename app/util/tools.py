@@ -3,7 +3,7 @@ import contextvars
 import functools
 import os
 import sys
-from typing import List
+from typing import List, Union
 
 
 def parse_args(args, keep_head=False) -> list:
@@ -19,7 +19,7 @@ def parse_args(args, keep_head=False) -> list:
     return args
 
 
-def isstartswith(prefix: str, args, full_match=False) -> bool:
+def isstartswith(prefix: str, args: Union[str, list], full_match=False) -> bool:
     """判断prefix是否以args中某元素开头
     :param prefix: 被匹配元素
     :param args: 匹配元素
