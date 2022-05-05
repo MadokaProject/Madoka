@@ -1,4 +1,6 @@
 import sys
+from typing import List
+from types import ModuleType
 
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -6,16 +8,18 @@ from graia.ariadne.message.element import Plain, Source, Image
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 from app.core.settings import *
+from app.plugin.base import Plugin
 from app.trigger import *
 from app.util.control import Permission
 from app.util.text2image import create_image
 from app.util.tools import isstartswith, Autonomy
+from app.core.Exceptions import NonStandardPlugin
 
 
 class Controller:
-    def __init__(self, plugin: list, *args):
+    def __init__(self, plugin: List[ModuleType], *args):
         """存储消息"""
         self.plugin = plugin  # 插件列表
         for arg in args:
@@ -31,7 +35,7 @@ class Controller:
                 self.source = arg  # 消息标识
             elif isinstance(arg, InterruptControl):
                 self.inc = arg  # 中断器
-            elif isinstance(arg, CommandManager):
+            elif isinstance(arg, CommandDelegateManager):
                 self.manager = arg
             elif isinstance(arg, Ariadne):
                 self.app = arg  # 程序执行主体
@@ -52,11 +56,13 @@ class Controller:
 
         # 自定义预触发器
         for trig in trigger.Trigger.__subclasses__():
-            obj = None
+            obj: trigger.Trigger
             if hasattr(self, 'friend'):
                 obj = trig(self.message, self.friend, self.app)
             elif hasattr(self, 'group'):
                 obj = trig(self.message, self.group, self.member, self.app)
+            else:
+                continue
             if not obj.enable:
                 continue
             await obj.process()
@@ -93,15 +99,19 @@ class Controller:
 
         # 加载插件
         for plugin in self.plugin:
-            obj = None
+            plg: Plugin
+            if not hasattr(plugin, 'Module'):
+                raise NonStandardPlugin(plugin.__name__)
             if hasattr(self, 'friend'):
-                obj = plugin.Module(self.message, self.friend, self.inc, self.app)
+                plg = plugin.Module(self.message, self.friend, self.inc, self.app)
             elif hasattr(self, 'group'):
-                obj = plugin.Module(self.message, self.group, self.member, self.source, self.inc, self.app)
+                plg = plugin.Module(self.message, self.group, self.member, self.source, self.inc, self.app)
+            else:
+                continue
             if Permission.require(self.member if hasattr(self, 'group') else self.friend, Permission.SUPER_ADMIN):
-                obj.hidden = False  # 隐藏菜单仅超级管理员以上可见
-            if send_help and not obj.hidden:  # 主菜单帮助获取
-                if not obj.enable:
+                plg.hidden = False  # 隐藏菜单仅超级管理员以上可见
+            if send_help and not plg.hidden:  # 主菜单帮助获取
+                if not plg.enable:
                     statu = "【  关闭  】"
                 else:
                     statu = "            "
@@ -109,31 +119,36 @@ class Controller:
                     si = " " + str(i)
                 else:
                     si = str(i)
-                resp += f"\n{si}  {statu}  {obj.brief_help}: {obj.entry}"
+                resp += f"\n{si}  {statu}  {plg.brief_help}: {plg.entry}"
                 i += 1
-            elif isstartswith(msg.split()[0][1:], obj.entry, full_match=1):  # 指令执行
-                if obj.enable:
-                    namespace = plugin.__name__.split('.')
-                    alc_s = self.manager.get_commands()[f'{namespace[-3]}.{namespace[-2]}']
+            elif isstartswith(msg.split()[0][1:], plg.entry, full_match=1):  # 指令执行
+                if plg.enable:
+                    namespace = plg.__module__.split('.')
+                    alc_s = self.manager.get_commands(f'{namespace[-3]}.{namespace[-2]}')
                     current = sys.stdout
                     alc_help = Autonomy()
                     sys.stdout = alc_help
-                    for alc in alc_s.keys():
-                        result = alc.parse(self.message)
-                        if result.head_matched:
-                            sys.stdout = current
+                    for alc in alc_s:
+                        if not (call := self.manager.get_delegate(alc.path)):
+                            continue
+                        try:
+                            result = alc.parse(self.message)
                             if result.matched:
-                                resp = await getattr(obj, alc_s[alc])(result, alc)
-                            elif alc_help.buff:
-                                resp = MessageChain.create([Image(data_bytes=await create_image(alc_help.buff, 80))])
-                            else:
-                                resp = MessageChain.create(Plain('参数错误!'))
-                            break
+                                sys.stdout = current
+                                resp = await call(result, alc)
+                                break
+                            elif result.head_matched:
+                                if alc_help.buff:
+                                    resp = MessageChain.create([Image(data_bytes=await create_image(alc_help.buff, 80))])
+                                else:
+                                    resp = MessageChain.create(Plain('参数错误!'))
+                                sys.stdout = current
+                                break
+                        except Exception as e:
+                            resp = MessageChain.create(Plain(f'{e}'))
                     sys.stdout = current
                 else:
-                    resp = MessageChain.create([
-                        Plain('此功能未开启！')
-                    ])
+                    resp = MessageChain.create([Plain('此功能未开启！')])
                 await self._do_send(resp)
                 break
 

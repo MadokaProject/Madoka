@@ -1,12 +1,12 @@
 import random
 
-from arclet.alconna import Alconna, Subcommand, Args, Arpamar
+from arclet.alconna import Alconna, Option, Args, Arpamar
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Plain, At
 from loguru import logger
 from prettytable import PrettyTable
 
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.entities.game import BotGame
 from app.entities.user import BotUser
@@ -19,25 +19,26 @@ from .game_res.sign_image_generator import get_sign_image
 class Module(Plugin):
     entry = 'gp'
     brief_help = '经济系统'
-    manager: CommandManager = CommandManager.get_command_instance()
+    manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
-    @manager(Alconna(
-        headers=manager.headers,
-        command=entry,
-        options=[
-            Subcommand('signin', help_text='每日签到'),
-            Subcommand('tf', help_text='转账', args=Args['at': At, 'money': int]),
-            Subcommand('迁移', help_text='迁移旧版金币'),
-            Subcommand('rank', help_text='显示群内已注册成员资金排行榜'),
-        ],
-        help_text='经济系统'
-    ))
-    async def process(self, command: Arpamar, alc: Alconna):
-        subcommand = command.subcommands
-        other_args = command.other_args
+    @manager.register(
+        Alconna(
+            headers=manager.headers,
+            command=entry,
+            options=[
+                Option('signin', help_text='每日签到'),
+                Option('tf', help_text='转账', args=Args['at': At, 'money': int]),
+                Option('迁移', help_text='迁移旧版金币'),
+                Option('rank', help_text='显示群内已注册成员资金排行榜'),
+            ],
+            help_text='经济系统'
+        )
+    )
+    async def process(self, command: Arpamar, _: Alconna):
+        options = command.options
         try:
             config = Config()
-            if not subcommand:
+            if not options:
                 """查询资金"""
                 user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
                 coin = await user.get_coins()
@@ -45,7 +46,7 @@ class Module(Plugin):
                     return MessageChain.create([At(self.member.id), Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
                 else:
                     return MessageChain.create([Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
-            if command.get('signin'):
+            if options.get('signin'):
                 """新版签到"""
                 coin = random.randint(1, 101)
                 if hasattr(self, 'group'):
@@ -73,7 +74,7 @@ class Module(Plugin):
                         await user.get_total_days()
                     )
                 return MessageChain.create([Image(data_bytes=sign_image)])
-            elif command.get('迁移'):
+            elif options.get('迁移'):
                 old_user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
                 new_user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
                 coin = await old_user.get_points()
@@ -82,9 +83,9 @@ class Module(Plugin):
                 await new_user.update_coin(coin)
                 await old_user.update_point(-coin)
                 return MessageChain.create([Plain(f'迁移成功！当前账户余额: {await new_user.get_coins()}')])
-            elif subcommand.__contains__('tf'):
-                target = other_args['at'].target
-                coin = other_args['money']
+            elif tf := options.get('tf'):
+                target = tf['at'].target
+                coin = tf['money']
                 if coin <= 0:
                     return self.args_error()
                 user = BotGame(self.member.id)
@@ -99,7 +100,7 @@ class Module(Plugin):
                     At(target),
                     Plain(f' %d{config.COIN_NAME}！' % coin)
                 ])
-            elif subcommand.__contains__('rank'):
+            elif options.get('rank'):
                 with MysqlDao() as db:
                     res = db.query(
                         "SELECT qid, coins FROM game ORDER BY coins DESC"

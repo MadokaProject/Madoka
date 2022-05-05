@@ -2,30 +2,35 @@ from arclet.alconna import Alconna, Option, Arpamar
 from graia.ariadne.model import MemberPerm
 
 from app.console.base import ConsoleController
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 
 
 class InfoList(ConsoleController):
     entry = 'list'
     brief_help = '查看好友/群组信息'
-    manager: CommandManager = CommandManager.get_command_instance()
+    manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
-    @manager(Alconna(
-        command=entry,
-        options=[
-            Option('--friend', alias='-f', help_text='查看好友信息'),
-            Option('--group', alias='-g', help_text='查看群组信息')
-        ],
-        help_text=brief_help
-    ))
+    @manager.register(
+        Alconna(
+            entry,
+            options=[
+                Option('--friend|-f', help_text='查看好友信息'),
+                Option('--group|-g', help_text='查看群组信息')
+            ],
+            help_text=brief_help
+        )
+    )
     async def process(self, command: Arpamar):
         if command.has('friend'):
             return '\n'.join(
                 f'{friend.remark}({friend.id})' + (f' - {friend.nickname}' if friend.nickname != friend.remark else '')
-                for friend in await self.app.getFriendList())
+                for friend in (await self.app.getFriendList())
+            )
         elif command.has('group'):
-            return '\n'.join(f'{group.name}({group.id}) - {self.get_perm_name(group.accountPerm)}' for group in
-                             await self.app.getGroupList())
+            return '\n'.join(
+                f'{group.name}({group.id}) - {self.get_perm_name(group.accountPerm)}'
+                for group in (await self.app.getGroupList())
+            )
         return self.args_error()
 
     @classmethod

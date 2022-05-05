@@ -46,3 +46,8 @@ class FrequencyLimitExceededAddBlackList(Exception):
 class FrequencyLimitExceededDoNothing(Exception):
     """请求者在黑名单中不作回应"""
     pass
+
+
+class NonStandardPlugin(Exception):
+    """非标准插件"""
+    pass

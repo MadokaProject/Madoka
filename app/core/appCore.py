@@ -6,6 +6,8 @@ import threading
 import traceback
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
+from typing import List
+from types import ModuleType
 
 from graia.ariadne.adapter import DefaultAdapter
 from graia.ariadne.app import Ariadne
@@ -19,7 +21,7 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
 from app.core.Exceptions import *
-from app.core.command_manager import CommandManager, command_manager
+from app.core.commander import CommandDelegateManager, command_manager
 from app.core.config import Config
 from app.extend.power import power
 from app.extend.schedule import custom_schedule, TaskerProcess
@@ -38,7 +40,7 @@ class AppCore:
     __inc: InterruptControl = None
     __scheduler: GraiaScheduler = None
     __manager = None
-    __plugin = []
+    __plugin: List[ModuleType] = []
     __thread_pool = None
     __config: Config = None
     __launched: bool = False
@@ -137,13 +139,13 @@ class AppCore:
     def get_inc(self):
         return self.__inc
 
-    def get_manager(self) -> CommandManager:
+    def get_manager(self) -> CommandDelegateManager:
         if self.__manager:
             return self.__manager
         else:
             raise CommandManagerInitialized
 
-    def get_plugin(self) -> list:
+    def get_plugin(self) -> List[ModuleType]:
         if self.__plugin:
             return self.__plugin
         else:
@@ -234,12 +236,12 @@ class AppCore:
                 return f'{plugin} 重载成功'
         return '重载失败，无此插件！'
 
-    async def load_plugin(self, plugin):
+    async def load_plugin(self, plugin_name: str):
         """加载插件"""
         try:
-            plugin = 'app.plugin.extension.' + plugin
-            if not await self.fild_plugin(plugin):
-                plugin = importlib.import_module(plugin)
+            plugin_name = 'app.plugin.extension.' + plugin_name
+            if not await self.fild_plugin(plugin_name):
+                plugin: ModuleType = importlib.import_module(plugin_name)
                 if hasattr(plugin, 'Module'):
                     self.__plugin.append(plugin)
                     logger.success("成功加载插件: " + plugin.__name__)
@@ -252,19 +254,19 @@ class AppCore:
             logger.error(f"扩展插件加载失败: {e}")
             return f'扩展插件加载失败: {e}'
 
-    def unload_plugin(self, plugin):
+    def unload_plugin(self, plugin_name):
         """卸载插件"""
-        plugin = 'app.plugin.extension.' + plugin
-        if plugin in sys.modules.keys():
-            sys.modules.pop(plugin)
+        plugin_name = 'app.plugin.extension.' + plugin_name
+        if plugin_name in sys.modules.keys():
+            sys.modules.pop(plugin_name)
             for __plugin in self.__plugin:
-                if plugin == __plugin.__name__:
+                if plugin_name == __plugin.__name__:
                     self.__manager.delete(__plugin)
                     self.__plugin.remove(__plugin)
-            return '卸载扩展插件成功: ' + plugin
+            return '卸载扩展插件成功: ' + plugin_name
         return '该扩展插件未加载'
 
-    async def fild_plugin(self, plugin) -> bool:
+    async def fild_plugin(self, plugin: str) -> bool:
         """查找插件是否加载"""
         for __plugin in self.__plugin:
             if plugin == __plugin.__name__:

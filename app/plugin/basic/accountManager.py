@@ -1,9 +1,9 @@
-from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
+from arclet.alconna import Alconna, Option, Args, Arpamar
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.decorator import permission_required
@@ -13,53 +13,51 @@ class Module(Plugin):
     entry = 'am'
     brief_help = '账号管理'
     hidden = True
-    manager: CommandManager = CommandManager.get_command_instance()
+    manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
     @permission_required(level=Permission.MASTER)
-    @manager(Alconna(
-        headers=manager.headers,
-        command=entry,
-        options=[
-            Subcommand('list', help_text='列出好友、群列表', options=[
-                Option('--friend', alias='-f', help_text='列出机器人的好友列表'),
-                Option('--group', alias='-g', help_text='列出机器人的群组列表')
-            ]),
-            Subcommand('delete', help_text='删除好友、群', options=[
-                Option('--friend', args=Args['friend_id': int], alias='-f', help_text='删除指定好友'),
-                Option('--group', args=Args['group_id': int], alias='-g', help_text='退出指定群组')
-            ])
-        ],
-        help_text='账号管理'
-    ))
+    @manager.register(
+        Alconna(
+            headers=manager.headers,
+            command=entry,
+            options=[
+                Option('list', Args["type":["friend", "group", "f", "g"]], help_text='列出好友、群列表'),
+                Option('delete', Args["type":["friend", "group", "f", "g"], "id":int], help_text='删除好友、群')
+            ],
+            help_text='账号管理'
+        )
+    )
     async def process(self, command: Arpamar, alc: Alconna):
-        subcommand = command.subcommands
-        other_args = command.other_args
-        if not subcommand:
+        options = command.options
+        if not options:
             return await self.print_help(alc.get_help())
         try:
-            if subcommand.__contains__('list'):
-                if other_args.__contains__('friend'):
+            if list_ := options.get("list"):
+                rs_type = list_.get("type")
+                if rs_type in ["friend", "f"]:
                     friend_list = await self.app.getFriendList()
                     return MessageChain.create([
                         Plain('\r\n'.join(
                             f'好友ID：{str(friend.id).ljust(14)}好友昵称：{str(friend.nickname)}' for friend in friend_list))
                     ])
-                if other_args.__contains__('group'):
+                elif rs_type in ["group", "g"]:
                     group_list = await self.app.getGroupList()
                     return MessageChain.create([
                         Plain('\r\n'.join(f'群ID：{str(group.id).ljust(14)}群名：{group.name}' for group in group_list))
                     ])
-            elif subcommand.__contains__('delete'):
-                if other_args.__contains__('friend_id'):
-                    if await self.app.getFriend(other_args['friend_id']):
-                        await self.app.deleteFriend(other_args['friend_id'])
+            elif delete_ := options.get("delete"):
+                rs_type = delete_.get("type")
+                target_id = delete_.get("id")
+                if rs_type in ["friend", "f"]:
+                    if await self.app.getFriend(target_id):
+                        await self.app.deleteFriend(target_id)
                         msg = '成功删除该好友！'
                     else:
                         msg = '没有找到该好友！'
                     return MessageChain.create([Plain(msg)])
-                if other_args.__contains__('group_id'):
-                    if await self.app.getGroup(other_args['group_id']):
-                        await self.app.quitGroup(other_args['group_id'])
+                elif rs_type in ["group", "g"]:
+                    if await self.app.getGroup(target_id):
+                        await self.app.quitGroup(target_id)
                         msg = '成功退出该群组！'
                     else:
                         msg = '没有找到该群组！'
