@@ -9,6 +9,8 @@ WORKDIR /app
 
 COPY Madoka .
 
-RUN pip install -r requirements.txt
+RUN apt-get update && apt-get install git -y && \
+    apt-get autoclean && rm -rf /var/lib/apt/lists/* && \
+    pip install -r requirements.txt
 
 CMD ["/bin/bash", "-c", "python main.py"]
