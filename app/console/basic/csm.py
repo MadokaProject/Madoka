@@ -1,65 +1,61 @@
-from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
+from arclet.alconna import Alconna, Option, Args, Arpamar, exclusion
 
 from app.console.base import ConsoleController
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 
 
 class CSM(ConsoleController):
     entry = 'csm'
     brief_help = '群管'
-    manager: CommandManager = CommandManager.get_command_instance()
+    manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
-    @manager(Alconna(
-        command=entry,
-        options=[
-            Subcommand('mute', help_text='禁言指定群成员', args=Args['group': int, 'qq': int:0, 'time': int: 10],
-                       options=[
-                           Option('--all', alias='-a', help_text='开启全员禁言')
-                       ]),
-            Subcommand('unmute', help_text='解除禁言指定群成员', args=Args['group': int, 'qq': int:0], options=[
-                Option('--all', alias='-a', help_text='关闭全员禁言')
-            ])
-        ],
-        help_text='群管助手'
-    ))
+    @manager.register(
+        Alconna(
+            entry,
+            options=[
+                Option(
+                    'mute',
+                    help_text='禁言指定群成员',
+                    args=Args['group': int, 'qq': int:0, 'time': int: 10],
+                ),
+                Option(
+                    'unmute',
+                    help_text='解除禁言指定群成员',
+                    args=Args['group': int, 'qq': int:0],
+                ),
+                Option('--all|-a', help_text='是否作用于全员'),
+            ],
+            help_text='群管助手',
+            behaviors=[exclusion('options.mute', 'options.unmute')]
+        )
+    )
     async def process(self, command: Arpamar):
         other_args = command.other_args
-        try:
-            if command.has('mute'):
-                if command.has('all'):
-                    if await self.app.getGroup(other_args['group']):
-                        await self.app.muteAll(other_args['group'])
-                        return '全员禁言成功!'
-                    else:
-                        return '未找到该群组'
-                elif other_args['qq'] != 0:
-                    if await self.app.getGroup(other_args['group']):
-                        if await self.app.getMember(other_args['group'], other_args['qq']):
-                            await self.app.muteMember(other_args['group'], other_args['qq'], other_args['time'] * 60)
-                            return '禁言成功!'
-                        else:
-                            return '未找到该群成员!'
-                    else:
-                        return '未找到该群组!'
-                return self.args_error()
-            elif command.has('unmute'):
-                if command.has('all'):
-                    if await self.app.getGroup(other_args['group']):
-                        await self.app.unmuteAll(other_args['group'])
-                        return '取消全员禁言成功!'
-                    else:
-                        return '未找到该群组'
-                elif other_args['qq'] != 0:
-                    if await self.app.getGroup(other_args['group']):
-                        if await self.app.getMember(other_args['group'], other_args['qq']):
-                            await self.app.unmuteMember(other_args['group'], other_args['qq'])
-                            return '禁言成功!'
-                        else:
-                            return '未找到该群成员!'
-                    else:
-                        return '未找到该群组!'
-                return self.args_error()
+        all_ = True if command.options.get('all') else False
+        if not command.options.get('mute') and not command.options.get('unmute'):
             return self.args_error()
+        qq = other_args['qq']
+        if not all_ and qq <= 0:
+            return self.args_error()
+        if (grp := (await self.app.getGroup(other_args['group']))) is None:
+            return '未找到该群组'
+        if (mbr := (await self.app.getMember(grp, qq))) is None and not all_:
+            return '未找到该成员'
+        try:
+            if command.options.get('mute'):
+                if all_:
+                    await self.app.muteAll(grp)
+                    return '全员禁言成功!'
+                await self.app.muteMember(grp, mbr, other_args['time'] * 60)
+                return '禁言成功!'
+            elif command.options.get('unmute'):
+                if all_:
+                    await self.app.unmuteAll(grp)
+                    return '取消全员禁言成功!'
+                await self.app.unmuteMember(grp, mbr)
+                return '解除禁言成功!'
+            else:
+                return self.args_error()
         except PermissionError:
             return self.exec_permission_error()
         except Exception as e:

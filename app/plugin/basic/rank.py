@@ -1,10 +1,10 @@
-from arclet.alconna import Alconna, Subcommand, Arpamar
+from arclet.alconna import Alconna, Option, Arpamar
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Plain
 from loguru import logger
 from prettytable import PrettyTable
 
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 from app.plugin.base import Plugin
 from app.util.dao import MysqlDao
 from app.util.text2image import create_image
@@ -13,23 +13,27 @@ from app.util.text2image import create_image
 class Module(Plugin):
     entry = 'rank'
     brief_help = '排行'
-    manager: CommandManager = CommandManager.get_command_instance()
+    manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
-    @manager(Alconna(
-        headers=manager.headers,
-        command=entry,
-        options=[
-            Subcommand('msg', help_text='显示群内成员发言排行榜')
-        ],
-        help_text='查询各类榜单'
-    ))
+    @manager.register(
+        Alconna(
+            headers=manager.headers,
+            command=entry,
+            options=[
+                Option('msg', help_text='显示群内成员发言排行榜')
+            ],
+            help_text='查询各类榜单'
+        )
+    )
     async def process(self, command: Arpamar, alc: Alconna):
-        subcommand = command.subcommands
-        if not subcommand:
+        options = command.options
+        if not options:
             return await self.print_help(alc.get_help())
         try:
-            if subcommand.__contains__('msg'):
+            if 'msg' in options:
                 """发言榜"""
+                if not hasattr(self, 'group'):
+                    return MessageChain.create('请在群聊内发送该命令！')
                 with MysqlDao() as db:
                     res = db.query(
                         "SELECT qid, count(qid) FROM msg WHERE uid=%s GROUP BY qid ORDER BY count(qid) DESC",

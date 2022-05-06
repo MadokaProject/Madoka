@@ -33,26 +33,33 @@ async def console_handler(
             send_help = True
 
         for func in base.ConsoleController.__subclasses__():
-            obj = func(params, console, app)
+            obj: base.ConsoleController = func(params, console, app)
             if send_help:
                 resp += f"\n\t{format(obj.entry, '<30')}\t{obj.brief_help}"
             elif isstartswith(param[0], obj.entry, full_match=True):
                 namespace = obj.__module__.split('.')
-                alc_s = manager.get_commands()[f'{namespace[-3]}.{namespace[-2]}']
+                alc_s = manager.get_commands(f'{namespace[-3]}_{namespace[-2]}')
                 current = sys.stdout
                 alc_help = Autonomy()
                 sys.stdout = alc_help
-                for alc in alc_s.keys():
-                    result = alc.parse(params)
-                    if result.head_matched:
-                        sys.stdout = current
+                for alc in alc_s:
+                    if not (call := manager.get_delegate(alc.path)):
+                        continue
+                    try:
+                        result = alc.parse(params)
                         if result.matched:
-                            resp = await getattr(obj, alc_s[alc])(result)
-                        elif alc_help.buff:
-                            resp = alc_help.buff
-                        else:
-                            resp = '参数错误!'
-                        break
+                            sys.stdout = current
+                            resp = await getattr(obj, call.__name__)(result)
+                            break
+                        elif result.head_matched:
+                            if alc_help.buff:
+                                resp = alc_help.buff
+                            else:
+                                resp = '参数错误!'
+                            sys.stdout = current
+                            break
+                    except Exception as e:
+                        resp = str(e)
                 sys.stdout = current
                 await _do_send(resp)
                 return

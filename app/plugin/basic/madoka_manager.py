@@ -13,7 +13,7 @@ from prettytable import PrettyTable
 
 from app.api.doHttp import doHttpRequest
 from app.core.appCore import AppCore
-from app.core.command_manager import CommandManager
+from app.core.commander import CommandDelegateManager
 from app.plugin.base import Plugin
 from app.util.control import Permission, Switch
 from app.util.decorator import permission_required
@@ -24,7 +24,7 @@ from app.util.tools import app_path
 class Module(Plugin):
     entry = 'plugin'
     brief_help = '插件管理'
-    manager: CommandManager = CommandManager.get_command_instance()
+    manager: CommandDelegateManager = CommandDelegateManager.get_instance()
     base_url = "https://madokaproject.coding.net/p/p/d/plugins/git/raw/master/"
     folder_path = os.path.join(app_path(), f'plugin/extension/')
 
@@ -56,40 +56,41 @@ class Module(Plugin):
         return True
 
     @permission_required(level=Permission.GROUP_ADMIN)
-    @manager(Alconna(
-        headers=manager.headers,
-        command=entry,
-        options=[
-            Subcommand('open', help_text='开启插件, <plugin>插件英文名', args=Args['plugin': str: ''], options=[
-                Option('--all', alias='-a', help_text='开启全部插件'),
-                Option('--friend', alias='-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq': int])
-            ]),
-            Subcommand('close', help_text='关闭插件, <plugin>插件英文名', args=Args['plugin': str: ''], options=[
-                Option('--all', alias='-a', help_text='关闭全部插件'),
-                Option('--friend', alias='-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq': int])
-            ]),
-            Subcommand('install', help_text='安装插件, <plugin>插件英文名', args=Args['plugin': str], options=[
-                Option('--upgrade', alias='-u', help_text='更新插件')
-            ]),
-            Subcommand('remove', help_text='删除插件, <plugin>插件英文名', args=Args['plugin': str]),
-            Subcommand('list', help_text='列出本地插件', options=[
-                Option('--all', alias='-a', help_text='列出插件库所有插件')
-            ]),
-            Subcommand('load', help_text='加载插件, <plugin>插件英文名', args=Args['plugin': str]),
-            Subcommand('unload', help_text='卸载插件, <plugin>插件英文名', args=Args['plugin': str]),
-            Subcommand('reload', help_text='重载插件[默认全部], <plugin>插件英文名', args=Args['plugin': str: 'all_plugin'])
-        ],
-        help_text='插件管理'
-    ))
+    @manager.register(
+        Alconna(
+            headers=manager.headers,
+            command=entry,
+            options=[
+                Subcommand('open', help_text='开启插件, <plugin>插件英文名', args=Args['plugin': str: ...], options=[
+                    Option('--all|-a', help_text='开启全部插件'),
+                    Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq': int])
+                ]),
+                Subcommand('close', help_text='关闭插件, <plugin>插件英文名', args=Args['plugin': str: ...], options=[
+                    Option('--all|-a', help_text='关闭全部插件'),
+                    Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq': int])
+                ]),
+                Subcommand('install', help_text='安装插件, <plugin>插件英文名', args=Args['plugin': str], options=[
+                    Option('--upgrade|-u', help_text='更新插件')
+                ]),
+                Subcommand('remove', help_text='删除插件, <plugin>插件英文名', args=Args['plugin': str]),
+                Subcommand('list', help_text='列出本地插件', options=[
+                    Option('--all|-a', help_text='列出所有插件')
+                ]),
+                Subcommand('load', help_text='加载插件, <plugin>插件英文名', args=Args['plugin': str]),
+                Subcommand('unload', help_text='卸载插件, <plugin>插件英文名', args=Args['plugin': str]),
+                Subcommand('reload', help_text='重载插件[默认全部], <plugin>插件英文名', args=Args['plugin': str: 'all_plugin'])
+            ],
+            help_text='插件管理'
+        )
+    )
     async def process(self, command: Arpamar, alc: Alconna):
         subcommand = command.subcommands
-        other_args = command.other_args
         if not subcommand:
             return await self.print_help(alc.get_help())
         try:
-            resp = await self.master_admin_process(subcommand, other_args)
+            resp = await self.master_admin_process(subcommand)
             if not resp:
-                resp = await self.group_admin_process(subcommand, other_args)
+                resp = await self.group_admin_process(subcommand)
             return resp
         except ModuleNotFoundError as e:
             logger.error(f"插件加载失败: {e}")
@@ -101,7 +102,7 @@ class Module(Plugin):
             return self.unkown_error()
 
     @permission_required(level=Permission.MASTER)
-    async def master_admin_process(self, subcommand: dict, other_args: dict):
+    async def master_admin_process(self, subcommand: dict):
         def delete(__core: AppCore, __plugin):
             """删除插件"""
             __core.unload_plugin(__plugin)
@@ -110,10 +111,10 @@ class Module(Plugin):
             if __dir.exists():
                 shutil.rmtree(__dir)
 
-        if subcommand.__contains__('install'):
+        if install := subcommand.get("install"):
             core: AppCore = AppCore.get_core_instance()
-            plugin = other_args['plugin']
-            upgrade = other_args.__contains__('upgrade')
+            plugin = install['plugin']
+            upgrade = 'upgrade' in install
             if upgrade:  # 更新插件
                 delete(core, plugin)
             elif await core.fild_plugin(f'app.plugin.extension.{plugin}'):
@@ -136,14 +137,14 @@ class Module(Plugin):
             else:
                 logger.warning('未找到该插件' + plugin_list[plugin]['name'])
                 return MessageChain.create([Plain('未找到该插件: ' + plugin)])
-        elif subcommand.__contains__('remove'):
-            plugin = other_args['plugin']
+        elif remove := subcommand.get("remove"):
+            plugin = remove['plugin']
             if not Path(self.folder_path + f'{plugin}.py').exists():
                 return MessageChain.create([Plain('该插件不存在: ' + plugin)])
             delete(AppCore.get_core_instance(), plugin)
             return MessageChain.create([Plain('插件删除成功: ' + plugin)])
-        elif subcommand.__contains__('list'):
-            if other_args.__contains__('all'):
+        elif 'list' in subcommand:
+            if subcommand['list'].get('all'):
                 msg = PrettyTable()
                 msg.field_names = ['序号', '插件名', '英文名', '作者', '版本号']
                 for index, (name, plugin) in enumerate((await self.get_plugin_list()).items()):
@@ -157,47 +158,54 @@ class Module(Plugin):
                 msg.add_row([index + 1, name.__name__.split('.')[-1]])
             msg.align = 'c'
             return MessageChain.create([Image(data_bytes=await create_image(msg.get_string()))])
-        elif subcommand.__contains__('load'):
+        elif load := subcommand.get("load"):
             core: AppCore = AppCore.get_core_instance()
-            return MessageChain.create([Plain(await core.load_plugin(other_args['plugin']))])
-        elif subcommand.__contains__('unload'):
+            return MessageChain.create([Plain(await core.load_plugin(load['plugin']))])
+        elif unloaded := subcommand.get("unload"):
             core: AppCore = AppCore.get_core_instance()
-            return MessageChain.create([Plain(core.unload_plugin(other_args['plugin']))])
-        elif subcommand.__contains__('reload'):
+            return MessageChain.create([Plain(core.unload_plugin(unloaded['plugin']))])
+        elif reload := subcommand.get("reload"):
             core: AppCore = AppCore.get_core_instance()
-            return MessageChain.create([Plain(core.reload_plugin_modules(other_args['plugin']))])
+            return MessageChain.create([Plain(core.reload_plugin_modules(reload['plugin']))])
 
-    async def group_admin_process(self, subcommand: dict, other_args: dict):
-        async def change_plugin_status():
+    async def group_admin_process(self, subcommand: dict):
+        async def change_plugin_status(user: int):
             if hasattr(self, 'group'):
                 return await Switch.plugin(self.member, perm, self.group)
             else:
-                if other_args.__contains__('qq'):
-                    user = other_args['qq']
-                else:
-                    return '缺少QQ号'
-                return await Switch.plugin(self.friend.id, perm, user)
+                if user > 0:
+                    return await Switch.plugin(self.friend.id, perm, user)
+                return '缺少QQ号'
 
         perm = ''
-        if subcommand.__contains__('open'):
-            if other_args.__contains__('all'):
+        qq = 0
+        if open_ := subcommand.get("open"):
+            if frd := open_.get("friend"):
+                qq: int = frd['qq']
+            if 'all' in open_:
                 perm = '*'
-            elif other_args['plugin'] != '':
+            elif open_['plugin']:
                 core: AppCore = AppCore.get_core_instance()
                 for plugin in core.get_plugin():
-                    if other_args['plugin'] == plugin.Module.entry:  # plugin.Module(self.message).entry:
-                        perm = other_args['plugin']
-        elif subcommand.__contains__('close'):
-            if other_args.__contains__('all'):
+                    if open_['plugin'] == plugin.Module.entry:  # plugin.Module(self.message).entry:
+                        perm = open_['plugin']
+        elif close_ := subcommand.get("close"):
+            if frd := close_.get("friend"):
+                qq: int = frd['qq']
+            if 'all' in close_:
                 perm = '-'
-            elif other_args['plugin'] != '':
+            elif close_['plugin']:
                 core: AppCore = AppCore.get_core_instance()
                 for plugin in core.get_plugin():
-                    if other_args['plugin'] == plugin.Module.entry:
-                        if other_args['plugin'] == 'plugin':
+                    if close_['plugin'] == plugin.Module.entry:
+                        if close_['plugin'] == self.entry:
                             return MessageChain.create([Plain('禁止关闭本插件管理工具')])
-                        perm = '-' + other_args['plugin']
+                        perm = '-' + close_['plugin']
+        else:
+            return self.args_error()
         if perm:
-            return MessageChain.create([Plain(await change_plugin_status())])
+            return MessageChain.create(
+                [Plain(await change_plugin_status(qq))]
+            )
         else:
             return self.args_error()

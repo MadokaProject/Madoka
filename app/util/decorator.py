@@ -8,6 +8,7 @@ def permission_required(level: int = Permission.GROUP_ADMIN):
 
     :param level: 允许的权限
     """
+
     def decorator(func):
         @wraps(func)
         async def with_wrapper(*args, **kwargs):

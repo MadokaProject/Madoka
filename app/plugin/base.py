@@ -4,7 +4,6 @@ from graia.ariadne.message.element import Plain, Image, Source
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
-from app.core.config import Config
 from app.util.control import Permission
 from app.util.permission import *
 from app.util.text2image import create_image
