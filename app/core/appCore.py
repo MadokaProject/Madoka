@@ -6,8 +6,8 @@ import threading
 import traceback
 from asyncio.events import AbstractEventLoop
 from pathlib import Path
-from typing import List
 from types import ModuleType
+from typing import List
 
 from graia.ariadne.adapter import DefaultAdapter
 from graia.ariadne.app import Ariadne

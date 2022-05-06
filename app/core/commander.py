@@ -1,7 +1,7 @@
 import functools
 import inspect
-from typing import Dict, Union, Callable, Optional
 from types import ModuleType
+from typing import Dict, Union, Callable, Optional
 
 from arclet.alconna import Alconna, command_manager as _cmd_mgr
 from arclet.alconna.util import Singleton
@@ -13,9 +13,16 @@ class CommandDelegateManager(metaclass=Singleton):
     """
     Alconna 命令委托管理器
     """
+    __instance = None
     __first_init: bool = False
     __delegates: Dict[str, Callable]
-    headers = ['.', ',', ';', '!', '?', '。', '，', '；', '！', '？', '/', '\\']
+    # headers = ['.', ',', ';', '!', '?', '。', '，', '；', '！', '？', '/', '\\']
+    headers = ['.']
+
+    def __new__(cls):
+        if not cls.__instance:
+            cls.__instance = object.__new__(cls)
+        return cls.__instance
 
     def __init__(self):
         if not self.__first_init:
@@ -26,8 +33,8 @@ class CommandDelegateManager(metaclass=Singleton):
 
     @classmethod
     def get_instance(cls):
-        if cls.__first_init:
-            return cls()
+        if cls.__instance:
+            return cls.__instance
         else:
             raise CommandManagerInitialized("命令管理器未初始化")
 
@@ -53,7 +60,7 @@ class CommandDelegateManager(metaclass=Singleton):
 
         def decorator(func: Callable):
             path_parts = inspect.getfile(func).replace('\\', '/').split('/')
-            alc.reset_namespace(f'{path_parts[-3]}.{path_parts[-2]}')
+            alc.reset_namespace(f'{path_parts[-3]}_{path_parts[-2]}')
             self.__delegates[alc.path] = func
 
             @functools.wraps(func)
@@ -68,18 +75,19 @@ class CommandDelegateManager(metaclass=Singleton):
         """删除命令"""
         if isinstance(target, Alconna):
             _cmd_mgr.delete(target)
+            target = target.path
         else:
             module_path = target.__name__.split('.')
-            namespace = f'{module_path[-3]}.{module_path[-2]}'
+            namespace = f'{module_path[-3]}_{module_path[-2]}'
             try:
                 name = target.Module.entry
             except AttributeError:
                 raise NonStandardPlugin("Madoka 插件必须以 'Module' 为名称作为入口")
-            if alc := self.__delegates.get(f"{namespace}.{name}"):
-                _cmd_mgr.delete(alc)
-                target = alc
+            target = f'{namespace}.{name}'
+            if target in self.__delegates:
+                _cmd_mgr.delete(target)
         try:
-            del self.__delegates[target.path]
+            del self.__delegates[target]
         except KeyError:
             pass
 

@@ -4,7 +4,7 @@ import struct
 import time
 
 import jsonpath
-from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
+from arclet.alconna import Alconna, Option, Args, Arpamar
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
@@ -165,13 +165,14 @@ class Module(Plugin):
             with MysqlDao() as db:
                 res = db.query('SELECT ip,port FROM mc_server WHERE `default`=1')
             default = [res[0][0], res[0][1]]
-            ip_ = command.options.get('ip', '127.0.0.1')
-            port_ = command.options.get('port', 25565)
+            options = command.options
+            ip_ = options['ip']['ip'] if options.get('ip') else '127.0.0.1'
+            port_ = options['port']['port'] if options.get('port') else 25565
             if command.options.get('set'):
                 return await self.set_default_mc(ip_, port_)
             if command.options.get('view'):
                 return MessageChain.create([Plain(f'默认服务器: {default[0]}:{default[1]}')])
-            timeout_ = command.options.get('timeout', 10)
+            timeout_ = options['timeout']['timeout'] if options.get('timeout') else 10
             default = [ip_, port_, timeout_]
             return MessageChain.create([Plain(StatusPing(*default).get_status(str_format=True))])
         except EnvironmentError as e:

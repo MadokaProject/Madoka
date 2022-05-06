@@ -1,6 +1,7 @@
 import time
-from uuid import uuid4
 from datetime import date
+from uuid import uuid4
+
 from app.core.settings import IntimacyLevel, IntimacyGet
 from app.util.dao import MysqlDao
 

@@ -73,7 +73,9 @@ class Module(Plugin):
                     Option('--upgrade|-u', help_text='更新插件')
                 ]),
                 Subcommand('remove', help_text='删除插件, <plugin>插件英文名', args=Args['plugin': str]),
-                Subcommand('list', help_text='列出本地插件, 通过 --all 选择是否列出所有插件', args=Args['all':'--all']),
+                Subcommand('list', help_text='列出本地插件', options=[
+                    Option('--all|-a', help_text='列出所有插件')
+                ]),
                 Subcommand('load', help_text='加载插件, <plugin>插件英文名', args=Args['plugin': str]),
                 Subcommand('unload', help_text='卸载插件, <plugin>插件英文名', args=Args['plugin': str]),
                 Subcommand('reload', help_text='重载插件[默认全部], <plugin>插件英文名', args=Args['plugin': str: 'all_plugin'])
@@ -83,6 +85,7 @@ class Module(Plugin):
     )
     async def process(self, command: Arpamar, alc: Alconna):
         subcommand = command.subcommands
+        print(subcommand)
         if not subcommand:
             return await self.print_help(alc.get_help())
         try:
@@ -141,8 +144,8 @@ class Module(Plugin):
                 return MessageChain.create([Plain('该插件不存在: ' + plugin)])
             delete(AppCore.get_core_instance(), plugin)
             return MessageChain.create([Plain('插件删除成功: ' + plugin)])
-        elif list_ := subcommand.get("list"):
-            if 'all' in list_:
+        elif 'list' in subcommand:
+            if subcommand['list'].get('all'):
                 msg = PrettyTable()
                 msg.field_names = ['序号', '插件名', '英文名', '作者', '版本号']
                 for index, (name, plugin) in enumerate((await self.get_plugin_list()).items()):
@@ -188,7 +191,7 @@ class Module(Plugin):
                     if open_['plugin'] == plugin.Module.entry:  # plugin.Module(self.message).entry:
                         perm = open_['plugin']
         elif close_ := subcommand.get("close"):
-            if frd := open_.get("friend"):
+            if frd := close_.get("friend"):
                 qq: int = frd['qq']
             if 'all' in close_:
                 perm = '-'
@@ -196,7 +199,7 @@ class Module(Plugin):
                 core: AppCore = AppCore.get_core_instance()
                 for plugin in core.get_plugin():
                     if close_['plugin'] == plugin.Module.entry:
-                        if close_['plugin'] == 'plugin':
+                        if close_['plugin'] == self.entry:
                             return MessageChain.create([Plain('禁止关闭本插件管理工具')])
                         perm = '-' + close_['plugin']
         else:

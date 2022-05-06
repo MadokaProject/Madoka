@@ -47,8 +47,9 @@ class Module(Plugin):
                 shell = [f'-g {self.group.id}', f'-t {self.member.id}']
             elif hasattr(self, 'friend'):
                 shell = f'-t {self.friend.id}'
-            if u := components.get('u'):
-                timeout = u['timeout'] if u['timeout'] > 0 else 10
+            if 'u' in components:
+                u = components['u']
+                timeout = u['timeout']['timeout'] if u.get('timeout') else 10
                 try:
                     ret = subprocess.call('git pull', timeout=timeout, shell=True)
                     con.stop()

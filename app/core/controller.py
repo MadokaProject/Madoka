@@ -1,6 +1,6 @@
 import sys
-from typing import List
 from types import ModuleType
+from typing import List
 
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -8,6 +8,7 @@ from graia.ariadne.message.element import Plain, Source, Image
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
+from app.core.Exceptions import NonStandardPlugin
 from app.core.commander import CommandDelegateManager
 from app.core.settings import *
 from app.plugin.base import Plugin
@@ -15,7 +16,6 @@ from app.trigger import *
 from app.util.control import Permission
 from app.util.text2image import create_image
 from app.util.tools import isstartswith, Autonomy
-from app.core.Exceptions import NonStandardPlugin
 
 
 class Controller:
@@ -124,7 +124,7 @@ class Controller:
             elif isstartswith(msg.split()[0][1:], plg.entry, full_match=1):  # 指令执行
                 if plg.enable:
                     namespace = plg.__module__.split('.')
-                    alc_s = self.manager.get_commands(f'{namespace[-3]}.{namespace[-2]}')
+                    alc_s = self.manager.get_commands(f'{namespace[-3]}_{namespace[-2]}')
                     current = sys.stdout
                     alc_help = Autonomy()
                     sys.stdout = alc_help
@@ -135,7 +135,7 @@ class Controller:
                             result = alc.parse(self.message)
                             if result.matched:
                                 sys.stdout = current
-                                resp = await call(result, alc)
+                                resp = await getattr(plg, call.__name__)(result, alc)
                                 break
                             elif result.head_matched:
                                 if alc_help.buff:

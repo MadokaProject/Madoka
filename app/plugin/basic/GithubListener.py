@@ -77,14 +77,17 @@ class Module(Plugin):
                 if not REPO.__contains__(group_id) or repo not in REPO[group_id]:
                     return MessageChain.create([Plain('修改失败，该仓库名不存在!')])
                 if _name:
+                    _name = _name['name']
                     await save_config('repo', group_id, repo, model='remove')
                     await save_config('repo', group_id, {_name: REPO[group_id][repo]}, model='add')
                     REPO[group_id][_name] = REPO[group_id].pop(repo)
                     repo = _name
                 if _api:
+                    _api = _api['api']
                     REPO[group_id][repo]['api'] = _api
                     await save_config('repo', group_id, {repo: REPO[group_id][repo]}, model='add')
                 if _branch:
+                    _branch = _branch['branch']
                     REPO[group_id][repo]['branch'] = _branch.replace('，', ',').split(',')
                     await save_config('repo', group_id, {repo: REPO[group_id][repo]}, model='add')
                 return MessageChain.create([Plain("修改成功!")])
@@ -96,12 +99,14 @@ class Module(Plugin):
                 REPO[group_id].pop(remove['repo'])
                 return MessageChain.create([Plain("删除成功！")])
             elif list_:
-                return MessageChain.create(
-                    '\r\n'.join(
-                        f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}"
-                        for name, info in REPO[str(self.group.id)].items()
+                if REPO.get(str(self.group.id), 0):
+                    return MessageChain.create(
+                        '\r\n'.join(
+                            f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}"
+                            for name, info in REPO[str(self.group.id)].items()
+                        )
                     )
-                )
+                return MessageChain.create('该群组未配置Github监听仓库！')
             return self.args_error()
         except Exception as e:
             logger.exception(e)

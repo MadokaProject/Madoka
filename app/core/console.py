@@ -38,7 +38,7 @@ async def console_handler(
                 resp += f"\n\t{format(obj.entry, '<30')}\t{obj.brief_help}"
             elif isstartswith(param[0], obj.entry, full_match=True):
                 namespace = obj.__module__.split('.')
-                alc_s = manager.get_commands(f'{namespace[-3]}.{namespace[-2]}')
+                alc_s = manager.get_commands(f'{namespace[-3]}_{namespace[-2]}')
                 current = sys.stdout
                 alc_help = Autonomy()
                 sys.stdout = alc_help
@@ -49,7 +49,7 @@ async def console_handler(
                         result = alc.parse(params)
                         if result.matched:
                             sys.stdout = current
-                            resp = await call(result)
+                            resp = await getattr(obj, call.__name__)(result)
                             break
                         elif result.head_matched:
                             if alc_help.buff:

@@ -32,6 +32,8 @@ class Module(Plugin):
         try:
             if 'msg' in options:
                 """发言榜"""
+                if not hasattr(self, 'group'):
+                    return MessageChain.create('请在群聊内发送该命令！')
                 with MysqlDao() as db:
                     res = db.query(
                         "SELECT qid, count(qid) FROM msg WHERE uid=%s GROUP BY qid ORDER BY count(qid) DESC",

@@ -132,7 +132,7 @@ class DB(InitDB):
 
     async def process(self):
         with MysqlDao() as db:
-            db.update("""CREATE TABLE game (
+            db.update("""create table if not exists game (
                     uuid char(36) not null comment 'UUID',
                     qid char(12) not null comment 'QQ号',
                     consecutive_days int default 0 not null comment '连续签到天数',

@@ -1,5 +1,3 @@
-from typing import Union
-
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
@@ -26,13 +24,13 @@ class Module(Plugin):
             command=entry,
             options=[
                 Subcommand('user', help_text='用户白名单', options=[
-                    Option('--add|-a', args=Args['qq': Union[At, int]], help_text='用户加入白名单'),
-                    Option('--delete|-d', args=Args['qq': Union[At, int]], help_text='用户移出白名单'),
+                    Option('--add|-a', args=Args['qq': [At, int]], help_text='用户加入白名单'),
+                    Option('--delete|-d', args=Args['qq': [At, int]], help_text='用户移出白名单'),
                     Option('--list|-l', help_text='查看用户白名单')
                 ]),
                 Subcommand('blacklist', help_text='用户黑名单', options=[
-                    Option('--add-a', args=Args['qq': Union[At, int]], help_text='用户加入黑名单'),
-                    Option('--delete|-d', args=Args['qq': Union[At, int]], help_text='用户移出黑名单'),
+                    Option('--add|-a', args=Args['qq': [At, int]], help_text='用户加入黑名单'),
+                    Option('--delete|-d', args=Args['qq': [At, int]], help_text='用户移出黑名单'),
                     Option('--list|-l', help_text='查看用户黑名单')
                 ]),
                 Subcommand('group', help_text='群组白名单', options=[
@@ -40,7 +38,7 @@ class Module(Plugin):
                     Option('--delete|-d', args=Args['group': int], help_text='群组移出白名单'),
                     Option('--list|-l', help_text='查看群组白名单')
                 ]),
-                Option('grant', help_text='调整用户权限等级', args=Args['qq': Union[At, int], 'level': int])
+                Option('grant', help_text='调整用户权限等级', args=Args['qq': [At, int], 'level': int])
             ],
             help_text='授权, 仅管理可用!'
         )

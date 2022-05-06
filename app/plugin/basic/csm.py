@@ -69,7 +69,7 @@ class Module(Plugin):
                     await self.app.muteAll(self.group.id)
                     return MessageChain.create([Plain('开启全员禁言成功!')])
                 elif target := mute.get('at'):
-                    time = mute['time'] if mute.get('time', 10) > 0 else 10
+                    time = mute['time']['time'] if mute.get('time') else 10
                     await self.app.muteMember(self.group, target.target, time * 60)
                     return MessageChain.create([Plain('禁言成功!')])
             elif unmute := components.get('unmute'):
@@ -80,7 +80,7 @@ class Module(Plugin):
                     await self.app.unmuteMember(self.group, target.target)
                     return MessageChain.create([Plain('解除禁言成功!')])
             elif func := components.get('func'):
-                tag = ""
+                tag = None
                 if func.get("card"):
                     tag = 'member_card_change'
                 elif func.get("quit"):
@@ -89,7 +89,7 @@ class Module(Plugin):
                     tag = 'member_kick'
                 elif func.get("flash"):
                     tag = 'flash_png'
-                if tag and await save_config(func, self.group.id, func['status']):
+                if tag and await save_config(tag, self.group.id, func['status']):
                     return MessageChain.create([Plain('开启成功！' if func['status'] else '关闭成功！')])
             elif repeat := components.get('刷屏检测'):
                 if await save_config('mute', self.group.id, {
