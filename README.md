@@ -28,7 +28,7 @@ $ python main.py
 
 ## 部署流程
 
-请查看 [**文档**](https://madoka.colsrch.cn): https://madoka.colsrch.cn
+请查看文档: https://madoka.colsrch.cn/doc/
 
 ## 项目版本管理
 
@@ -83,3 +83,4 @@ $ python main.py
 4. [`mirai-api-http`](https://github.com/project-mirai/mirai-api-http): 提供与 `mirai` 交互方式的 `mirai-console` 插件
 5. [`Graia Ariadne`](https://github.com/GraiaProject/Ariadne): 一个设计精巧, 协议实现完备的, 基于 `mirai-api-http v2`
    的即时聊天软件自动化框架.
+6. [`Arclet-Alconna`](https://github.com/ArcletProject/Alconna): 一个直观的、高性能、泛用的命令行参数解析器集成库

@@ -31,6 +31,7 @@ class Module(Plugin):
                 Subcommand('func', args=Args['status': bool], help_text='功能开关', options=[
                     Option('--card|-C', help_text='成员名片修改通知'),
                     Option('--flash|-F', help_text='闪照识别'),
+                    Option('--recall|-R', help_text='撤回识别'),
                     Option('--kick|-K', help_text='成员被踢通知'),
                     Option('--quit|-Q', help_text='成员退群通知')
                 ]),
@@ -89,6 +90,8 @@ class Module(Plugin):
                     tag = 'member_kick'
                 elif func.get("flash"):
                     tag = 'flash_png'
+                elif func.get("recall"):
+                    tag = 'member_recall'
                 if tag and await save_config(tag, self.group.id, func['status']):
                     return MessageChain.create([Plain('开启成功！' if func['status'] else '关闭成功！')])
             elif repeat := components.get('刷屏检测'):

@@ -13,6 +13,7 @@ from graia.ariadne.event.mirai import (
     MemberLeaveEventKick,
     MemberLeaveEventQuit,
     MemberHonorChangeEvent,
+    GroupRecallEvent
 )
 from graia.ariadne.model import Group, Member
 from graia.broadcast.interrupt import InterruptControl
@@ -61,6 +62,8 @@ class Event:
                 self.member_leave_quit = arg
             elif isinstance(arg, MemberHonorChangeEvent):
                 self.member_honor_change = arg
+            elif isinstance(arg, GroupRecallEvent):
+                self.group_recall = arg
 
     async def process(self):
         """子类必须重写此方法，此方法用于执行对应事件消息"""

@@ -15,7 +15,7 @@ from app.util.tools import restart
 
 
 class Module(Plugin):
-    entry = 'p'
+    entry = 'power'
     brief_help = '电源'
     hidden = True
     manager: CommandDelegateManager = CommandDelegateManager.get_instance()

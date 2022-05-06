@@ -173,7 +173,8 @@ class AppCore:
 
     async def bot_launch_init(self):
         try:
-            threading.Thread(daemon=True, target=WebServer).start()
+            if self.__config.WEBSERVER_ENABLE:
+                threading.Thread(daemon=True, target=WebServer).start()
             await InitDB(self.__basic)
             self.__loop.create_task(power(self.__app, sys.argv))
             group_list = await self.__app.getGroupList()

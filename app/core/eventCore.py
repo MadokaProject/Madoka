@@ -13,6 +13,7 @@ from graia.ariadne.event.mirai import (
     MemberLeaveEventKick,
     MemberLeaveEventQuit,
     MemberHonorChangeEvent,
+    GroupRecallEvent
 )
 from loguru import logger
 
@@ -99,6 +100,12 @@ async def member_leave_quit_listener(app: Ariadne, event: MemberLeaveEventQuit):
 @bcc.receiver("MemberHonorChangeEvent")
 async def member_honor_change_listener(app: Ariadne, event: MemberHonorChangeEvent):
     event = EventController("MemberHonorChangeEvent", app, inc, event)
+    await event.process_event()
+
+
+@bcc.receiver("GroupRecallEvent")
+async def group_recall_listener(app: Ariadne, event: GroupRecallEvent):
+    event = EventController("GroupRecallEvent", app, inc, event)
     await event.process_event()
 
 

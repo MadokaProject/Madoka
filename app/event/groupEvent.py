@@ -1,16 +1,30 @@
+from datetime import datetime
 from io import BytesIO
 
 import httpx
 from PIL import Image as IMG
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, At, Image
+from graia.ariadne.message.element import Plain, At, Image, Forward, ForwardNode
 from graia.ariadne.model import MemberInfo
 
 from app.core.config import Config
 from app.core.settings import ADMIN_USER
 from app.event.base import Event
 from app.util.onlineConfig import get_config
-from app.util.sendMessage import safeSendGroupMessage
+from app.util.sendMessage import safeSendGroupMessage, safeSendFriendMessage
+
+
+async def avater_blackandwhite(qq: int) -> bytes:
+    """
+    获取群成员头像黑白化
+    """
+    url = f"http://q1.qlogo.cn/g?b=qq&nk={str(qq)}&s=4"
+    async with httpx.AsyncClient() as client:
+        resp = await client.get(url)
+    img = IMG.open(BytesIO(resp.content))
+    img = img.convert("L")
+    img.save(imgbio := BytesIO(), "JPEG")
+    return imgbio.getvalue()
 
 
 class MemberCardChange(Event):
@@ -104,14 +118,31 @@ class MemberHonorChange(Event):
         await safeSendGroupMessage(self.member_honor_change.member.group, MessageChain.create(msg))
 
 
-async def avater_blackandwhite(qq: int) -> bytes:
-    """
-    获取群成员头像黑白化
-    """
-    url = f"http://q1.qlogo.cn/g?b=qq&nk={str(qq)}&s=4"
-    async with httpx.AsyncClient() as client:
-        resp = await client.get(url)
-    img = IMG.open(BytesIO(resp.content))
-    img = img.convert("L")
-    img.save(imgbio := BytesIO(), "JPEG")
-    return imgbio.getvalue()
+class GroupRecallEvent(Event):
+    """有人撤回消息"""
+    event_name = "GroupRecallEvent"
+
+    async def process(self):
+        if self.group_recall.operator is None:
+            return
+        _config = Config()
+        if _config.EVENT_GROUP_RECALL or await get_config('member_recall', self.group_recall.group.id):
+            message = MessageChain.create(Forward([
+                ForwardNode(
+                    target=self.group_recall.operator,
+                    time=datetime.now(),
+                    message=MessageChain.create(
+                        f'{self.group_recall.group.name}: {self.group_recall.group.id} 群有人撤回了一条消息'
+                        if _config.EVENT_GROUP_RECALL else '有人撤回了一条消息'
+                    ),
+                ),
+                ForwardNode(
+                    target=self.group_recall.operator,
+                    time=datetime.now(),
+                    message=MessageChain.create((await self.app.getMessageFromId(self.group_recall.messageId)).messageChain)
+                )
+            ]))
+            if _config.EVENT_GROUP_RECALL:
+                await safeSendFriendMessage(_config.MASTER_QQ, message)
+            else:
+                await safeSendGroupMessage(self.group_recall.group.id, message)

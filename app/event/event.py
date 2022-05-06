@@ -13,6 +13,7 @@ from graia.ariadne.event.mirai import (
     MemberLeaveEventKick,
     MemberLeaveEventQuit,
     MemberHonorChangeEvent,
+    GroupRecallEvent
 )
 from graia.ariadne.model import Group, Member
 from graia.broadcast.interrupt import InterruptControl
@@ -62,6 +63,8 @@ class EventController:
             elif isinstance(arg, MemberLeaveEventQuit):
                 self.event = arg
             elif isinstance(arg, MemberHonorChangeEvent):
+                self.event = arg
+            elif isinstance(arg, GroupRecallEvent):
                 self.event = arg
 
     async def process_event(self):

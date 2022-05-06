@@ -21,9 +21,9 @@ class Config:
         self.BOT_NAME = self.cf.get('bot', 'bot_name')
         self.MASTER_QQ = self.cf.get('bot', 'master_qq')
         self.MASTER_NAME = self.cf.get('bot', 'master_name')
-        self.DEBUG = True if self.cf.get('bot', 'debug', fallback='False').lower() == 'true' else False
-        self.ONLINE = True if self.cf.get('bot', 'online', fallback='True').lower() == 'true' else False
-        self.HEARTBEAT_LOG = False if self.cf.get('bot', 'heartbeat_log', fallback='False').lower() == 'false' else True
+        self.DEBUG = self.cf.getboolean('bot', 'debug', fallback=False)
+        self.ONLINE = self.cf.getboolean('bot', 'online', fallback=True)
+        self.HEARTBEAT_LOG = self.cf.getboolean('bot', 'heartbeat_log', fallback=False)
 
         self.MYSQL_HOST = self.cf.get('mysql', 'host', fallback='127.0.0.1')
         self.MYSQL_PORT = self.cf.getint('mysql', 'port', fallback=3306)
@@ -36,14 +36,17 @@ class Config:
 
         self.COIN_NAME = self.cf.get('coin_settings', 'name', fallback='金币')
 
-        self.REPO_ENABLE = True if self.cf.get('github', 'enable', fallback='False').lower() == 'true' else False
+        self.REPO_ENABLE = self.cf.getboolean('github', 'enable', fallback=False)
         self.REPO_TIME = self.cf.get('github', 'time', fallback='*/10  * * * *')
 
         self.COMMAND_HEADERS = self.cf.get('command', 'headers', fallback='.').split()
 
+        self.WEBSERVER_ENABLE = self.cf.getboolean('webserver', 'enable', fallback=False)
         self.WEBSERVER_HOST = self.cf.get('webserver', 'host', fallback='0.0.0.0')
         self.WEBSERVER_PORT = self.cf.get('webserver', 'port', fallback=8080)
         self.WEBSERVER_DEBUG = self.cf.getboolean('webserver', 'debug', fallback=False)
+
+        self.EVENT_GROUP_RECALL = self.cf.getboolean('event', 'groupRecall2me', fallback=True)
 
     def change_debug(self):
         if not self.ONLINE:
