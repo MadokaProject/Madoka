@@ -6,6 +6,7 @@ from typing import Dict, Union, Callable, Optional
 from arclet.alconna import Alconna, command_manager as _cmd_mgr
 from arclet.alconna.util import Singleton
 
+from app.core.config import Config
 from .Exceptions import CommandManagerInitialized, CommandManagerAlreadyInitialized, NonStandardPlugin
 
 
@@ -16,8 +17,7 @@ class CommandDelegateManager(metaclass=Singleton):
     __instance = None
     __first_init: bool = False
     __delegates: Dict[str, Callable]
-    # headers = ['.', ',', ';', '!', '?', '。', '，', '；', '！', '？', '/', '\\']
-    headers = ['.']
+    headers = Config().COMMAND_HEADERS
 
     def __new__(cls):
         if not cls.__instance:

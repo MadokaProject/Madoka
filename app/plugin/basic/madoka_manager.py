@@ -85,7 +85,6 @@ class Module(Plugin):
     )
     async def process(self, command: Arpamar, alc: Alconna):
         subcommand = command.subcommands
-        print(subcommand)
         if not subcommand:
             return await self.print_help(alc.get_help())
         try:
