@@ -3,7 +3,7 @@ import random
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 
-from app.api.doHttp import doHttpRequest
+from app.util.doHttp import do_http_request
 from app.core.settings import *
 from app.trigger.trigger import Trigger
 
@@ -52,7 +52,7 @@ class Chat(Trigger):
             'appid': 0,
             'msg': message,
         }
-        response = json.loads(await doHttpRequest(url=url, method='GET', params=params))
+        response = json.loads(await do_http_request(url=url, method='GET', params=params))
         resp = MessageChain.create([At(self.member.id)])
         if response['result'] == 0:
             resp.extend(MessageChain.create([

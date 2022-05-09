@@ -4,7 +4,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
-from app.api.doHttp import doHttpRequest
+from app.util.doHttp import do_http_request
 from app.core.config import Config
 
 
@@ -33,7 +33,7 @@ async def check_version(app: Ariadne, config: Config):
     """检查版本信息"""
     try:
         remote_version_url = 'https://cdn.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json'
-        remote_info = await doHttpRequest(remote_version_url, method='get', _type='json')
+        remote_info = await do_http_request(remote_version_url, method='get', _type='json')
         remote_version = remote_info['version']
         remote_update_logs = remote_info['update_log']
         logger.info(f'Remote version: {remote_version}')

@@ -78,6 +78,14 @@ class BotGame:
                 return 0
             return res[0][0]
 
+    async def get_today_coin(self) -> int:
+        """获取当日签到金币"""
+        with MysqlDao() as db:
+            res = db.query("SELECT coin FROM game WHERE qid=%s", [self.qq])
+            if res[0][0] is None:
+                return 0
+            return res[0][0]
+
     async def upgrade_intimacy_level(self) -> None:
         """修改用户好感度等级"""
         with MysqlDao() as db:
@@ -115,8 +123,8 @@ class BotGame:
 
         with MysqlDao() as db:
             res = db.update(
-                "UPDATE game SET coins=coins+%s, last_signin_time=CURDATE(), total_days=total_days+1 WHERE qid=%s",
-                [self.coin, self.qq]
+                "UPDATE game SET coin=%s, coins=coins+%s, last_signin_time=CURDATE(), total_days=total_days+1 "
+                "WHERE qid=%s", [self.coin, self.coin, self.qq]
             )
             if not res:
                 raise Exception()

@@ -3,12 +3,23 @@ from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw
 
 from .CutString import get_cut_str
+from .tools import to_thread
 
 font_file = 'app/resource/font/sarasa-mono-sc-semibold.ttf'
 font = ImageFont.truetype(font_file, 32)
 
 
 async def create_image(text: str, cut=64) -> bytes:
+    """文本转图片（自动使用子线程）
+
+    :param text: 文本
+    :param cut: 自动断行长度
+    """
+    imageio: bytes = await to_thread(create_image_thread, text, cut)
+    return imageio
+
+
+def create_image_thread(text: str, cut=64) -> bytes:
     """文本转图片
 
     :param text: 文本

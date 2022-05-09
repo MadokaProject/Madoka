@@ -1,3 +1,4 @@
+import asyncio
 import time
 from io import BytesIO
 from pathlib import Path
@@ -6,7 +7,7 @@ from typing import Union, Tuple
 import httpx
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-from app.api.doHttp import doHttpRequest
+from app.util.doHttp import do_http_request
 from app.core.settings import IntimacyLevel, IntimacyGet
 
 base_path = Path(__file__).parent
@@ -20,11 +21,11 @@ stroke_width = 5
 _Ink = Union[str, int, Tuple[int, int, int], Tuple[int, int, int, int]]
 
 
-async def get_qlogo(id: int) -> bytes:
-    return await doHttpRequest(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(id)}&s=640", _type='byte')
+def get_qlogo(id: int) -> bytes:
+    return asyncio.run(doHttpRequest(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(id)}&s=640", _type='byte'))
 
 
-async def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink = "white") -> Image.Image:
+def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink = "white") -> Image.Image:
     origin_w = w
     origin_h = h
     w *= 4
@@ -82,7 +83,7 @@ def cut_text(
     return target.rstrip()
 
 
-async def get_sign_image(
+def get_sign_image(
         uuid: str,
         qid: int,
         name: str,
@@ -106,7 +107,7 @@ async def get_sign_image(
     canvas = Image.new("RGB", bg_size, '#FFFFFF')
     draw = ImageDraw.Draw(canvas)
 
-    qlogo = Image.open(BytesIO(await get_qlogo(id=qid)))
+    qlogo = Image.open(BytesIO(get_qlogo(id=qid)))
     if bg_size[1] > bg_size[0]:
         qlogo1 = qlogo.resize((bg_size[1], bg_size[1]), Image.LANCZOS).filter(ImageFilter.GaussianBlur(radius=50))
         canvas.paste(qlogo1, ((bg_size[0] - bg_size[1]) // 2, 0))
@@ -160,7 +161,7 @@ async def get_sign_image(
     draw.text((2 * avatar_xy + avatar_size, y), uid, font=font_2, fill='#ffffff')
     y += font_2.getsize(uid)[1] + 30
     draw.text((2 * avatar_xy + avatar_size, y), impression, font=font_2, fill='#ffffff')
-    bar = await progress_bar(font_2.getsize(impression)[0], 6, intimacy / IntimacyLevel[intimacy_level], fg='#80d0f1',
+    bar = progress_bar(font_2.getsize(impression)[0], 6, intimacy / IntimacyLevel[intimacy_level], fg='#80d0f1',
                              bg='#00000055')
     canvas.paste(bar, (2 * avatar_xy + avatar_size, y + font_2.getsize(impression)[1] + 10), mask=bar.split()[3])
 

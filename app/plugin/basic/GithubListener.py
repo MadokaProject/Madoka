@@ -11,7 +11,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from loguru import logger
 
-from app.api.doHttp import doHttpRequest
+from app.util.doHttp import do_http_request
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.settings import REPO
@@ -135,7 +135,7 @@ class Tasker(Scheduler):
                 if not obj.__contains__(name):
                     obj.update({name: {}})
                 try:
-                    branches = await doHttpRequest(info['api'], 'get', 'JSON')
+                    branches = await do_http_request(info['api'], 'get', 'JSON')
                     for branch in branches:
                         if info['branch'][0] != '*' and branch['name'] not in info['branch']:
                             continue

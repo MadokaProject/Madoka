@@ -11,7 +11,7 @@ from loguru import logger
 from pip import main as pip
 from prettytable import PrettyTable
 
-from app.api.doHttp import doHttpRequest
+from app.util.doHttp import do_http_request
 from app.core.appCore import AppCore
 from app.core.commander import CommandDelegateManager
 from app.plugin.base import Plugin
@@ -29,7 +29,7 @@ class Module(Plugin):
     folder_path = os.path.join(app_path(), f'plugin/extension/')
 
     async def get_plugin_list(self) -> dict:
-        return json.loads(await doHttpRequest(self.base_url + 'list.json', method='get'))
+        return json.loads(await do_http_request(self.base_url + 'list.json', method='get'))
 
     async def get_plugin_by_url(self, plugin_name, url_lists) -> bool:
         async def download(__url, __filepath):
