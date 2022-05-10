@@ -15,7 +15,7 @@ from app.util.tools import restart
 
 
 class Module(Plugin):
-    entry = 'power'
+    entry = 'p'
     brief_help = '电源'
     hidden = True
     manager: CommandDelegateManager = CommandDelegateManager.get_instance()
@@ -26,11 +26,11 @@ class Module(Plugin):
             headers=manager.headers,
             command=entry,
             options=[
-                Option('k', help_text='关闭机器人'),
-                Option('r', help_text='重启机器人'),
                 Subcommand('u', help_text='升级机器人', options=[
                     Option('--timeout|-t', args=Args['timeout': int: 10])
-                ])
+                ]),
+                Option('k', help_text='关闭机器人'),
+                Option('r', help_text='重启机器人'),
             ],
             help_text='电源控制, 仅主人可用'
         )
