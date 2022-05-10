@@ -49,7 +49,7 @@ class Module(Plugin):
                 shell = f'-t {self.friend.id}'
             if 'u' in components:
                 u = components['u']
-                timeout = u['timeout']['timeout'] if u.get('timeout') else 10
+                timeout = u['timeout']['timeout'] if command.find('timeout') else 10
                 try:
                     ret = subprocess.call('git pull', timeout=timeout, shell=True)
                     con.stop()
