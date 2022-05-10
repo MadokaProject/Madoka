@@ -26,14 +26,14 @@ class SendMsg(ConsoleController):
         if frd := command.options.get('friend'):
             if await self.app.getFriend(frd['num']):
                 await self.app.sendFriendMessage(
-                    frd['num'], MessageChain.create(Plain(command.main_args['msg']))
+                    frd['num'], MessageChain.create(Plain(command.query('msg')))
                 )
                 return '发送成功!'
             return '未找到该好友'
         elif gp := command.options.get('group'):
             if await self.app.getGroup(gp['num']):
                 await self.app.sendGroupMessage(
-                    gp['num'], MessageChain.create(Plain(command.main_args['msg']))
+                    gp['num'], MessageChain.create(Plain(command.query('msg')))
                 )
                 return '发送成功!'
             return '未找到该群组'

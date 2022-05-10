@@ -37,8 +37,8 @@ class Module(Plugin):
             if not hasattr(self, 'group'):
                 return MessageChain.create([Plain('请在群聊内使用该命令!')])
             config_name = self.configs[list(options.keys())[0]]
-            if await save_config(config_name, self.group.id, command.get('bool')):
-                return MessageChain.create([Plain('开启成功！' if command.get('bool') else '关闭成功！')])
+            if await save_config(config_name, self.group.id, command.query('bool')):
+                return MessageChain.create([Plain('开启成功！' if command.query('bool') else '关闭成功！')])
         except Exception as e:
             logger.exception(e)
             return self.unkown_error()

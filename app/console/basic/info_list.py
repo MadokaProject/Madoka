@@ -21,12 +21,12 @@ class InfoList(ConsoleController):
         )
     )
     async def process(self, command: Arpamar):
-        if command.has('friend'):
+        if command.find('friend'):
             return '\n'.join(
                 f'{friend.remark}({friend.id})' + (f' - {friend.nickname}' if friend.nickname != friend.remark else '')
                 for friend in (await self.app.getFriendList())
             )
-        elif command.has('group'):
+        elif command.find('group'):
             return '\n'.join(
                 f'{group.name}({group.id}) - {self.get_perm_name(group.accountPerm)}'
                 for group in (await self.app.getGroupList())
