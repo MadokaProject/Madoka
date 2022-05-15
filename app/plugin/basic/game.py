@@ -121,8 +121,8 @@ class Module(Plugin):
                 if int(await user.get_coins()) < coin:
                     return self.point_not_enough()
                 await user.update_coin(-coin)
-                user = BotUser(target, coin)
-                await user.update_point(coin)
+                user = BotGame(target, coin)
+                await user.update_coin(coin)
                 return MessageChain.create([
                     At(self.member.id),
                     Plain(' 已转赠给'),
