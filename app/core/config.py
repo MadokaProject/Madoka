@@ -6,7 +6,7 @@ from loguru import logger
 
 class Config:
     INFO_NAME = 'Madoka'
-    INFO_VERSION = '2.0.0'
+    INFO_VERSION = '2.1.0'
     INFO_DOCS = 'https://madoka.colsrch.cn'
     INFO_REPO = 'https://github.com/MadokaProject/Madoka'
     CONFIG_FILE = Path(__file__).parent.joinpath('config.ini')
