@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 
 import aiohttp.client
 import requests
-from app.util.network import general_request
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
 from graia.ariadne.context import enter_context
 from graia.ariadne.message.chain import MessageChain
@@ -18,6 +17,7 @@ from app.core.settings import REPO
 from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.decorator import permission_required
+from app.util.network import general_request
 from app.util.onlineConfig import save_config
 from app.util.tools import app_path
 

@@ -1,11 +1,11 @@
 import random
 
-from app.util.network import general_request
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 
 from app.core.settings import *
 from app.trigger.trigger import Trigger
+from app.util.network import general_request
 
 no_answer = [
     '我好像忘了什么...',

@@ -6,9 +6,9 @@ from typing import Union, Tuple
 
 import httpx
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
-from app.util.network import general_request
 
 from app.core.settings import IntimacyLevel, IntimacyGet
+from app.util.network import general_request
 
 base_path = Path(__file__).parent
 font_path = 'app/resource/font/OPPOSans-B.ttf'

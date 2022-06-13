@@ -9,6 +9,8 @@ class Config:
     INFO_VERSION = '2.1.0'
     INFO_DOCS = 'https://madoka.colsrch.cn'
     INFO_REPO = 'https://github.com/MadokaProject/Madoka'
+    REMOTE_VERSION_URL = 'https://fastly.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json'
+
     CONFIG_FILE = Path(__file__).parent.joinpath('config.ini')
 
     def __init__(self):
@@ -18,7 +20,7 @@ class Config:
         self.cf = configparser.ConfigParser()
         self.cf.read(self.CONFIG_FILE, encoding='utf-8')
         try:
-            self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='http://127.0.0.1')
+            self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='127.0.0.1')
             self.LOGIN_PORT = self.cf.get('bot', 'port', fallback='8080')
             self.LOGIN_QQ = self.cf.get('bot', 'qq')
             self.VERIFY_KEY = self.cf.get('bot', 'verify_key')
