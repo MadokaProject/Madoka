@@ -176,7 +176,7 @@ class AppCore:
                 logger.info(f"群ID: {str(group.id).ljust(14)}群名: {group.name}")
 
             logger.success("WebServer is starting")
-            importlib.__import__("app.core.eventCore")
+            importlib.__import__("app.core.event")
             importlib.__import__("app.core.console")
         except Exception as e:
             logger.exception(e)
