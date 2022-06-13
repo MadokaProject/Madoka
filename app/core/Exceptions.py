@@ -51,3 +51,18 @@ class FrequencyLimitExceededDoNothing(Exception):
 class NonStandardPlugin(Exception):
     """非标准插件"""
     pass
+
+
+class PluginManagerInitialized(Exception):
+    """插件管理器未初始化"""
+    pass
+
+
+class PluginManagerAlreadyInitialized(Exception):
+    """插件管理器重复初始化"""
+    pass
+
+
+class RemotePluginNotFound(Exception):
+    """未在插件仓库找到该插件"""
+    pass

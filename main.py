@@ -16,15 +16,12 @@ from app.util.version import version_notice
 
 config = Config()
 
-LOG_PATH = Path("./app/tmp/logs")
+LOG_PATH = Path(__file__).parent.joinpath("app/tmp/logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
 logger.add(LOG_PATH.joinpath("common.log"), level="INFO", retention=f"{config.COMMON_RETENTION} days", encoding="utf-8")
 logger.add(LOG_PATH.joinpath("error.log"), level="ERROR", retention=f"{config.ERROR_RETENTION} days", encoding="utf-8")
 
 core = AppCore(config)
-
-core.load_plugin_modules()
-core.load_schedulers()
 
 app = core.get_app()
 bcc = core.get_bcc()
@@ -36,14 +33,14 @@ manager = core.get_manager()
 async def friend_message_handler(_app: Ariadne, message: MessageChain, friend: Friend):
     message_text_log = message.asDisplay().replace("\n", "\\n")
     logger.info(f"收到来自好友 <{friend.nickname}> 的消息：{message_text_log}")
-    await Controller(core.get_plugin(), _app, message, friend, inc, manager).process_event()
+    await Controller(_app, message, friend, inc, manager, config).process_event()
 
 
 @bcc.receiver(GroupMessage)
 async def group_message_handler(_app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
     message_text_log = message.asDisplay().replace("\n", "\\n")
     logger.info(f"收到来自群 <{group.name}> 中成员 <{member.name}> 的消息：{message_text_log}")
-    await Controller(core.get_plugin(), _app, message, group, member, source, inc, manager).process_event()
+    await Controller(_app, message, group, member, source, inc, manager, config).process_event()
 
 
 @logger.catch

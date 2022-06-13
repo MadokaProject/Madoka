@@ -6,8 +6,8 @@ from typing import Union, Tuple
 
 import httpx
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
+from app.util.network import general_request
 
-from app.util.doHttp import do_http_request
 from app.core.settings import IntimacyLevel, IntimacyGet
 
 base_path = Path(__file__).parent
@@ -22,7 +22,7 @@ _Ink = Union[str, int, Tuple[int, int, int], Tuple[int, int, int, int]]
 
 
 def get_qlogo(id: int) -> bytes:
-    return asyncio.run(do_http_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(id)}&s=640", _type='byte'))
+    return asyncio.run(general_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(id)}&s=640", _type='byte'))
 
 
 def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink = "white") -> Image.Image:
@@ -162,7 +162,7 @@ def get_sign_image(
     y += font_2.getsize(uid)[1] + 30
     draw.text((2 * avatar_xy + avatar_size, y), impression, font=font_2, fill='#ffffff')
     bar = progress_bar(font_2.getsize(impression)[0], 6, intimacy / IntimacyLevel[intimacy_level], fg='#80d0f1',
-                             bg='#00000055')
+                       bg='#00000055')
     canvas.paste(bar, (2 * avatar_xy + avatar_size, y + font_2.getsize(impression)[1] + 10), mask=bar.split()[3])
 
     gift_1 = f'+{coin}'

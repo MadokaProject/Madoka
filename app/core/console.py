@@ -9,7 +9,7 @@ from graia.ariadne.message.parser.twilight import (
 )
 from loguru import logger
 
-from app.console import *
+from app.console.base import ConsoleController
 from app.core.appCore import AppCore
 from app.util.tools import parse_args, isstartswith, Autonomy
 
@@ -32,34 +32,29 @@ async def console_handler(
         if isstartswith(param[0], 'help', full_match=True):
             send_help = True
 
-        for func in base.ConsoleController.__subclasses__():
-            obj: base.ConsoleController = func(params, console, app)
+        for plg in manager.get_delegates('console').values():
             if send_help:
-                resp += f"\n\t{format(obj.entry, '<30')}\t{obj.brief_help}"
-            elif isstartswith(param[0], obj.entry, full_match=True):
-                namespace = obj.__module__.split('.')
-                alc_s = manager.get_commands(f'{namespace[-3]}_{namespace[-2]}')
+                resp += f"\n\t{format(plg.entry, '<30')}\t{plg.brief_help}"
+            elif isstartswith(param[0], plg.entry, full_match=True):
                 current = sys.stdout
                 alc_help = Autonomy()
                 sys.stdout = alc_help
-                for alc in alc_s:
-                    if not (call := manager.get_delegate(alc.path)):
-                        continue
-                    try:
-                        result = alc.parse(params)
-                        if result.matched:
-                            sys.stdout = current
-                            resp = await getattr(obj, call.__name__)(result)
-                            break
-                        elif result.head_matched:
-                            if alc_help.buff:
-                                resp = alc_help.buff
-                            else:
-                                resp = '参数错误!'
-                            sys.stdout = current
-                            break
-                    except Exception as e:
-                        resp = str(e)
+                try:
+                    result = plg.alc.parse(params)
+                    if result.matched:
+                        sys.stdout = current
+                        resp = await plg.func(
+                            ConsoleController(params, console, app),
+                            result
+                        )
+                    elif result.head_matched:
+                        if alc_help.buff:
+                            resp = alc_help.buff
+                        else:
+                            resp = '参数错误!'
+                        sys.stdout = current
+                except Exception as e:
+                    resp = str(e)
                 sys.stdout = current
                 await _do_send(resp)
                 return

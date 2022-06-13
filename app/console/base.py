@@ -6,13 +6,6 @@ from app.util.tools import *
 
 
 class ConsoleController:
-    """控制台命令继承此父类，并重写下面四个参数
-        :param entry: 程序入口点参数
-        :param brief_help: 简短帮助，显示在主帮助菜单
-        """
-    entry: str = 'plugin'
-    brief_help: str = 'this is a brief help.'
-
     def __init__(self, *args):
         for arg in args:
             if isinstance(arg, MatchResult):

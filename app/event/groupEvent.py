@@ -139,7 +139,8 @@ class GroupRecallEvent(Event):
                 ForwardNode(
                     target=self.group_recall.operator,
                     time=datetime.now(),
-                    message=MessageChain.create((await self.app.getMessageFromId(self.group_recall.messageId)).messageChain)
+                    message=MessageChain.create(
+                        (await self.app.getMessageFromId(self.group_recall.messageId)).messageChain)
                 )
             ]))
             if _config.EVENT_GROUP_RECALL:

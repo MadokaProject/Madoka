@@ -1,6 +1,6 @@
-import os
 import pickle
 import time
+from pathlib import Path
 
 import jsonpath
 from graia.ariadne.message.chain import MessageChain
@@ -76,8 +76,9 @@ class McServer:
             return None
 
 
-async def mc_listener(app, path, ips, qq, delay_sec):
-    if os.path.exists(file := os.sep.join([path, f'{ips[0]}_{str(ips[1])}.dat'])):
+async def mc_listener(app, path: Path, ips, qq, delay_sec):
+    file = path.joinpath(f'{ips[0]}_{str(ips[1])}.dat')
+    if file.exists():
         with open(file, 'rb') as f:
             obj = pickle.load(f)
     else:

@@ -1,6 +1,6 @@
 import configparser
-
 from pathlib import Path
+
 from loguru import logger
 
 
@@ -18,7 +18,7 @@ class Config:
         self.cf = configparser.ConfigParser()
         self.cf.read(self.CONFIG_FILE, encoding='utf-8')
         try:
-            self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='127.0.0.1')
+            self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='http://127.0.0.1')
             self.LOGIN_PORT = self.cf.get('bot', 'port', fallback='8080')
             self.LOGIN_QQ = self.cf.get('bot', 'qq')
             self.VERIFY_KEY = self.cf.get('bot', 'verify_key')

@@ -3,6 +3,7 @@ import contextvars
 import functools
 import os
 import sys
+from pathlib import Path
 from typing import List, Union
 
 
@@ -41,8 +42,9 @@ def restart(*args):
     os.execl(python, python, *[sys.argv[0], *args])
 
 
-def app_path():
-    return os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+def app_path() -> Path:
+    """获取 app 绝对路径"""
+    return Path(__file__).parent.parent
 
 
 async def to_thread(func, /, *args, **kwargs):

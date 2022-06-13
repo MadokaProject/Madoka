@@ -1,6 +1,6 @@
 import warnings
 
-from app.util.doHttp import do_http_request as new_do_http_request
+from app.util.network import general_request as new_do_http_request
 
 
 async def doHttpRequest(url, method='GET', _type='TEXT', params=None, headers=None, data=None):
@@ -15,5 +15,5 @@ async def doHttpRequest(url, method='GET', _type='TEXT', params=None, headers=No
     :return: str
     """
 
-    warnings.warn("该方法已被移至util目录，本文件将在下两个的版本移除，请修改导入路径为app.util.doHttp", DeprecationWarning)
+    warnings.warn("该方法已被移至util目录，本文件将在下两个的版本后移除，请修改导入路径为app.util.network", DeprecationWarning)
     return new_do_http_request(url, method, _type, params, headers, data)

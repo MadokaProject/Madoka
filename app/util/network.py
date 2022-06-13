@@ -1,7 +1,10 @@
 import random
+import urllib.request
+from pathlib import Path
 from urllib.parse import urlparse
 
 import aiohttp
+from loguru import logger
 from retrying import retry
 
 
@@ -57,7 +60,7 @@ class RandomUserAgentMiddleware(object):
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
-async def do_http_request(url, method='GET', _type='TEXT', params=None, headers=None, data=None):
+async def general_request(url, method='GET', _type='TEXT', params=None, headers=None, data=None):
     """通用Http异步请求函数
 
     :param url: str 请求的网址*
@@ -91,3 +94,22 @@ async def do_http_request(url, method='GET', _type='TEXT', params=None, headers=
         else:
             response = 'please set _type in [text, json, header, byte]'
         return response
+
+
+@retry(stop_max_attempt_number=5, wait_fixed=1000)
+def download(url: str, file_path: Path) -> bool:
+    """下载文件
+
+    :param url: 下载地址
+    :param file_path: 存储目录（包括文件名）
+    """
+    logger.info(f"尝试下载文件: {url}")
+    if file_path.exists():
+        logger.info(f"该文件已存在，跳过: {file_path}")
+    else:
+        try:
+            urllib.request.urlretrieve(url, filename=file_path)
+        except Exception as e:
+            logger.error(f"下载文件时发生错误，错误信息: {e}")
+            return False
+    return True
