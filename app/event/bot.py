@@ -14,8 +14,8 @@ from app.core.settings import ACTIVE_GROUP, ADMIN_USER
 from app.core.settings import NUDGE_INFO
 from app.entities.group import BotGroup
 from app.event.base import Event
-from app.util.onlineConfig import get_config
-from app.util.sendMessage import safeSendGroupMessage
+from app.util.online_config import get_config
+from app.util.send_message import safeSendGroupMessage
 
 
 class BotInvitedJoinGroupRequest(Event):

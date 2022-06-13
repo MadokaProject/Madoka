@@ -2,7 +2,7 @@ from io import BytesIO
 
 from PIL import Image, ImageFont, ImageDraw
 
-from .CutString import get_cut_str
+from .cut_string import get_cut_str
 from .tools import to_thread
 
 font_file = 'app/resource/font/sarasa-mono-sc-semibold.ttf'

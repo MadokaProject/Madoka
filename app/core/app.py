@@ -17,10 +17,10 @@ from loguru import logger
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
-from app.core.Exceptions import *
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.initDB import InitDB
+from app.core.database import InitDB
+from app.core.exceptions import *
 from app.core.plugins import PluginManager
 from app.extend.power import power
 from webapp.main import WebServer
@@ -166,7 +166,7 @@ class AppCore:
             await self.__plugins.loads_all_plugin()
             from app.extend.schedule import custom_schedule
             self.__loop.create_task(custom_schedule(self.__scheduler, self.__app))
-            self.__database.start()
+            await self.__database.start()
             if self.__config.WEBSERVER_ENABLE:
                 threading.Thread(daemon=True, target=WebServer).start()
             self.__loop.create_task(power(self.__app, sys.argv))

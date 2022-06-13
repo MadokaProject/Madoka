@@ -2,16 +2,16 @@ import re
 import string
 
 
-def get_cut_str(str, cut):
+def get_cut_str(text, cut):
     """自动断行，用于 Pillow 等不会自动换行的场景
 
-    :param str: 文本
+    :param text: 文本
     :param cut: 断行长度
     """
     punc = """，,、。.？?）》】“"‘'；;：:！!·`~%^& """
     si = 0
     i = 0
-    next_str = str
+    next_str = text
     str_list = []
 
     while re.search(r'\n\n\n\n\n', next_str):

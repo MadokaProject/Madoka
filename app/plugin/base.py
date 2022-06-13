@@ -1,3 +1,5 @@
+from typing import List
+
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Source, Image
@@ -8,6 +10,7 @@ from app.core.commander import CommandDelegateManager
 from app.util.control import Permission
 from app.util.permission import *
 from app.util.text2image import create_image
+from app.util.tools import parse_args
 
 
 class Plugin:
@@ -17,6 +20,7 @@ class Plugin:
         for arg in args:
             if isinstance(arg, MessageChain):
                 self.message = arg  # 消息内容
+                self.msg: List[str] = parse_args(self.message.asDisplay())
             elif isinstance(arg, Friend):
                 self.friend = arg  # 消息来源 好友
             elif isinstance(arg, Group):

@@ -10,7 +10,7 @@ from graia.ariadne.message.element import Plain
 from graia.scheduler import GraiaScheduler, timers
 from loguru import logger
 
-from app.core.appCore import AppCore
+from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.settings import REPO
@@ -18,7 +18,7 @@ from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.network import general_request
-from app.util.onlineConfig import save_config
+from app.util.online_config import save_config
 from app.util.tools import app_path
 
 core: AppCore = AppCore.get_core_instance()

@@ -4,7 +4,7 @@ from graia.ariadne.message.element import Plain, At
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.core.initDB import InitDB
+from app.core.database import InitDB
 from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
@@ -202,8 +202,8 @@ async def grant_permission_process(user_id: int, new_level: int):
     return MessageChain.create([Plain(f'修改成功！\r\n{user_id} level: {new_level}')])
 
 
-@database()
-def init_db():
+@database.init()
+async def init_db():
     with MysqlDao() as _db:
         _db.update(
             "create table if not exists user( \

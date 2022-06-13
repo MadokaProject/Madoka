@@ -6,7 +6,7 @@ import jsonpath
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 
-from app.plugin.basic.mcinfo import StatusPing
+from app.plugin.basic.mc_info import StatusPing
 
 
 class McServer:

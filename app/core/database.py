@@ -3,6 +3,8 @@ from typing import Callable, List
 
 from loguru import logger
 
+from .exceptions import DatabaseManagerInitialized, DatabaseManagerAlreadyInitialized
+
 
 class InitDB:
     __instance = None
@@ -19,16 +21,16 @@ class InitDB:
             self.__databases = []
             self.__first_init = True
         else:
-            raise Exception
+            raise DatabaseManagerAlreadyInitialized("数据库管理器重复初始化")
 
     @classmethod
     def get_instance(cls):
         if cls.__instance:
             return cls.__instance
         else:
-            raise Exception
+            raise DatabaseManagerInitialized("数据库管理器未初始化")
 
-    def __call__(self):
+    def init(self):
         def decorator(func: Callable):
             self.__databases.append(func)
 
@@ -40,10 +42,10 @@ class InitDB:
 
         return decorator
 
-    def start(self):
+    async def start(self):
         try:
             for db in self.__databases:
-                db()
+                await db()
             logger.success('初始化数据库成功')
         except Exception as e:
             logger.error('初始化数据库失败: ' + str(e))

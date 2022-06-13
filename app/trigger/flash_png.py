@@ -5,7 +5,7 @@ from graia.ariadne.message.element import FlashImage, Plain, Forward, ForwardNod
 
 from app.core.config import Config
 from app.trigger.trigger import Trigger
-from app.util.onlineConfig import get_config
+from app.util.online_config import get_config
 
 
 class FlashPng(Trigger):

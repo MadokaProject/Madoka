@@ -1,8 +1,8 @@
 __all__ = [
     'trigger',
     'mode',
-    'savemsg',
-    'flashpng',
+    'save_msg',
+    'flash_png',
     'csm',
     'reply',
     'chat',

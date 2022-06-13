@@ -17,7 +17,7 @@ from graia.ariadne.event.mirai import (
 )
 from loguru import logger
 
-from app.core.appCore import AppCore
+from app.core.app import AppCore
 from app.event.event import EventController
 
 core: AppCore = AppCore.get_core_instance()

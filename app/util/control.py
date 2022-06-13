@@ -8,7 +8,7 @@ from graia.ariadne.model import Friend, Group, Member, MemberPerm
 
 from app.core.config import Config
 from app.core.settings import ADMIN_USER, GROUP_ADMIN_USER, BANNED_USER
-from app.util.onlineConfig import set_plugin_switch
+from app.util.online_config import set_plugin_switch
 
 
 class Permission:

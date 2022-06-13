@@ -10,8 +10,8 @@ from graia.ariadne.model import MemberInfo
 from app.core.config import Config
 from app.core.settings import ADMIN_USER
 from app.event.base import Event
-from app.util.onlineConfig import get_config
-from app.util.sendMessage import safeSendGroupMessage, safeSendFriendMessage
+from app.util.online_config import get_config
+from app.util.send_message import safeSendGroupMessage, safeSendFriendMessage
 
 
 async def avater_blackandwhite(qq: int) -> bytes:

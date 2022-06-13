@@ -2,7 +2,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 
 from app.trigger.trigger import Trigger
-from app.util.onlineConfig import get_config
+from app.util.online_config import get_config
 
 
 class Reply(Trigger):

@@ -3,7 +3,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 
 from app.core.config import Config
-from app.util.onlineConfig import get_config
+from app.util.online_config import get_config
 
 
 async def online_notice(app: Ariadne, config: Config):

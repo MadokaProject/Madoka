@@ -66,3 +66,13 @@ class PluginManagerAlreadyInitialized(Exception):
 class RemotePluginNotFound(Exception):
     """未在插件仓库找到该插件"""
     pass
+
+
+class DatabaseManagerInitialized(Exception):
+    """数据库管理器未初始化"""
+    pass
+
+
+class DatabaseManagerAlreadyInitialized(Exception):
+    """数据库管理器重复初始化"""
+    pass

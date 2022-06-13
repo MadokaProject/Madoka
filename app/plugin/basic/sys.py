@@ -4,12 +4,12 @@ from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.core.initDB import InitDB
+from app.core.database import InitDB
 from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
-from app.util.onlineConfig import save_config
+from app.util.online_config import save_config
 
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 database: InitDB = InitDB.get_instance()
@@ -46,8 +46,8 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
         return self.unkown_error()
 
 
-@database()
-def init_db():
+@database.init()
+async def init_db():
     with MysqlDao() as db:
         """初始化系统数据表"""
         db.update(

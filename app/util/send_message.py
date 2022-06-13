@@ -1,10 +1,14 @@
 from typing import Optional, Union
 
-from graia.ariadne.context import ariadne_ctx
+from graia.ariadne.app import Ariadne
 from graia.ariadne.exception import UnknownTarget
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain, Source
 from graia.ariadne.model import BotMessage, Group, Friend
+
+from app.core.app import AppCore
+
+app: Ariadne = AppCore.get_core_instance().get_app()
 
 
 async def safeSendMessage(
@@ -23,7 +27,7 @@ async def safeSendMessage(
     elif isinstance(target, Friend):
         return await safeSendFriendMessage(target, message, quote)
     else:
-        app = ariadne_ctx.get()
+        # app = ariadne_ctx.get()
         if app.getGroup(target):
             return await safeSendGroupMessage(target, message, quote)
         elif app.getFriend(target):
@@ -43,7 +47,7 @@ async def safeSendFriendMessage(
     :param message: 发送消息
     :param quote: 回复ID
     """
-    app = ariadne_ctx.get()
+    # app = ariadne_ctx.get()
     try:
         return await app.sendFriendMessage(target, message, quote=quote)
     except UnknownTarget:
@@ -69,7 +73,7 @@ async def safeSendGroupMessage(
     :param message: 发送消息
     :param quote: 回复ID
     """
-    app = ariadne_ctx.get()
+    # app = ariadne_ctx.get()
     try:
         return await app.sendGroupMessage(target, message, quote=quote)
     except UnknownTarget:

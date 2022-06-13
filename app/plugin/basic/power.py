@@ -6,7 +6,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
 from loguru import logger
 
-from app.core.appCore import AppCore
+from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.plugin.base import Plugin
 from app.util.control import Permission

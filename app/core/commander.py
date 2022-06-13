@@ -6,7 +6,7 @@ from arclet.alconna import Alconna, command_manager as _cmd_mgr
 from arclet.alconna.util import Singleton
 
 from app.core.config import Config
-from .Exceptions import CommandManagerInitialized, CommandManagerAlreadyInitialized
+from .exceptions import CommandManagerInitialized, CommandManagerAlreadyInitialized
 
 
 class PluginInfo:

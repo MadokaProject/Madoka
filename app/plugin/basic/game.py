@@ -8,7 +8,7 @@ from prettytable import PrettyTable
 
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.initDB import InitDB
+from app.core.database import InitDB
 from app.entities.game import BotGame
 from app.entities.user import BotUser
 from app.plugin.base import Plugin
@@ -158,8 +158,8 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
         return self.unkown_error()
 
 
-@database()
-def init_db():
+@database.init()
+async def init_db():
     with MysqlDao() as db:
         db.update("""create table if not exists game (
                     uuid char(36) not null comment 'UUID',

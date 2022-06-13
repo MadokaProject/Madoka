@@ -10,7 +10,7 @@ from graia.ariadne.message.parser.twilight import (
 from loguru import logger
 
 from app.console.base import ConsoleController
-from app.core.appCore import AppCore
+from app.core.app import AppCore
 from app.util.tools import parse_args, isstartswith, Autonomy
 
 core: AppCore = AppCore.get_core_instance()

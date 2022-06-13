@@ -4,8 +4,8 @@ from graia.ariadne.message.element import Plain, Image
 from loguru import logger
 from prettytable import PrettyTable
 
-from app.core.Exceptions import RemotePluginNotFound
 from app.core.commander import CommandDelegateManager
+from app.core.exceptions import RemotePluginNotFound
 from app.core.plugins import PluginManager
 from app.plugin.base import Plugin
 from app.util.control import Permission, Switch

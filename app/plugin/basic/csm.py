@@ -7,7 +7,7 @@ from app.core.commander import CommandDelegateManager
 from app.plugin.base import Plugin
 from app.util.control import Permission
 from app.util.decorator import permission_required
-from app.util.onlineConfig import save_config
+from app.util.online_config import save_config
 
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 

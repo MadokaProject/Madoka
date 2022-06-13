@@ -13,7 +13,7 @@ from pip import main as pip
 from app.core.commander import CommandDelegateManager
 from app.util.network import general_request, download
 from app.util.tools import app_path, to_thread
-from .Exceptions import *
+from .exceptions import *
 
 
 class PluginType(Enum):
@@ -46,14 +46,14 @@ class PluginManager:
     __basic = [
         'sys',
         'power',
-        'accountManager',
+        'account_manager',
         'madoka_manager',
         'csm',
         'permission',
-        'replyKeyword',
-        'GroupJoin',
-        'GithubListener',
-        'mcinfo',
+        'reply_keyword',
+        'group_join',
+        'github_listener',
+        'mc_info',
         'game',
         'rank'
     ]

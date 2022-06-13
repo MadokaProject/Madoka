@@ -8,7 +8,7 @@ from graia.ariadne.message.element import Source
 from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
-from app.core.appCore import AppCore
+from app.core.app import AppCore
 from app.core.config import Config
 from app.core.controller import Controller
 from app.util.other import online_notice, offline_notice
