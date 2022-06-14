@@ -7,7 +7,7 @@ from .exceptions import ConfigInitialized, ConfigAlreadyInitialized
 
 class Config:
     INFO_NAME = 'Madoka'
-    INFO_VERSION = '2.1.0'
+    INFO_VERSION = '2.2.0'
     INFO_DOCS = 'https://madoka.colsrch.cn'
     INFO_REPO = 'https://github.com/MadokaProject/Madoka'
     REMOTE_VERSION_URL = 'https://fastly.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json'
