@@ -32,7 +32,7 @@ class MemberCardChange(Event):
     event_name = "MemberCardChangeEvent"
 
     async def process(self):
-        config = Config()
+        config = Config.get_instance()
         if self.member_card_change.member.id == int(config.LOGIN_QQ):
             if self.member_card_change.current != config.BOT_NAME:
                 for qq in ADMIN_USER:
@@ -125,7 +125,7 @@ class GroupRecallEvent(Event):
     async def process(self):
         if self.group_recall.operator is None:
             return
-        _config = Config()
+        _config = Config.get_instance()
         if _config.EVENT_GROUP_RECALL or await get_config('member_recall', self.group_recall.group.id):
             message = MessageChain.create(Forward([
                 ForwardNode(

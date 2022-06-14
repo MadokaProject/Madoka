@@ -23,7 +23,7 @@ class BotInvitedJoinGroupRequest(Event):
     event_name = "BotInvitedJoinGroupRequestEvent"
 
     async def process(self):
-        config = Config()
+        config = Config.get_instance()
         if self.bot_invited_join.groupId in ACTIVE_GROUP:
             await self.app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([
                 Plain("收到邀请入群事件"),
@@ -78,7 +78,7 @@ class BotJoinGroup(Event):
     event_name = "BotJoinGroupEvent"
 
     async def process(self):
-        config = Config()
+        config = Config.get_instance()
         membernum = len(await self.app.getMemberList(self.bot_join_group.group))
         await self.app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([
             Plain("收到加入群聊事件"),
@@ -192,7 +192,7 @@ class Nudge(Event):
     event_name = "NudgeEvent"
 
     async def process(self):
-        config = Config()
+        config = Config.get_instance()
         if self.nudge.target == int(config.LOGIN_QQ):
             if self.nudge.context_type == "group":
                 if member := await self.app.getMember(self.nudge.group_id, self.nudge.supplicant):

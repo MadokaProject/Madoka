@@ -22,7 +22,7 @@ class Permission:
     USER = 1
     BANNED = 0
     DEFAULT = USER
-    config = Config()
+    config = Config.get_instance()
 
     @classmethod
     def get(cls, member: Union[Member, Friend, int]) -> int:

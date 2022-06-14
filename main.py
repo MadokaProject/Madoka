@@ -14,7 +14,7 @@ from app.core.controller import Controller
 from app.util.other import online_notice, offline_notice
 from app.util.version import version_notice
 
-config = Config()
+config = Config.get_instance()
 
 LOG_PATH = Path(__file__).parent.joinpath("app/tmp/logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)

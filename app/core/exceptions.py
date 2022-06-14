@@ -76,3 +76,13 @@ class DatabaseManagerInitialized(Exception):
 class DatabaseManagerAlreadyInitialized(Exception):
     """数据库管理器重复初始化"""
     pass
+
+
+class ConfigInitialized(Exception):
+    """配置文件未初始化"""
+    pass
+
+
+class ConfigAlreadyInitialized(Exception):
+    """配置文件重复初始化"""
+    pass

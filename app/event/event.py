@@ -68,7 +68,7 @@ class EventController:
                 self.event = arg
 
     async def process_event(self):
-        config = Config()
+        config = Config.get_instance()
         if config.ONLINE and config.DEBUG:
             return
 

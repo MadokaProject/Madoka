@@ -38,7 +38,7 @@ class Chat(Trigger):
     async def process(self):
         if hasattr(self, 'friend') or not self.message.asDisplay() or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
-        config = Config()
+        config = Config.get_instance()
         message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
         if not message or message[0] in '.,;!?。，；！？/\\':
             return

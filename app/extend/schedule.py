@@ -10,7 +10,7 @@ from app.util.version import check_version
 
 
 async def custom_schedule(scheduler: GraiaScheduler, bot: Ariadne):
-    config = Config()
+    config = Config.get_instance()
     path = app_path().joinpath('tmp/mcserver')
     path.mkdir(parents=True, exist_ok=True)
     for ips, qq, delay in LISTEN_MC_SERVER:

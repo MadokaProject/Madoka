@@ -74,7 +74,7 @@ async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
                     ACTIVE_GROUP[uid.id] = res
                     db.update('UPDATE `group` SET permission=%s WHERE uid=%s', [','.join(f'{i}' for i in res), uid.id])
         else:
-            config = Config()
+            config = Config.get_instance()
             if uid == int(config.MASTER_QQ):
                 return False
             with MysqlDao() as db:

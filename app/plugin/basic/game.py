@@ -40,7 +40,7 @@ database: InitDB = InitDB.get_instance()
 async def process(self: Plugin, command: Arpamar, _: Alconna):
     options = command.options
     try:
-        config = Config()
+        config = Config.get_instance()
         if not options:
             """查询资金"""
             user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)

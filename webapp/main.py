@@ -31,5 +31,5 @@ api.add_resource(Health, '/api/rest/health')  # 机器人健康检查
 
 
 def WebServer():
-    config = Config()
+    config = Config.get_instance()
     app.run(host=config.WEBSERVER_HOST, port=config.WEBSERVER_PORT, debug=config.WEBSERVER_DEBUG)

@@ -10,7 +10,7 @@ from app.util.decorator import permission_required
 
 class ChangeMode(Trigger):
     async def process(self):
-        config = Config()
+        config = Config.get_instance()
         if self.msg[0] == '.mode':
             await self.change_mode()
         if config.ONLINE and config.DEBUG:
@@ -18,7 +18,7 @@ class ChangeMode(Trigger):
 
     @permission_required(level=Permission.MASTER)
     async def change_mode(self):
-        config = Config()
+        config = Config.get_instance()
         if config.ONLINE:
             if config.DEBUG:
                 await self.do_send(MessageChain.create([
