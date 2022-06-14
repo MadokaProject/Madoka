@@ -124,7 +124,7 @@ class PluginManager:
         extension_plugin_path.mkdir(exist_ok=True)
         for plugin in extension_plugin_path.rglob(pattern='*.py'):
             if plugin.name not in self.__ignore and plugin.is_file():
-                plugins.update({plugin.name.split()[0]: PluginType.Extension})
+                plugins.update({plugin.name.split('.')[0]: PluginType.Extension})
         await self.loads_plugin(plugins)
 
     async def loads_all_plugin(self) -> None:
