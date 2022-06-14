@@ -90,7 +90,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
             return MessageChain.create([Plain('插件删除成功: ' + plugin)])
         return MessageChain.create([Plain('该插件不存在: ' + plugin)])
     elif 'list' in subcommand:
-        if subcommand['list'].get('remote'):
+        if subcommand['list']:
             msg = PrettyTable()
             msg.field_names = ['序号', '插件名', '英文名', '作者', '版本号']
             for index, (name, plugin) in enumerate((await plugin_mgr.get_remote_plugins()).items()):
