@@ -74,7 +74,7 @@ class Controller:
                 )
 
         # 加载插件
-        for plg in self.args.manager.get_delegates().values():
+        for plg in self.args.manager.get_delegates().copy().values():
             enable = plg.enable
             hidden = plg.hidden
             if hasattr(self.args, 'friend'):

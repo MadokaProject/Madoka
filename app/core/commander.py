@@ -112,7 +112,7 @@ class CommandDelegateManager(metaclass=Singleton):
         if isinstance(target, PluginInfo):
             _cmd_mgr.delete(target.alc)
             target = target.func.__module__
-        else:
+        elif isinstance(target, ModuleType):
             target = target.__name__
             if target in self.__delegates[cmd_type]:
                 _cmd_mgr.delete(self.__delegates[cmd_type][target].alc)

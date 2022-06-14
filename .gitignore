@@ -1,8 +1,9 @@
-app/core/config.ini
 .idea/*
-**/__pycache__/
-venv/*
-app/tmp/*
 .vscode/*
+venv/*
+**/__pycache__/
+app/core/config.ini
+app/tmp/*
+app/plugin/extension/*
 k8s/config
 k8s/
