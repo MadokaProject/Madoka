@@ -222,7 +222,7 @@ class PluginManager:
                 logger.error('插件安装失败，请尝试重新安装: ' + plugin_list[plugin]['name'])
                 return False
         else:
-            logger.warning('未找到该插件' + plugin_list[plugin]['name'])
+            logger.warning('未找到该插件' + plugin)
             raise RemotePluginNotFound(plugin)
 
     def delete_plugin(self, plugin: str) -> bool:
