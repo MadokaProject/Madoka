@@ -1,11 +1,14 @@
 import random
 
 from arclet.alconna import Alconna, Option, Args, Arpamar
+from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Plain, At
+from graia.scheduler import GraiaScheduler, timers
 from loguru import logger
 from prettytable import PrettyTable
 
+from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.database import InitDB
@@ -13,10 +16,14 @@ from app.entities.game import BotGame
 from app.entities.user import BotUser
 from app.plugin.base import Plugin
 from app.util.dao import MysqlDao
+from app.util.send_message import safeSendFriendMessage
 from app.util.text2image import create_image
 from app.util.tools import to_thread
 from .game_res.sign_image_generator import get_sign_image
 
+core: AppCore = AppCore.get_core_instance()
+app: Ariadne = core.get_app()
+sche: GraiaScheduler = core.get_scheduler()
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 database: InitDB = InitDB.get_instance()
 
@@ -33,6 +40,7 @@ database: InitDB = InitDB.get_instance()
             Option('tf', help_text='转账', args=Args['at': At, 'money': int]),
             Option('迁移', help_text='迁移旧版金币'),
             Option('rank', help_text='显示群内已注册成员资金排行榜'),
+            Option('auto', args=Args['status': int], help_text='每天消耗10%金币自动签到')
         ],
         help_text='经济系统'
     )
@@ -151,11 +159,34 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
                     Image(data_bytes=await create_image(msg.get_string()))
                 ]))
                 return resp
+        elif auto := options.get('auto'):
+            status = auto['status']
+            if status not in [0, 1]:
+                return self.args_error()
+            await BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id).auto_signin(status)
+            return MessageChain.create('开启成功，将于每日8点为您自动签到！' if status else '关闭成功！')
         else:
             return self.args_error()
     except Exception as e:
         logger.exception(e)
         return self.unkown_error()
+
+
+@sche.schedule(timers.crontabify('0 8 * * * 0'))
+async def auto_sing():
+    logger.info('auto signin is running...')
+    with MysqlDao() as db:
+        res = db.query('SELECT qid FROM game WHERE auto_signin=1')
+        for qq, in res:
+            user = BotGame(qq, random.randint(1, 101))
+            if not await user.get_sign_in_status():
+                consume = int(await user.get_coins() * 0.1)
+                if await user.reduce_coin(consume):
+                    await user.sign_in()
+                    logger.success(f'账号: {qq} 自动签到完成~')
+                    await safeSendFriendMessage(qq, MessageChain.create(f'今日份签到完成，消耗{consume}金币\n请发送.gp get查收'))
+                else:
+                    await safeSendFriendMessage(qq, MessageChain.create("您的金币不足，无法完成自动签到"))
 
 
 @database.init()
@@ -167,6 +198,7 @@ async def init_db():
                     consecutive_days int default 0 not null comment '连续签到天数',
                     total_days int default 0 not null comment '累计签到天数',
                     last_signin_time date comment '上次签到时间',
+                    auto_signin int default 0 not null comment '自动签到',
                     coin int comment '今日获得货币',
                     coins int default 0 not null comment '货币',
                     intimacy int default 0 not null comment '好感度',

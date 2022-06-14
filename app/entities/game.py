@@ -122,12 +122,10 @@ class BotGame:
         await self.grant_intimacy(IntimacyGet[consecutive_days - 1])  # 好感度调整
 
         with MysqlDao() as db:
-            res = db.update(
+            db.update(
                 "UPDATE game SET coin=%s, coins=coins+%s, last_signin_time=CURDATE(), total_days=total_days+1 "
                 "WHERE qid=%s", [self.coin, self.coin, self.qq]
             )
-            if not res:
-                raise Exception()
 
     async def get_coins(self) -> int:
         """查询金币"""
@@ -139,16 +137,14 @@ class BotGame:
             return res[0][0]
 
     async def update_coin(self, coin) -> None:
-        """修改积分
+        """修改金币
         :param coin: str, 金币变动值
         """
         with MysqlDao() as db:
-            res = db.update(
+            db.update(
                 "UPDATE game SET coins=coins+%s WHERE qid=%s",
                 [coin, self.qq]
             )
-            if not res:
-                raise Exception()
 
     async def get_sign_in_status(self) -> bool:
         """查询签到状态"""
@@ -160,6 +156,7 @@ class BotGame:
             return res[0][0]
 
     async def reduce_coin(self, coin: int) -> bool:
+        """消耗金币"""
         if await self.get_coins() < coin:
             return False
         await self.update_coin(-coin)
@@ -170,9 +167,15 @@ class BotGame:
         :param num: str, 答题变动值
         """
         with MysqlDao() as db:
-            res = db.update(
+            db.update(
                 "UPDATE game SET english_answer=english_answer+%s WHERE qid=%s",
                 [num, self.qq]
             )
-            if not res:
-                raise Exception()
+
+    async def auto_signin(self, status: int) -> None:
+        """自动签到开关"""
+        with MysqlDao() as db:
+            db.update(
+                "UPDATE game SET auto_signin=%s WHERE qid=%s",
+                [status, self.qq]
+            )
