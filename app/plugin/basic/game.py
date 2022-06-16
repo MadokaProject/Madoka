@@ -40,7 +40,7 @@ database: InitDB = InitDB.get_instance()
             Option('tf', help_text='转账', args=Args['at': At, 'money': int]),
             Option('迁移', help_text='迁移旧版金币'),
             Option('rank', help_text='显示群内已注册成员资金排行榜'),
-            Option('auto', args=Args['status': int], help_text='每天消耗10%金币自动签到')
+            Option('auto', args=Args['status': bool], help_text='每天消耗10%金币自动签到')
         ],
         help_text='经济系统'
     )
@@ -160,9 +160,7 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
                 ]))
                 return resp
         elif auto := options.get('auto'):
-            status = auto['status']
-            if status not in [0, 1]:
-                return self.args_error()
+            status = 1 if auto['status'] else 0
             await BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id).auto_signin(status)
             return MessageChain.create('开启成功，将于每日8点为您自动签到！' if status else '关闭成功！')
         else:
@@ -178,9 +176,9 @@ async def auto_sing():
     with MysqlDao() as db:
         res = db.query('SELECT qid FROM game WHERE auto_signin=1')
         for qq, in res:
-            user = BotGame(qq, random.randint(1, 101))
+            user = BotGame(qq, coin := random.randint(1, 101))
             if not await user.get_sign_in_status():
-                consume = int(await user.get_coins() * 0.1)
+                consume = random.randint(0, int(coin * 0.1))
                 if await user.reduce_coin(consume):
                     await user.sign_in()
                     logger.success(f'账号: {qq} 自动签到完成~')
