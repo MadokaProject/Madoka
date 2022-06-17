@@ -1,5 +1,19 @@
 # Changelog
 
+## [2.3.0](https://github.com/MadokaProject/Madoka/compare/v2.2.0...v2.3.0) (2022-06-17)
+
+
+### Features
+
+* **app.plugins:** 支持不同版本下载对应版本的插件 ([9d282ae](https://github.com/MadokaProject/Madoka/commit/9d282ae6d2475a709437df42d6d74c1086b48cd6))
+* **game:** 新增自动签到功能 ([0fa3c86](https://github.com/MadokaProject/Madoka/commit/0fa3c860125e28a050f8323fc25d420b42194ab7))
+
+
+### Bug Fixes
+
+* **app.plugins:** 重载插件提示错误 ([9d282ae](https://github.com/MadokaProject/Madoka/commit/9d282ae6d2475a709437df42d6d74c1086b48cd6))
+* **game:** 调整自动签到收费 ([49166b6](https://github.com/MadokaProject/Madoka/commit/49166b606c0b60b846292fa71e5b50d145691688))
+
 ## [2.2.0](https://github.com/MadokaProject/Madoka/compare/2.1.0...v2.2.0) (2022-06-14)
 
 
