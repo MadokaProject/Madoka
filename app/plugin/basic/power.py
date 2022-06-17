@@ -26,7 +26,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         command='p',
         options=[
             Subcommand('u', help_text='升级机器人', options=[
-                Option('--timeout|-t', args=Args['timeout': int: 10])
+                Option('--timeout|-t', args=Args['timeout', int, 10])
             ]),
             Option('k', help_text='关闭机器人'),
             Option('r', help_text='重启机器人'),
@@ -59,15 +59,15 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
             except subprocess.TimeoutExpired:
                 logger.warning('升级超时！')
                 if hasattr(self, 'group'):
-                    return MessageChain.create([At(self.member.id), Plain(" 升级超时！")])
+                    return MessageChain([At(self.member.id), Plain(" 升级超时！")])
                 else:
-                    return MessageChain.create([Plain("升级超时！")])
+                    return MessageChain([Plain("升级超时！")])
         elif 'r' in components:
             con.stop()
             restart('-r', *shell)
         elif 'k' in components:
             con.stop()
-            await self.app.stop()
+            self.app.stop()
         else:
             return self.args_error()
     except Exception as e:

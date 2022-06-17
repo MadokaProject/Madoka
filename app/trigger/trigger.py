@@ -14,7 +14,7 @@ class Trigger:
 
     def __init__(self, message, *args):
         """根据需求可重写此构造方法"""
-        self.msg: List[str] = parse_args(message.asDisplay(), keep_head=True)
+        self.msg: List[str] = parse_args(message.display, keep_head=True)
         self.message: MessageChain = message
         for arg in args:
             if isinstance(arg, Friend):
@@ -35,9 +35,9 @@ class Trigger:
         if not isinstance(resp, MessageChain):
             return
         if hasattr(self, 'friend'):  # 发送好友消息
-            await self.app.sendFriendMessage(self.friend, resp)
+            await self.app.send_friend_message(self.friend, resp)
         elif hasattr(self, 'group'):  # 发送群聊消息
-            await self.app.sendGroupMessage(self.group, resp)
+            await self.app.send_group_message(self.group, resp)
 
     def check_admin(self, level: int):
         """检查是否管理员"""

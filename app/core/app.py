@@ -6,10 +6,13 @@ from asyncio.events import AbstractEventLoop
 from types import ModuleType
 from typing import List
 
-from graia.ariadne.adapter import DefaultAdapter
 from graia.ariadne.app import Ariadne
+from graia.ariadne.connection.config import (
+    HttpClientConfig,
+    WebsocketClientConfig,
+    config as cfg
+)
 from graia.ariadne.console import Console
-from graia.ariadne.model import MiraiSession
 from graia.broadcast import Broadcast
 from graia.broadcast.interrupt import InterruptControl
 from graia.scheduler import GraiaScheduler
@@ -54,22 +57,17 @@ class AppCore:
             logger.info("Initializing")
             self.__loop = asyncio.get_event_loop()
             self.__bcc = Broadcast(loop=self.__loop)
+            Ariadne.config(loop=self.__loop, broadcast=self.__bcc)
             self.__app = Ariadne(
-                broadcast=self.__bcc,
-                connect_info=DefaultAdapter(
-                    broadcast=self.__bcc,
-                    mirai_session=MiraiSession(
-                        host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}',
-                        verify_key=config.VERIFY_KEY,
-                        account=config.LOGIN_QQ
-                    ),
-                    log=config.HEARTBEAT_LOG
-                ),
-                chat_log_config=False
+                connection=cfg(
+                    config.LOGIN_QQ,
+                    config.VERIFY_KEY,
+                    HttpClientConfig(host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}'),
+                    WebsocketClientConfig(host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}')
+                )
             )
             self.__inc = InterruptControl(self.__bcc)
             self.__scheduler = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
-            self.__app.debug = False
             self.__config = config
             self.__console = Console(
                 broadcast=self.__bcc,
@@ -168,16 +166,16 @@ class AppCore:
             self.__loop.create_task(custom_schedule(self.__scheduler, self.__app))
             await self.__database.start()
             if self.__config.WEBSERVER_ENABLE:
+                logger.success("WebServer is starting")
                 threading.Thread(daemon=True, target=WebServer).start()
             self.__loop.create_task(power(self.__app, sys.argv))
-            group_list = await self.__app.getGroupList()
+            group_list = await self.__app.get_group_list()
             logger.info("本次启动活动群组如下：")
             for group in group_list:
                 logger.info(f"群ID: {str(group.id).ljust(14)}群名: {group.name}")
 
-            logger.success("WebServer is starting")
             importlib.__import__("app.core.event")
             importlib.__import__("app.core.console")
         except Exception as e:
             logger.exception(e)
-            exit()
+            self.__app.stop()

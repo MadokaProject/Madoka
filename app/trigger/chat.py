@@ -36,7 +36,7 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
-        if hasattr(self, 'friend') or not self.message.asDisplay() or self.msg[0][0] in '.,;!?。，；！？/\\':
+        if hasattr(self, 'friend') or not self.message.display or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
         config = Config.get_instance()
         message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
@@ -44,7 +44,7 @@ class Chat(Trigger):
             return
         message = ''.join(message)
         url = 'http://api.qingyunke.com/api.php'
-        if self.group.id in GROUP_RUNING_LIST or not self.message.has(At) or self.message.getFirst(At).target != int(
+        if self.group.id in GROUP_RUNING_LIST or not self.message.has(At) or self.message.get_first(At).target != int(
                 config.LOGIN_QQ):
             return
         params = {
@@ -53,13 +53,13 @@ class Chat(Trigger):
             'msg': message,
         }
         response = json.loads(await general_request(url=url, method='GET', params=params))
-        resp = MessageChain.create([At(self.member.id)])
+        resp = MessageChain([At(self.member.id)])
         if response['result'] == 0:
-            resp.extend(MessageChain.create([
+            resp.extend(MessageChain([
                 Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
             ]))
         else:
-            resp.extend(MessageChain.create([
+            resp.extend(MessageChain([
                 Plain(' ' + random.choice(no_answer))
             ]))
         await self.do_send(resp)

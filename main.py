@@ -31,15 +31,11 @@ manager = core.get_manager()
 
 @bcc.receiver(FriendMessage)
 async def friend_message_handler(_app: Ariadne, message: MessageChain, friend: Friend):
-    message_text_log = message.asDisplay().replace("\n", "\\n")
-    logger.info(f"收到来自好友 <{friend.nickname}> 的消息：{message_text_log}")
     await Controller(_app, message, friend, inc, manager, config).process_event()
 
 
 @bcc.receiver(GroupMessage)
 async def group_message_handler(_app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
-    message_text_log = message.asDisplay().replace("\n", "\\n")
-    logger.info(f"收到来自群 <{group.name}> 中成员 <{member.name}> 的消息：{message_text_log}")
     await Controller(_app, message, group, member, source, inc, manager, config).process_event()
 
 

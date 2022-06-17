@@ -25,12 +25,12 @@ async def process(self: ConsoleController, command: Arpamar):
     if command.find('friend'):
         return '\n'.join(
             f'{friend.remark}({friend.id})' + (f' - {friend.nickname}' if friend.nickname != friend.remark else '')
-            for friend in (await self.app.getFriendList())
+            for friend in (await self.app.get_friend_list())
         )
     elif command.find('group'):
         return '\n'.join(
-            f'{group.name}({group.id}) - {get_perm_name(group.accountPerm)}'
-            for group in (await self.app.getGroupList())
+            f'{group.name}({group.id}) - {get_perm_name(group.account_perm)}'
+            for group in (await self.app.get_group_list())
         )
     return self.args_error()
 

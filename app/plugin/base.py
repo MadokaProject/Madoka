@@ -20,7 +20,7 @@ class Plugin:
         for arg in args:
             if isinstance(arg, MessageChain):
                 self.message = arg  # 消息内容
-                self.msg: List[str] = parse_args(self.message.asDisplay())
+                self.msg: List[str] = parse_args(self.message.display)
             elif isinstance(arg, Friend):
                 self.friend = arg  # 消息来源 好友
             elif isinstance(arg, Group):
@@ -47,58 +47,58 @@ class Plugin:
 
     @classmethod
     async def print_help(cls, help_doc: str):
-        return MessageChain.create([Image(data_bytes=await create_image(help_doc, 80))])
+        return MessageChain([Image(data_bytes=await create_image(help_doc, 80))])
 
     @classmethod
     def unkown_error(cls):
         """未知错误默认回复消息"""
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '未知错误，请联系管理员处理！'
         )])
 
     @classmethod
     def args_error(cls):
         """参数错误默认回复消息"""
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '输入的参数错误！'
         )])
 
     @classmethod
     def index_error(cls):
         """索引错误默认回复消息"""
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '索引超出范围！'
         )])
 
     @classmethod
     def arg_type_error(cls):
         """类型错误默认回复消息"""
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '参数类型错误！'
         )])
 
     @classmethod
     def exec_permission_error(cls):
         """权限不够回复消息"""
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '没有相应操作权限！'
         )])
 
     @classmethod
     def point_not_enough(cls):
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             f'你的{Config().COIN_NAME}不足哦！'
         )])
 
     @classmethod
     def not_admin(cls):
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '你的权限不足，无权操作此命令！'
         )])
 
     @classmethod
     def exec_success(cls):
-        return MessageChain.create([Plain(
+        return MessageChain([Plain(
             '指令执行成功！'
         )])
 

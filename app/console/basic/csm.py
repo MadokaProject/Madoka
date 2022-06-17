@@ -15,12 +15,12 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
             Option(
                 'mute',
                 help_text='禁言指定群成员',
-                args=Args['group': int, 'qq': int:0, 'time': int: 10],
+                args=Args['group', int]['qq', int, 0]['time', int, 10],
             ),
             Option(
                 'unmute',
                 help_text='解除禁言指定群成员',
-                args=Args['group': int, 'qq': int:0],
+                args=Args['group', int]['qq', int, 0],
             ),
             Option('--all|-a', help_text='是否作用于全员'),
         ],
@@ -36,22 +36,22 @@ async def process(self: ConsoleController, command: Arpamar):
     qq = other_args['qq']
     if not all_ and qq <= 0:
         return self.args_error()
-    if (grp := (await self.app.getGroup(other_args['group']))) is None:
+    if (grp := (await self.app.get_group(other_args['group']))) is None:
         return '未找到该群组'
-    if (mbr := (await self.app.getMember(grp, qq))) is None and not all_:
+    if (mbr := (await self.app.get_member(grp, qq))) is None and not all_:
         return '未找到该成员'
     try:
         if command.options.get('mute'):
             if all_:
-                await self.app.muteAll(grp)
+                await self.app.mute_all(grp)
                 return '全员禁言成功!'
-            await self.app.muteMember(grp, mbr, other_args['time'] * 60)
+            await self.app.mute_member(grp, mbr, other_args['time'] * 60)
             return '禁言成功!'
         elif command.options.get('unmute'):
             if all_:
-                await self.app.unmuteAll(grp)
+                await self.app.unmute_all(grp)
                 return '取消全员禁言成功!'
-            await self.app.unmuteMember(grp, mbr)
+            await self.app.unmute_member(grp, mbr)
             return '解除禁言成功!'
         else:
             return self.args_error()

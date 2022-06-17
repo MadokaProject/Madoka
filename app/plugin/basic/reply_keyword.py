@@ -20,8 +20,8 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         headers=manager.headers,
         command='reply',
         options=[
-            Option('add', help_text='添加或修改自定义回复', args=Args['keyword': str, 'text': AllParam]),
-            Option('remove', help_text='删除自定义回复', args=Args['keyword': str]),
+            Option('add', help_text='添加或修改自定义回复', args=Args['keyword', str]['text', AllParam]),
+            Option('remove', help_text='删除自定义回复', args=Args['keyword', str]),
             Option('list', help_text='列出本群自定义回复')
         ],
         help_text='群自定义回复: 仅管理可用!'
@@ -33,20 +33,20 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
         return await self.print_help(alc.get_help())
     try:
         if not hasattr(self, 'group'):
-            return MessageChain.create([Plain('请在群聊内使用该命令!')])
+            return MessageChain([Plain('请在群聊内使用该命令!')])
         if add := options.get('add'):
             await save_config('group_reply', self.group.id, {
                 add['keyword']: add['text'][0].replace('<br>', '\n')
             }, model='add')
-            return MessageChain.create([Plain('添加/修改成功！')])
+            return MessageChain([Plain('添加/修改成功！')])
         elif remove := options.get('remove'):
             msg = '删除成功!' if (await save_config(
                 'group_reply', self.group.id, remove['keyword'], model='remove'
             )) else '删除失败!该关键词不存在'
-            return MessageChain.create([Plain(msg)])
+            return MessageChain([Plain(msg)])
         elif options.get('list'):
             res = await get_config('group_reply', self.group.id)
-            return MessageChain.create(
+            return MessageChain(
                 [Plain('\n'.join(f'{key}' for key in res.keys()) if res else '该群组暂未配置！')]
             )
         return self.args_error()

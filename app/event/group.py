@@ -36,25 +36,25 @@ class MemberCardChange(Event):
         if self.member_card_change.member.id == int(config.LOGIN_QQ):
             if self.member_card_change.current != config.BOT_NAME:
                 for qq in ADMIN_USER:
-                    await self.app.sendFriendMessage(qq, MessageChain.create([
+                    await self.app.send_friend_message(qq, MessageChain([
                         Plain(f"检测到 {config.BOT_NAME} 群名片变动"),
                         Plain(f"\n群号：{str(self.member_card_change.member.group.id)}"),
                         Plain(f"\n群名：{self.member_card_change.member.group.name}"),
                         Plain(f"\n被修改为：{self.member_card_change.current}"),
                         Plain(f"\n已为你修改回：{config.BOT_NAME}")
                     ]))
-                await self.app.modifyMemberInfo(
+                await self.app.modify_member_info(
                     group=self.member_card_change.member.group.id,
                     member=int(config.LOGIN_QQ),
                     info=MemberInfo(name=config.BOT_NAME),
                 )
                 await safeSendGroupMessage(
-                    self.member_card_change.member.group.id, MessageChain.create([Plain("请不要修改我的群名片")])
+                    self.member_card_change.member.group.id, MessageChain([Plain("请不要修改我的群名片")])
                 )
         else:
             if await get_config('member_card_change', self.member_card_change.member.group.id) and \
                     self.member_card_change.current not in [None, '']:
-                await safeSendGroupMessage(self.member_card_change.member.group, MessageChain.create([
+                await safeSendGroupMessage(self.member_card_change.member.group, MessageChain([
                     At(self.member_card_change.member.id),
                     Plain(f" 的群名片由 {self.member_card_change.origin} 被修改为 {self.member_card_change.current}")
                 ]))
@@ -74,7 +74,7 @@ class MemberJoin(Event):
         res = await get_config('member_join', self.member_join.member.group.id)
         if res and res['active']:
             msg.append(Plain(f"\r\n{res['text']}") if res.__contains__('text') else None)
-            await safeSendGroupMessage(self.member_join.member.group, MessageChain.create(msg))
+            await safeSendGroupMessage(self.member_join.member.group, MessageChain(msg))
 
 
 class MemberLeaveKick(Event):
@@ -89,7 +89,7 @@ class MemberLeaveKick(Event):
             Plain(" 踢出本群"),
         ]
         if await get_config('member_kick', self.member_leave_kick.member.group.id):
-            await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain.create(msg))
+            await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain(msg))
 
 
 class MemberLeaveQuit(Event):
@@ -102,7 +102,7 @@ class MemberLeaveQuit(Event):
             Plain(f"\n{self.member_leave_quit.member.name} 退出本群"),
         ]
         if await get_config('member_quit', self.member_leave_quit.member.group.id):
-            await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain.create(msg))
+            await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain(msg))
 
 
 class MemberHonorChange(Event):
@@ -115,7 +115,7 @@ class MemberHonorChange(Event):
             Plain(
                 f" {'获得了' if self.member_honor_change.action == 'achieve' else '失去了'} 群荣誉 {self.member_honor_change.honor}！"),
         ]
-        await safeSendGroupMessage(self.member_honor_change.member.group, MessageChain.create(msg))
+        await safeSendGroupMessage(self.member_honor_change.member.group, MessageChain(msg))
 
 
 class GroupRecallEvent(Event):
@@ -127,11 +127,11 @@ class GroupRecallEvent(Event):
             return
         _config = Config.get_instance()
         if _config.EVENT_GROUP_RECALL or await get_config('member_recall', self.group_recall.group.id):
-            message = MessageChain.create(Forward([
+            message = MessageChain(Forward([
                 ForwardNode(
                     target=self.group_recall.operator,
                     time=datetime.now(),
-                    message=MessageChain.create(
+                    message=MessageChain(
                         f'{self.group_recall.group.name}: {self.group_recall.group.id} 群有人撤回了一条消息'
                         if _config.EVENT_GROUP_RECALL else '有人撤回了一条消息'
                     ),
@@ -139,8 +139,8 @@ class GroupRecallEvent(Event):
                 ForwardNode(
                     target=self.group_recall.operator,
                     time=datetime.now(),
-                    message=MessageChain.create(
-                        (await self.app.getMessageFromId(self.group_recall.messageId)).messageChain)
+                    message=MessageChain(
+                        (await self.app.get_message_from_id(self.group_recall.message_id)).message_chain)
                 )
             ]))
             if _config.EVENT_GROUP_RECALL:

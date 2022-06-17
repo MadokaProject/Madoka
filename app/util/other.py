@@ -9,13 +9,13 @@ from app.util.online_config import get_config
 async def online_notice(app: Ariadne, config: Config):
     """上线提醒"""
     if config.ONLINE:
-        group_list = await app.getGroupList()
+        group_list = await app.get_group_list()
         for group in group_list:
             if await get_config('online_notice', group.id):
-                await app.sendGroupMessage(group, MessageChain.create([Plain(f"{config.BOT_NAME}打卡上班啦！")]))
+                await app.send_group_message(group, MessageChain([Plain(f"{config.BOT_NAME}打卡上班啦！")]))
 
 
 async def offline_notice(app: Ariadne, config: Config):
     """下线提醒"""
     if config.ONLINE:
-        await app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([Plain("正在关闭")]))
+        await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain("正在关闭")]))

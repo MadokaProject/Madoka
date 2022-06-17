@@ -16,25 +16,25 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
     alc=Alconna(
         command=entry,
         options=[
-            Option('--friend|-f', help_text='向指定好友发送消息', args=Args['num': int]),
-            Option('--group|-g', help_text='向指定群组发送消息', args=Args['num': int])
+            Option('--friend|-f', help_text='向指定好友发送消息', args=Args['num', int]),
+            Option('--group|-g', help_text='向指定群组发送消息', args=Args['num', int])
         ],
         help_text='发送消息',
-        main_args=Args['msg': str]
+        main_args=Args['msg', str]
     )
 )
 async def process(self: ConsoleController, command: Arpamar):
     if frd := command.options.get('friend'):
-        if await self.app.getFriend(frd['num']):
-            await self.app.sendFriendMessage(
-                frd['num'], MessageChain.create(Plain(command.query('msg')))
+        if await self.app.get_friend(frd['num']):
+            await self.app.send_friend_message(
+                frd['num'], MessageChain(Plain(command.query('msg')))
             )
             return '发送成功!'
         return '未找到该好友'
     elif gp := command.options.get('group'):
-        if await self.app.getGroup(gp['num']):
-            await self.app.sendGroupMessage(
-                gp['num'], MessageChain.create(Plain(command.query('msg')))
+        if await self.app.get_group(gp['num']):
+            await self.app.send_group_message(
+                gp['num'], MessageChain(Plain(command.query('msg')))
             )
             return '发送成功!'
         return '未找到该群组'

@@ -18,7 +18,7 @@ class Controller:
         self.args = Plugin(*args)
 
     async def process_event(self):
-        msg = self.args.message.asDisplay()
+        msg = self.args.message.display
         send_help = False  # 是否为主菜单帮助
         resp = None
         i = 1
@@ -109,15 +109,15 @@ class Controller:
                             resp = await plg.func(self.args, result, plg.alc)
                         elif result.head_matched:
                             if alc_help.buff:
-                                resp = MessageChain.create([Image(data_bytes=await create_image(alc_help.buff, 80))])
+                                resp = MessageChain([Image(data_bytes=await create_image(alc_help.buff, 80))])
                             else:
-                                resp = MessageChain.create(Plain('参数错误!'))
+                                resp = MessageChain(Plain('参数错误!'))
                             sys.stdout = current
                     except Exception as e:
-                        resp = MessageChain.create(Plain(f'{e}'))
+                        resp = MessageChain(Plain(f'{e}'))
                     sys.stdout = current
                 else:
-                    resp = MessageChain.create([Plain('此功能未开启！')])
+                    resp = MessageChain([Plain('此功能未开启！')])
                 await self._do_send(resp)
 
         # 主菜单帮助发送
@@ -129,13 +129,13 @@ class Controller:
                     + "\n所有功能均需添加前缀 ."
                     + "\n源码: github.com/MadokaProject/Madoka"
             )
-            await self._do_send(MessageChain.create([Image(data_bytes=await create_image(resp, 80))]))
+            await self._do_send(MessageChain([Image(data_bytes=await create_image(resp, 80))]))
 
     async def _do_send(self, resp):
         """发送消息"""
         if not isinstance(resp, MessageChain):
             return
         if hasattr(self.args, 'friend'):  # 发送好友消息
-            await self.args.app.sendFriendMessage(self.args.friend, resp)
+            await self.args.app.send_friend_message(self.args.friend, resp)
         elif hasattr(self.args, 'group'):  # 发送群聊消息
-            await self.args.app.sendGroupMessage(self.args.group, resp)
+            await self.args.app.send_group_message(self.args.group, resp)

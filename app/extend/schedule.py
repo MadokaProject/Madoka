@@ -22,10 +22,3 @@ async def custom_schedule(scheduler: GraiaScheduler, bot: Ariadne):
     @logger.catch
     async def version_info_listener():
         await check_version(bot, config)
-
-#
-# async def TaskerProcess(scheduler: GraiaScheduler, obj):
-#     @scheduler.schedule(timers.crontabify(obj.cron))
-#     @logger.catch
-#     async def process():
-#         await obj.process()

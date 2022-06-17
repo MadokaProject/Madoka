@@ -17,7 +17,7 @@ class CSM(Trigger):
         if (getattr(self, 'friend', None) or getattr(self, 'member', None)).id in BANNED_USER:
             self.as_last = True
         if not hasattr(self, 'group') or self.check_admin(
-                Permission.GROUP_ADMIN) or self.group.accountPerm == MemberPerm.Member:
+                Permission.GROUP_ADMIN) or self.group.account_perm == MemberPerm.Member:
             return
         if CONFIG.__contains__(str(self.group.id)) and CONFIG[str(self.group.id)].__contains__('status') and \
                 CONFIG[str(self.group.id)]['status']:  # 默认关闭，需自行开启(.admin status)
@@ -40,16 +40,16 @@ class CSM(Trigger):
                     duplicate = CONFIG[str(self.group.id)]['duplicate'] if CONFIG[str(self.group.id)].__contains__(
                         'duplicate') else {'time': 30, 'mute': 120, 'message': '请勿发送重复消息！'}
                     if time < flood['time']:  # 刷屏禁言
-                        await self.app.muteMember(self.group, self.member.id, flood['mute'])
-                        resp = MessageChain.create([
+                        await self.app.mute_member(self.group, self.member.id, flood['mute'])
+                        resp = MessageChain([
                             At(self.member.id), Plain(' ' + flood['message'])
                         ])
                         await self.do_send(resp)
                         return True
                     elif res[0][4] == res[1][4] == res[2][4] \
                             and res[0][4].strip() != '' and time < duplicate['time']:  # 30秒内重复消息禁言
-                        await self.app.muteMember(self.group, self.member.id, duplicate['mute'])
-                        resp = MessageChain.create([
+                        await self.app.mute_member(self.group, self.member.id, duplicate['mute'])
+                        resp = MessageChain([
                             At(self.member.id), Plain(' ' + duplicate['message'])
                         ])
                         await self.do_send(resp)
@@ -57,8 +57,8 @@ class CSM(Trigger):
             over_length = CONFIG[str(self.group.id)]['over-length'] if CONFIG[str(self.group.id)].__contains__(
                 'over-length') else {'text': 500, 'mute': 120, 'message': '请勿发送超长消息'}
             if len(self.msg) > over_length['text']:
-                await self.app.muteMember(self.group, self.member.id, over_length['mute'])
-                resp = MessageChain.create([
+                await self.app.mute_member(self.group, self.member.id, over_length['mute'])
+                resp = MessageChain([
                     At(self.member.id), Plain(' ' + over_length['message'])
                 ])
                 await self.do_send(resp)

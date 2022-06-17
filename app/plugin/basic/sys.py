@@ -25,8 +25,8 @@ configs = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}
         headers=manager.headers,
         command='sys',
         options=[
-            Option('禁言退群', help_text='设置机器人禁言是否退群', args=Args['bool': bool]),
-            Option('上线通知', help_text='设置机器人上线是否通知该群', args=Args['bool': bool])
+            Option('禁言退群', help_text='设置机器人禁言是否退群', args=Args['bool', bool]),
+            Option('上线通知', help_text='设置机器人上线是否通知该群', args=Args['bool', bool])
         ],
         help_text='系统设置: 仅主人可用!'
     )
@@ -37,10 +37,10 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
         return await self.print_help(alc.get_help())
     try:
         if not hasattr(self, 'group'):
-            return MessageChain.create([Plain('请在群聊内使用该命令!')])
+            return MessageChain([Plain('请在群聊内使用该命令!')])
         config_name = configs[list(options.keys())[0]]
         if await save_config(config_name, self.group.id, command.query('bool')):
-            return MessageChain.create([Plain('开启成功！' if command.query('bool') else '关闭成功！')])
+            return MessageChain([Plain('开启成功！' if command.query('bool') else '关闭成功！')])
     except Exception as e:
         logger.exception(e)
         return self.unkown_error()

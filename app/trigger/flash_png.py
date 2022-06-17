@@ -12,19 +12,19 @@ class FlashPng(Trigger):
     async def process(self):
         if self.message.has(FlashImage):
             user = self.member if hasattr(self, 'group') else self.friend
-            message = MessageChain.create(Forward([
+            message = MessageChain(Forward([
                 ForwardNode(
                     target=user,
                     time=datetime.now(),
-                    message=MessageChain.create(Plain('识别到闪照如下')),
+                    message=MessageChain(Plain('识别到闪照如下')),
                 ),
                 ForwardNode(
                     target=user,
                     time=datetime.now(),
-                    message=MessageChain.create(self.message.getFirst(FlashImage).toImage())
+                    message=MessageChain(self.message.get_first(FlashImage).to_image())
                 )
             ]))
             if hasattr(self, 'friend'):
-                await self.app.sendFriendMessage(Config().MASTER_QQ, message)
+                await self.app.send_friend_message(Config().MASTER_QQ, message)
             elif hasattr(self, 'group') and await get_config('flash_png', self.group.id):
                 await self.do_send(message)

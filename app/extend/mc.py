@@ -44,26 +44,26 @@ class McServer:
             self.players = players
             self.description = description
         else:
-            resp = MessageChain.create([
+            resp = MessageChain([
                 Plain(f'地址：{self.ip}:{self.port}\r\n'),
                 Plain(f'描述：{description}\r\n'),
                 Plain(f'信息：\r\n')
             ])
-            resp_content = MessageChain.create([])
+            resp_content = MessageChain([])
             if status and (status != self.status):
-                resp_content.extend(MessageChain.create([
+                resp_content.extend(MessageChain([
                     Plain('服务器已开启！\r\n')
                 ]))
             for player in self.players - players:
-                resp_content.extend(MessageChain.create([
+                resp_content.extend(MessageChain([
                     Plain(f'{player}退出了服务器！\r\n')
                 ]))
             for player in players - self.players:
-                resp_content.extend(MessageChain.create([
+                resp_content.extend(MessageChain([
                     Plain(f'{player}加入了服务器！\r\n')
                 ]))
             if (not status) and (status != self.status):
-                resp_content.extend(MessageChain.create([
+                resp_content.extend(MessageChain([
                     Plain('服务器已关闭！\r\n')
                 ]))
             self.status = status
@@ -92,12 +92,12 @@ async def mc_listener(app, path: Path, ips, qq, delay_sec):
         return
     for target in qq:
         if target[0] == 'f':
-            target = await app.getFriend(int(target[1:]))
+            target = await app.get_friend(int(target[1:]))
             if not target:
                 continue
-            await app.sendFriendMessage(target, resp)
+            await app.send_friend_message(target, resp)
         elif target[0] == 'g':
-            target = await app.getGroup(int(target[1:]))
+            target = await app.get_group(int(target[1:]))
             if not target:
                 continue
-            await app.sendGroupMessage(target, resp)
+            await app.send_group_message(target, resp)

@@ -12,19 +12,18 @@ class NewFriendRequest(Event):
     event_name = 'NewFriendRequestEvent'
 
     async def process(self):
-        sourceGroup: Optional[int] = self.new_friend.sourceGroup
-        if sourceGroup:
-            group_name = await self.app.getGroup(sourceGroup)
+        source_group: Optional[int] = self.new_friend.source_group
+        group_name = '未知'
+        if source_group:
+            group_name = await self.app.get_group(source_group)
             if group_name:
                 group_name = group_name.name
-            else:
-                group_name = '未知'
         for qq in ADMIN_USER:
-            await self.app.sendFriendMessage(qq, MessageChain.create([
+            await self.app.send_friend_message(qq, MessageChain([
                 Plain("收到添加好友事件\r\n"),
                 Plain(f"QQ: {self.new_friend.supplicant}\r\n"),
                 Plain(f"昵称: {self.new_friend.nickname}\r\n"),
-                Plain(f"来自群: {group_name}({sourceGroup})\r\n") if sourceGroup else Plain("来自好友搜索\r\n"),
+                Plain(f"来自群: {group_name}({source_group})\r\n") if source_group else Plain("来自好友搜索\r\n"),
                 Plain("状态: 已通过申请\r\n"),
                 Plain(self.new_friend.message) if self.new_friend.message else Plain("无附加信息")
             ]))

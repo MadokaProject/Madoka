@@ -11,7 +11,7 @@ class Config:
     INFO_VERSION = '2.3.0'
     INFO_DOCS = 'https://madoka.colsrch.cn'
     INFO_REPO = 'https://github.com/MadokaProject/Madoka'
-    REMOTE_REPO_VERSION = 'v2.2'
+    REMOTE_REPO_VERSION = 'release'
     REMOTE_VERSION_URL = 'https://fastly.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json'
 
     CONFIG_FILE = Path(__file__).parent.joinpath('config.ini')
@@ -34,10 +34,10 @@ class Config:
             try:
                 self.LOGIN_HOST = self.cf.get('bot', 'host', fallback='127.0.0.1')
                 self.LOGIN_PORT = self.cf.get('bot', 'port', fallback='8080')
-                self.LOGIN_QQ = self.cf.get('bot', 'qq')
+                self.LOGIN_QQ = self.cf.getint('bot', 'qq')
                 self.VERIFY_KEY = self.cf.get('bot', 'verify_key')
                 self.BOT_NAME = self.cf.get('bot', 'bot_name')
-                self.MASTER_QQ = self.cf.get('bot', 'master_qq')
+                self.MASTER_QQ = self.cf.getint('bot', 'master_qq')
                 self.MASTER_NAME = self.cf.get('bot', 'master_name')
                 self.DEBUG = self.cf.getboolean('bot', 'debug', fallback=False)
                 self.ONLINE = self.cf.getboolean('bot', 'online', fallback=True)

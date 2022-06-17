@@ -27,9 +27,9 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         options=[
             Option('view', help_text='查看默认服务器'),
             Option('set', help_text='设置默认MC服务器(仅主人可用)'),
-            Option('--ip|-i', help_text='域名或IP', args=Args['ip': str: '127.0.0.1']),
-            Option('--port|-p', help_text='端口号', args=Args['port': int: 25565]),
-            Option('--timeout|-t', help_text='超时时间', args=Args['timeout': int: 10])
+            Option('--ip|-i', help_text='域名或IP', args=Args['ip', str, '127.0.0.1']),
+            Option('--port|-p', help_text='端口号', args=Args['port', int, 25565]),
+            Option('--timeout|-t', help_text='超时时间', args=Args['timeout', int, 10])
         ],
         help_text='检测MC服务器信息'
     )
@@ -45,13 +45,13 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
         if command.options.get('set'):
             return await set_default_mc(ip_, port_)
         if command.options.get('view'):
-            return MessageChain.create([Plain(f'默认服务器: {default[0]}:{default[1]}')])
+            return MessageChain([Plain(f'默认服务器: {default[0]}:{default[1]}')])
         timeout_ = options['timeout']['timeout'] if options.get('timeout') else 10
         default = [ip_, port_, timeout_]
-        return MessageChain.create([Plain(StatusPing(*default).get_status(str_format=True))])
+        return MessageChain([Plain(StatusPing(*default).get_status(str_format=True))])
     except EnvironmentError as e:
         logger.warning(e)
-        return MessageChain.create([Plain('由于目标计算机积极拒绝，无法连接。服务器可能已关闭。')])
+        return MessageChain([Plain('由于目标计算机积极拒绝，无法连接。服务器可能已关闭。')])
     except ValueError:
         return self.arg_type_error()
     except Exception as e:
@@ -80,7 +80,7 @@ async def set_default_mc(ip='127.0.0.1', port=25565):
                 'INSERT INTO mc_server (ip, port, `default`, listen, delay) VALUES (%s, %s, 1, 0, 60)',
                 [default_ip, default_port]
             )
-    return MessageChain.create([Plain('设置成功!')])
+    return MessageChain([Plain('设置成功!')])
 
 
 class StatusPing:

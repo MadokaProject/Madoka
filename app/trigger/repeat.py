@@ -17,12 +17,12 @@ class Repeat(Trigger):
         probability = random.randint(0, 101)
         try:
             if (probability < 1) and repeated(self.group.id, self.app.account, 2):
-                await self.app.sendGroupMessage(self.group, self.message.asSendable())
-                save(self.group.id, self.app.account, self.message.asDisplay())
-                logger.info('Random Repeat: ' + self.message.asDisplay())
+                await self.app.send_group_message(self.group, self.message.as_sendable())
+                save(self.group.id, self.app.account, self.message.display)
+                logger.info('Random Repeat: ' + self.message.display)
             if repeated(self.group.id, self.app.account, 2):
-                await self.app.sendGroupMessage(self.group, self.message.asSendable())
-                save(self.group.id, self.app.account, self.message.asDisplay())
-                logger.info('Follow Repeat: ' + self.message.asDisplay())
+                await self.app.send_group_message(self.group, self.message.as_sendable())
+                save(self.group.id, self.app.account, self.message.display)
+                logger.info('Follow Repeat: ' + self.message.display)
         except Exception as e:
             logger.warning(e)

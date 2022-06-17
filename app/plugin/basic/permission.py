@@ -25,21 +25,21 @@ database: InitDB = InitDB.get_instance()
         command='perm',
         options=[
             Subcommand('user', help_text='用户白名单', options=[
-                Option('--add|-a', args=Args['qq': [At, int]], help_text='用户加入白名单'),
-                Option('--delete|-d', args=Args['qq': [At, int]], help_text='用户移出白名单'),
+                Option('--add|-a', args=Args['qq', [At, int]], help_text='用户加入白名单'),
+                Option('--delete|-d', args=Args['qq', [At, int]], help_text='用户移出白名单'),
                 Option('--list|-l', help_text='查看用户白名单')
             ]),
             Subcommand('blacklist', help_text='用户黑名单', options=[
-                Option('--add|-a', args=Args['qq': [At, int]], help_text='用户加入黑名单'),
-                Option('--delete|-d', args=Args['qq': [At, int]], help_text='用户移出黑名单'),
+                Option('--add|-a', args=Args['qq', [At, int]], help_text='用户加入黑名单'),
+                Option('--delete|-d', args=Args['qq', [At, int]], help_text='用户移出黑名单'),
                 Option('--list|-l', help_text='查看用户黑名单')
             ]),
             Subcommand('group', help_text='群组白名单', options=[
-                Option('--add|-a', args=Args['group': int], help_text='群组加入白名单'),
-                Option('--delete|-d', args=Args['group': int], help_text='群组移出白名单'),
+                Option('--add|-a', args=Args['group', int], help_text='群组加入白名单'),
+                Option('--delete|-d', args=Args['group', int], help_text='群组移出白名单'),
                 Option('--list|-l', help_text='查看群组白名单')
             ]),
-            Option('grant', help_text='调整用户权限等级', args=Args['qq': [At, int], 'level': int])
+            Option('grant', help_text='调整用户权限等级', args=Args['qq', [At, int]]['level', int])
         ],
         help_text='授权, 仅管理可用!'
     )
@@ -58,16 +58,16 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                 target = grant['qq'].target if isinstance(grant['qq'], At) else grant['qq']
                 level = grant['level']
                 if user.id == target and level != 4 and Permission.require(user, 4):
-                    return MessageChain.create([Plain(f'怎么有master想给自己改权限呢？{Config().BOT_NAME}很担心你呢，快去脑科看看吧！')])
+                    return MessageChain([Plain(f'怎么有master想给自己改权限呢？{Config().BOT_NAME}很担心你呢，快去脑科看看吧！')])
                 if await BotUser(target).get_level() == 0:
-                    return MessageChain.create([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
+                    return MessageChain([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
                 if 1 <= level <= 2:
                     if result := await BotUser(target).get_level():
                         if result == 4:
                             if Permission.require(user, 4):
-                                return MessageChain.create([Plain('就算是master也不能修改master哦！（怎么能有两个master呢')])
+                                return MessageChain([Plain('就算是master也不能修改master哦！（怎么能有两个master呢')])
                             else:
-                                return MessageChain.create([Plain('master level 不可更改！若想进行修改请直接修改配置文件！')])
+                                return MessageChain([Plain('master level 不可更改！若想进行修改请直接修改配置文件！')])
                         elif result == 3:
                             if Permission.require(user, 4):
                                 ADMIN_USER.remove(target)
@@ -75,7 +75,7 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                                     GROUP_ADMIN_USER.append(target)
                                 return await grant_permission_process(target, level)
                             else:
-                                return MessageChain.create([Plain("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！")])
+                                return MessageChain([Plain("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！")])
                         elif result == 2:
                             if level == 1:
                                 GROUP_ADMIN_USER.remove(target)
@@ -91,13 +91,13 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                         ADMIN_USER.append(target)
                         return await grant_permission_process(target, level)
                     else:
-                        return MessageChain.create([Plain('权限不足，你必须达到等级4(master level)才可对超级管理员进行授权！')])
+                        return MessageChain([Plain('权限不足，你必须达到等级4(master level)才可对超级管理员进行授权！')])
                 else:
-                    return MessageChain.create([
+                    return MessageChain([
                         Plain('level值非法！level值范围: 1-3\r\n1: user\r\n2: admin\r\n3: super admin')
                     ])
             else:
-                return MessageChain.create([Plain('权限不足，爬!')])
+                return MessageChain([Plain('权限不足，爬!')])
         elif user:
             return await master_grant_user(self, user)
         elif blacklist:
@@ -118,7 +118,7 @@ async def master_grant_user(self: Plugin, user_: dict):
         if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
             BotUser(target, active=1)
             ACTIVE_USER.update({target: '*'})
-            return MessageChain.create([Plain('激活成功!')])
+            return MessageChain([Plain('激活成功!')])
         return self.not_admin()
     elif delete := user_.get('delete'):
         target = delete['qq'].target if isinstance(delete['qq'], At) else delete['qq']
@@ -126,14 +126,14 @@ async def master_grant_user(self: Plugin, user_: dict):
             await BotUser(target, active=0).user_deactivate()
             if target in ACTIVE_USER:
                 ACTIVE_USER.pop(target)
-            return MessageChain.create([Plain('取消激活成功!')])
+            return MessageChain([Plain('取消激活成功!')])
         return self.not_admin()
     elif user_.get('lisr'):
         with MysqlDao() as db:
             res = db.query("SELECT uid FROM user WHERE active=1")
         msg = '用户白名单'
         if res:
-            friends = {i.id: i.nickname for i in await self.app.getFriendList()}
+            friends = {i.id: i.nickname for i in await self.app.get_friend_list()}
             for qq in res:
                 qq = int(qq[0])
                 if qq in friends.keys():
@@ -142,7 +142,7 @@ async def master_grant_user(self: Plugin, user_: dict):
                     msg += f'\n未知用户昵称: {qq}'
         else:
             msg = '无激活用户'
-        return MessageChain.create([Plain(msg)])
+        return MessageChain([Plain(msg)])
 
 
 @permission_required(level=Permission.SUPER_ADMIN)
@@ -152,7 +152,7 @@ async def master_grant_blacklist(self: Plugin, blacklist: dict):
         if Permission.compare(self.member if hasattr(self, 'group') else self.friend, target):
             await BotUser(target).grant_level(0)
             BANNED_USER.append(target)
-            return MessageChain.create([Plain('禁用成功!')])
+            return MessageChain([Plain('禁用成功!')])
         return self.not_admin()
     elif delete := blacklist.get('delete'):
         target = delete['qq'].target if isinstance(delete['qq'], At) else delete['qq']
@@ -160,12 +160,12 @@ async def master_grant_blacklist(self: Plugin, blacklist: dict):
             await BotUser(target).grant_level(1)
             if target in BANNED_USER:
                 BANNED_USER.remove(target)
-            return MessageChain.create([Plain('解除禁用成功!')])
+            return MessageChain([Plain('解除禁用成功!')])
         return self.not_admin()
     elif blacklist.get('list'):
         with MysqlDao() as db:
             res = db.query("SELECT uid FROM user WHERE level=0")
-        return MessageChain.create([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无黑名单用户')])
+        return MessageChain([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无黑名单用户')])
 
 
 @permission_required(level=Permission.SUPER_ADMIN)
@@ -173,18 +173,18 @@ async def master_grant_group(self: Plugin, group: dict):
     if add := group.get('add'):
         BotGroup(add['group'], active=1)
         ACTIVE_GROUP.update({add['group']: '*'})
-        return MessageChain.create([Plain('激活成功!')])
+        return MessageChain([Plain('激活成功!')])
     elif delete := group.get('delete'):
         await BotGroup(delete['group'], active=0).group_deactivate()
         if delete['group'] in ACTIVE_GROUP:
             ACTIVE_GROUP.pop(delete['group'])
-        return MessageChain.create([Plain('禁用成功!')])
+        return MessageChain([Plain('禁用成功!')])
     elif group.get('list'):
         with MysqlDao() as db:
             res = db.query("SELECT uid FROM `group` WHERE active=1")
         msg = '群组白名单'
         if res:
-            groups = {i.id: {'name': i.name, 'perm': i.accountPerm.value} for i in await self.app.getGroupList()}
+            groups = {i.id: {'name': i.name, 'perm': i.account_perm.value} for i in await self.app.get_group_list()}
             for group_id in res:
                 group_id = int(group_id[0])
                 if group_id in groups.keys():
@@ -193,13 +193,13 @@ async def master_grant_group(self: Plugin, group: dict):
                     msg += f"\n未知群: {group_id} - 未加入该群"
         else:
             msg = '无白名单群组'
-        return MessageChain.create([Plain(msg)])
+        return MessageChain([Plain(msg)])
 
 
 async def grant_permission_process(user_id: int, new_level: int):
     """修改用户权限"""
     await BotUser(user_id).grant_level(new_level)
-    return MessageChain.create([Plain(f'修改成功！\r\n{user_id} level: {new_level}')])
+    return MessageChain([Plain(f'修改成功！\r\n{user_id} level: {new_level}')])
 
 
 @database.init()

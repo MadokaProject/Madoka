@@ -9,7 +9,7 @@ class ConsoleController:
     def __init__(self, *args):
         for arg in args:
             if isinstance(arg, MatchResult):
-                self.param: List[str] = parse_args(arg.result.asDisplay())  # 命令内容
+                self.param: List[str] = parse_args(arg.result.display)  # 命令内容
             elif isinstance(arg, Console):
                 self.console = arg
             elif isinstance(arg, Ariadne):

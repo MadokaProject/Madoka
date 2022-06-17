@@ -43,13 +43,13 @@ async def check_version(app: Ariadne, config: Config):
                     log_msg += f"{log['version']}: {log['info']}\r\n"
                 else:
                     break
-            await app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([
+            await app.send_friend_message(config.MASTER_QQ, MessageChain([
                 Plain('检测到有新版本发布啦！\r\n'),
                 Plain('更新提要：\r\n'),
                 Plain(log_msg),
                 Plain(f'详情内容请前往{config.INFO_REPO}/releases查看')
             ]))
-            await app.sendFriendMessage(config.MASTER_QQ, MessageChain.create([Plain('发送.p u可进行更新操作')]))
+            await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain('发送.p u可进行更新操作')]))
     except aiohttp.client.ClientConnectorError:
         logger.warning('获取远程版本信息超时')
     except Exception as e:

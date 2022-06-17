@@ -32,16 +32,16 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
         if 'msg' in options:
             """发言榜"""
             if not hasattr(self, 'group'):
-                return MessageChain.create('请在群聊内发送该命令！')
+                return MessageChain('请在群聊内发送该命令！')
             with MysqlDao() as db:
                 res = db.query(
                     "SELECT qid, count(qid) FROM msg WHERE uid=%s GROUP BY qid ORDER BY count(qid) DESC",
                     [self.group.id]
                 )
-                members = await self.app.getMemberList(self.group.id)
+                members = await self.app.get_member_list(self.group.id)
                 group_user = {item.id: item.name for item in members}
                 index = 1
-                resp = MessageChain.create([Plain('群内发言排行：\r\n')])
+                resp = MessageChain([Plain('群内发言排行：\r\n')])
                 msg = PrettyTable()
                 msg.field_names = ['序号', '群昵称', '发言条数']
                 for qid, num in res:
@@ -51,7 +51,7 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                     index += 1
                 msg.align = 'r'
                 msg.align['群昵称'] = 'l'
-                resp.extend(MessageChain.create([
+                resp.extend(MessageChain([
                     Image(data_bytes=await create_image(msg.get_string()))
                 ]))
                 return resp

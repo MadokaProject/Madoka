@@ -37,10 +37,10 @@ database: InitDB = InitDB.get_instance()
         options=[
             Option('signin', help_text='每日签到'),
             Option('get', help_text='获取今日签到图'),
-            Option('tf', help_text='转账', args=Args['at': At, 'money': int]),
+            Option('tf', help_text='转账', args=Args['at', At]['money', int]),
             Option('迁移', help_text='迁移旧版金币'),
             Option('rank', help_text='显示群内已注册成员资金排行榜'),
-            Option('auto', args=Args['status': bool], help_text='每天消耗10%金币自动签到')
+            Option('auto', args=Args['status', bool], help_text='每天消耗10%金币自动签到')
         ],
         help_text='经济系统'
     )
@@ -54,9 +54,9 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
             coin = await user.get_coins()
             if hasattr(self, 'group'):
-                return MessageChain.create([At(self.member.id), Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
+                return MessageChain([At(self.member.id), Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
             else:
-                return MessageChain.create([Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
+                return MessageChain([Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
         if options.get('signin'):
             """签到"""
             coin = random.randint(1, 101)
@@ -69,9 +69,9 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             user = BotGame(qq, coin)
             if await user.get_sign_in_status():
                 if hasattr(self, 'group'):
-                    return MessageChain.create([At(self.member.id), Plain(' 你今天已经签到过了！')])
+                    return MessageChain([At(self.member.id), Plain(' 你今天已经签到过了！')])
                 else:
-                    return MessageChain.create([Plain(' 你今天已经签到过了！')])
+                    return MessageChain([Plain(' 你今天已经签到过了！')])
             else:
                 await user.sign_in()
                 sign_image = await to_thread(
@@ -85,7 +85,7 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
                     await user.get_consecutive_days(),
                     await user.get_total_days()
                 )
-            return MessageChain.create([Image(data_bytes=sign_image)])
+            return MessageChain([Image(data_bytes=sign_image)])
         elif options.get('get'):
             """获取今日签到图"""
             if hasattr(self, 'group'):
@@ -97,9 +97,9 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             user = BotGame(qq)
             if not await user.get_sign_in_status():
                 if hasattr(self, 'group'):
-                    return MessageChain.create([At(self.member.id), Plain(' 你今天还没有签到哦！')])
+                    return MessageChain([At(self.member.id), Plain(' 你今天还没有签到哦！')])
                 else:
-                    return MessageChain.create([Plain('你今天还没有签到哦！')])
+                    return MessageChain([Plain('你今天还没有签到哦！')])
             sign_image = await to_thread(
                 get_sign_image,
                 await user.get_uuid(),
@@ -111,16 +111,16 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
                 await user.get_consecutive_days(),
                 await user.get_total_days()
             )
-            return MessageChain.create([Image(data_bytes=sign_image)])
+            return MessageChain([Image(data_bytes=sign_image)])
         elif options.get('迁移'):
             old_user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
             new_user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
             coin = await old_user.get_points()
             if coin <= 0:
-                return MessageChain.create([Plain('迁移失败，您的旧版账户中没有余额！')])
+                return MessageChain([Plain('迁移失败，您的旧版账户中没有余额！')])
             await new_user.update_coin(coin)
             await old_user.update_point(-coin)
-            return MessageChain.create([Plain(f'迁移成功！当前账户余额: {await new_user.get_coins()}')])
+            return MessageChain([Plain(f'迁移成功！当前账户余额: {await new_user.get_coins()}')])
         elif tf := options.get('tf'):
             target = tf['at'].target
             coin = tf['money']
@@ -132,7 +132,7 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             await user.update_coin(-coin)
             user = BotGame(target, coin)
             await user.update_coin(coin)
-            return MessageChain.create([
+            return MessageChain([
                 At(self.member.id),
                 Plain(' 已转赠给'),
                 At(target),
@@ -143,8 +143,8 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
                 res = db.query(
                     "SELECT qid, coins FROM game ORDER BY coins DESC"
                 )
-                group_user = {item.id: item.name for item in await self.app.getMemberList(self.group.id)}
-                resp = MessageChain.create([Plain(f'群内{config.COIN_NAME}排行:\n')])
+                group_user = {item.id: item.name for item in await self.app.get_member_list(self.group.id)}
+                resp = MessageChain([Plain(f'群内{config.COIN_NAME}排行:\n')])
                 index = 1
                 msg = PrettyTable()
                 msg.field_names = ['序号', '群昵称', f'{config.COIN_NAME}']
@@ -155,14 +155,14 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
                     index += 1
                 msg.align = 'r'
                 msg.align['群昵称'] = 'l'
-                resp.extend(MessageChain.create([
+                resp.extend(MessageChain([
                     Image(data_bytes=await create_image(msg.get_string()))
                 ]))
                 return resp
         elif auto := options.get('auto'):
             status = 1 if auto['status'] else 0
             await BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id).auto_signin(status)
-            return MessageChain.create('开启成功，将于每日8点为您自动签到！' if status else '关闭成功！')
+            return MessageChain('开启成功，将于每日8点为您自动签到！' if status else '关闭成功！')
         else:
             return self.args_error()
     except Exception as e:
@@ -178,13 +178,13 @@ async def auto_sing():
         for qq, in res:
             user = BotGame(qq, coin := random.randint(1, 101))
             if not await user.get_sign_in_status():
-                consume = random.randint(0, int(coin * 0.1))
+                consume = random.randint(0, int(coin * 0.3))
                 if await user.reduce_coin(consume):
                     await user.sign_in()
                     logger.success(f'账号: {qq} 自动签到完成~')
-                    await safeSendFriendMessage(qq, MessageChain.create(f'今日份签到完成，消耗{consume}金币\n请发送.gp get查收'))
+                    await safeSendFriendMessage(qq, MessageChain(f'今日份签到完成，消耗{consume}金币\n请发送.gp get查收'))
                 else:
-                    await safeSendFriendMessage(qq, MessageChain.create("您的金币不足，无法完成自动签到"))
+                    await safeSendFriendMessage(qq, MessageChain("您的金币不足，无法完成自动签到"))
 
 
 @database.init()

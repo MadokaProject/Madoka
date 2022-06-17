@@ -24,7 +24,7 @@ async def console_handler(
         console: Console,
         params: MatchResult,
 ):
-    if params := params.result.asDisplay():
+    if params := params.result.display:
         send_help = False  # 是否为主菜单帮助
         resp = 'Usage: [COMMAND] [OPTION]'
         param = parse_args(params, keep_head=True)

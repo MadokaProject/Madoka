@@ -19,7 +19,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 )
 async def stop(self: ConsoleController, command: Arpamar):
     if command.options.get('yes'):
-        await self.app.stop()
+        self.app.stop()
         self.console.stop()
     else:
         res: str = await self.console.prompt(
@@ -27,7 +27,7 @@ async def stop(self: ConsoleController, command: Arpamar):
             style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
         )
         if res.lower() in ('y', 'yes'):
-            await self.app.stop()
+            self.app.stop()
             self.console.stop()
 
 
@@ -36,7 +36,7 @@ async def stop(self: ConsoleController, command: Arpamar):
     brief_help='更新',
     many=2,
     alc=Alconna(command='upgrade', help_text='更新程序') + Option('--time|-t', help_text='超时时间',
-                                                              args=Args['time': int:10])
+                                                              args=Args['time', int, 10])
 )
 async def upgrade(self: ConsoleController, command: Arpamar):
     try:
