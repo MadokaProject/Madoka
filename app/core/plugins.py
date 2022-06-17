@@ -10,6 +10,7 @@ from typing import Dict, Union
 from loguru import logger
 from pip import main as pip
 
+from app.core.config import Config
 from app.core.commander import CommandDelegateManager
 from app.util.network import general_request, download
 from app.util.tools import app_path, to_thread
@@ -41,7 +42,7 @@ class PluginManager:
     __plugins: Dict[str, ModuleType]
     __ignore = ["__init__.py", "__pycache__"]
     __base_path = app_path().joinpath('plugin')
-    __base_url = "https://madokaproject.coding.net/p/p/d/plugins/git/raw/master/"
+    __base_url = f"https://madokaproject.coding.net/p/p/d/plugins/git/raw/{Config.REMOTE_REPO_VERSION}/"
     __folder_path = __base_path.joinpath('extension')
     __basic = [
         'sys',
@@ -143,12 +144,12 @@ class PluginManager:
             for module in self.__plugins.values():
                 self.__manager.delete(module)
                 importlib.reload(module)
-                logger.success(f"重载插件: {plugin} 成功")
+                logger.success(f"重载插件: {module.__name__} 成功")
             return True
         if module := self.__plugins.get(f'app.plugin.{plugin_type}.{plugin}'):
             self.__manager.delete(module)
             importlib.reload(module)
-            logger.success(f"重载插件: {plugin} 成功")
+            logger.success(f"重载插件: {module.__name__} 成功")
             return True
         logger.warning('重载失败，无此插件！')
         return False
