@@ -1,8 +1,8 @@
 import math
 import time
 from datetime import date
-from uuid import uuid4
 from typing import List
+from uuid import uuid4
 
 from loguru import logger
 

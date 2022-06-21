@@ -7,9 +7,9 @@ from pathlib import Path
 from types import ModuleType
 from typing import Dict, Union
 
+from graia.scheduler import GraiaScheduler
 from loguru import logger
 from pip import main as pip
-from graia.scheduler import GraiaScheduler
 
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
