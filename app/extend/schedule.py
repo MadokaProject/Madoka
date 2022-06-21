@@ -18,7 +18,7 @@ async def custom_schedule(scheduler: GraiaScheduler, bot: Ariadne):
         async def mc_listen_schedule():
             await mc_listener(bot, path, ips, qq, delay)
 
-    @scheduler.schedule(timers.every_custom_hours(24))
+    @scheduler.schedule(timers.crontabify('0 6 * * * 0'))
     @logger.catch
     async def version_info_listener():
         await check_version(bot, config)
