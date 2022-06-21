@@ -1,5 +1,21 @@
 # Changelog
 
+## [2.4.0](https://github.com/MadokaProject/Madoka/compare/v2.3.0...v2.4.0) (2022-06-21)
+
+
+### Features
+
+* **game:** 新增每日收租 ([3932349](https://github.com/MadokaProject/Madoka/commit/3932349724b9658c22c84ba3c316272e067af9d1))
+* **graia:** 升级ariadne->0.7.12, alconna->0.9.4 ([aa89ea5](https://github.com/MadokaProject/Madoka/commit/aa89ea54a99f706a4ab46717bff2d9aae683ab2f))
+
+
+### Bug Fixes
+
+* **check_version:** 调整版本更新检查执行时间 ([2ea41a5](https://github.com/MadokaProject/Madoka/commit/2ea41a5364934bc8288785beb29abf1cba813022))
+* **plugins:** 修复重载、卸载插件后, 计划任务仍存在的bug ([3932349](https://github.com/MadokaProject/Madoka/commit/3932349724b9658c22c84ba3c316272e067af9d1))
+* **sche:** 修改初始化方式 ([ccc38d5](https://github.com/MadokaProject/Madoka/commit/ccc38d5db83630e233e9e7c78881436dded891b6))
+* **util.network:** 移除general_request旧接口 ([2ea41a5](https://github.com/MadokaProject/Madoka/commit/2ea41a5364934bc8288785beb29abf1cba813022))
+
 ## [2.3.0](https://github.com/MadokaProject/Madoka/compare/v2.2.0...v2.3.0) (2022-06-17)
 
 
