@@ -10,8 +10,8 @@ from typing import Dict, Union
 from loguru import logger
 from pip import main as pip
 
-from app.core.config import Config
 from app.core.commander import CommandDelegateManager
+from app.core.config import Config
 from app.util.network import general_request, download
 from app.util.tools import app_path, to_thread
 from .exceptions import *

@@ -67,7 +67,7 @@ class AppCore:
                 )
             )
             self.__inc = InterruptControl(self.__bcc)
-            self.__scheduler = GraiaScheduler(loop=self.__loop, broadcast=self.__bcc)
+            self.__scheduler = self.__app.create(GraiaScheduler)
             self.__config = config
             self.__console = Console(
                 broadcast=self.__bcc,
