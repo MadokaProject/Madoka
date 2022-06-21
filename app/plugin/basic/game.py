@@ -10,7 +10,6 @@ from prettytable import PrettyTable
 
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
-from app.core.config import Config
 from app.core.database import InitDB
 from app.entities.game import BotGame
 from app.entities.user import BotUser
@@ -22,6 +21,7 @@ from app.util.tools import to_thread
 from .game_res.sign_image_generator import get_sign_image
 
 core: AppCore = AppCore.get_core_instance()
+config = core.get_config()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
@@ -48,7 +48,6 @@ database: InitDB = InitDB.get_instance()
 async def process(self: Plugin, command: Arpamar, _: Alconna):
     options = command.options
     try:
-        config = Config.get_instance()
         if not options:
             """查询资金"""
             user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
@@ -185,6 +184,20 @@ async def auto_sing():
                     await safeSendFriendMessage(qq, MessageChain(f'今日份签到完成，消耗{consume}金币\n请发送.gp get查收'))
                 else:
                     await safeSendFriendMessage(qq, MessageChain("您的金币不足，无法完成自动签到"))
+
+
+@sche.schedule(timers.crontabify('59 23 * * * 50'))
+async def tasks():
+    sign_info = await BotGame.get_all_sign_num()
+    total_rent = await BotGame.ladder_rent_collection(config)
+    await app.send_friend_message(
+        config.MASTER_QQ,
+        MessageChain([
+            Plain(f"签到统计成功，昨日共有 {sign_info[0]} / {sign_info[1]} 人完成了签到，"),
+            Plain(f"签到率为 {'{:.2%}'.format(sign_info[0] / sign_info[1])}\n"),
+            Plain(f"今日收取了 {total_rent} {config.COIN_NAME}")
+        ])
+    )
 
 
 @database.init()

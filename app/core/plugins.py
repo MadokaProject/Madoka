@@ -9,6 +9,7 @@ from typing import Dict, Union
 
 from loguru import logger
 from pip import main as pip
+from graia.scheduler import GraiaScheduler
 
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
@@ -69,6 +70,8 @@ class PluginManager:
             self.__plugins = {}
             self.__first_init = True
             self.__manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+            from app.core.app import AppCore
+            self.__sche: GraiaScheduler = AppCore.get_core_instance().get_scheduler()
         else:
             raise PluginManagerAlreadyInitialized("插件管理器重复初始化")
 
@@ -143,11 +146,13 @@ class PluginManager:
         if plugin == 'all_plugin':
             for module in self.__plugins.values():
                 self.__manager.delete(module)
+                self.remove_tasker(module)
                 importlib.reload(module)
                 logger.success(f"重载插件: {module.__name__} 成功")
             return True
         if module := self.__plugins.get(f'app.plugin.{plugin_type}.{plugin}'):
             self.__manager.delete(module)
+            self.remove_tasker(module)
             importlib.reload(module)
             logger.success(f"重载插件: {module.__name__} 成功")
             return True
@@ -162,12 +167,20 @@ class PluginManager:
         if plugin_name in sys.modules.keys():
             sys.modules.pop(plugin_name)
             __plugin = self.__plugins.get(plugin_name)
+            self.remove_tasker(__plugin)
             self.__manager.delete(__plugin)
             self.__plugins.pop(plugin_name)
             logger.success('卸载扩展插件成功: ' + plugin_name)
             return True
         logger.warning('该扩展插件未加载')
         return False
+
+    def remove_tasker(self, tasks: ModuleType):
+        """删除计划任务"""
+        for tasker in self.__sche.schedule_tasks.copy():
+            if tasks.__name__ == tasker.target.__module__:
+                tasker.stop()
+                self.__sche.schedule_tasks.remove(tasker)
 
     async def find_plugin(self, plugin: Union[str, ModuleType]) -> bool:
         """查找插件是否加载"""

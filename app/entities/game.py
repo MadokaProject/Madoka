@@ -1,7 +1,12 @@
+import math
 import time
 from datetime import date
 from uuid import uuid4
+from typing import List
 
+from loguru import logger
+
+from app.core.config import Config
 from app.core.settings import IntimacyLevel, IntimacyGet
 from app.util.dao import MysqlDao
 
@@ -179,3 +184,33 @@ class BotGame:
                 "UPDATE game SET auto_signin=%s WHERE qid=%s",
                 [status, self.qq]
             )
+
+    @classmethod
+    async def get_all_sign_num(cls) -> List[int]:
+        """获取当日签到人数"""
+        with MysqlDao() as db:
+            all_num = db.query("SELECT COUNT(uuid) FROM game")
+            sign_num = db.query("SELECT COUNT(uuid) FROM game WHERE last_signin_time=CURDATE()")
+            return [sign_num[0][0], all_num[0][0]]
+
+    @classmethod
+    async def ladder_rent_collection(cls, config: Config) -> int:
+        """收租
+
+        :return: 总租金
+        """
+        total_rent = 0
+        with MysqlDao() as db:
+            user_list = db.query(
+                "SELECT qid, coins FROM game WHERE coins >= 1000 ORDER BY coins DESC"
+            )
+            for user, coins in user_list:
+                if user:
+                    ladder_rent = int((1 - (math.floor(coins / 1000) / 100)) * coins)
+                    db.update(
+                        "UPDATE game SET coins=%s WHERE qid=%s",
+                        [ladder_rent, user]
+                    )
+                    total_rent += coins - ladder_rent
+                    logger.info(f"{user} 被收取 {coins - ladder_rent} {config.COIN_NAME}")
+            return total_rent
