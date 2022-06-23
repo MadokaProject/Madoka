@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.1](https://github.com/MadokaProject/Madoka/compare/v2.4.0...v2.4.1) (2022-06-23)
+
+
+### Bug Fixes
+
+* **controller:** 修复非超级管理员也能进入隐藏插件的bug ([bfb36ee](https://github.com/MadokaProject/Madoka/commit/bfb36ee4bad97862adce1997c3edcb6d7f1bc5ea))
+
 ## [2.4.0](https://github.com/MadokaProject/Madoka/compare/v2.3.0...v2.4.0) (2022-06-21)
 
 
