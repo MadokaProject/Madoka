@@ -97,7 +97,7 @@ class Controller:
                     si = str(i)
                 resp += f"\n{si}  {statu}  {plg.brief_help}: {plg.entry}"
                 i += 1
-            elif isstartswith(msg.split()[0][1:], plg.entry, full_match=1):
+            elif isstartswith(msg.split()[0][1:], plg.entry, full_match=1) and not hidden:
                 if enable:
                     current = sys.stdout
                     alc_help = Autonomy()
