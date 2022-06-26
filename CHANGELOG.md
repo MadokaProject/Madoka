@@ -1,5 +1,12 @@
 # Changelog
 
+## [2.4.2](https://github.com/MadokaProject/Madoka/compare/v2.4.1...v2.4.2) (2022-06-26)
+
+
+### Bug Fixes
+
+* **plugin:** 控制请求频率 ([0f5b7f9](https://github.com/MadokaProject/Madoka/commit/0f5b7f9aa2efa60ace5dd7ecea8b267be3c710f2))
+
 ## [2.4.1](https://github.com/MadokaProject/Madoka/compare/v2.4.0...v2.4.1) (2022-06-23)
 
 
