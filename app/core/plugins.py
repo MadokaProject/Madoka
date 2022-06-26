@@ -11,6 +11,7 @@ from typing import Dict, Union, List
 from graia.scheduler import GraiaScheduler
 from loguru import logger
 from pip import main as pip
+from prettytable import PrettyTable
 from retrying import retry
 
 from app.core.commander import CommandDelegateManager
@@ -18,6 +19,8 @@ from app.core.config import Config
 from app.util.network import general_request, download
 from app.util.tools import app_path, to_thread
 from .exceptions import *
+from ..util.text2image import create_image
+from ..util.version import compare_version
 
 
 class PluginType(Enum):
@@ -92,10 +95,10 @@ class PluginManager:
             plugins = [f"app.plugin.{plugin_type}.{plugin_info}"]
             plugin_info = plugins[0]
         elif isinstance(plugin_info, dict):
-            for plugin in self.__base_path.joinpath(plugin_type.value, plugin_info['root']).rglob(pattern='*.py'):
+            for plugin in self.__base_path.joinpath(plugin_type.value, plugin_info['root_dir']).rglob(pattern='*.py'):
                 if plugin.name not in self.__ignore and plugin.is_file():
-                    plugins.append(f"app.plugin.{plugin_type.value}.{plugin.name.split('.')[0]}")
-            plugin_info = f"app.plugin.{plugin_type}.{plugin_info['root']}"
+                    plugins.append(f"app.plugin.{plugin_type.value}.{plugin_info['root_dir']}.{plugin.name.split('.')[0]}")
+            plugin_info = f"app.plugin.{plugin_type}.{plugin_info['root_dir']}"
         try:
             for plugin in plugins:
                 if not await self.find_plugin(plugin):
@@ -169,7 +172,7 @@ class PluginManager:
         plugins = []
         for plugin in self.__folder_path.joinpath(plugin_info).rglob(pattern='*.py'):
             if plugin.name not in self.__ignore and plugin.is_file():
-                plugins.append(f"app.plugin.{plugin_type.value}.{plugin.name.split('.')[0]}")
+                plugins.append(f"app.plugin.{plugin_type.value}.{plugin_info}.{plugin.name.split('.')[0]}")
         for plugin in plugins:
             if module := self.__plugins.get(plugin):
                 self.__manager.delete(module)
@@ -339,3 +342,23 @@ class PluginManager:
         shutil.rmtree(self.__folder_path.joinpath(plugin_info['root_dir']))
         asyncio.create_task(self.remove_plugin_info(plugin_info))
         logger.success(f"插件删除成功: {plugin_info['name']} - {plugin_info['author']}")
+
+    async def check_update(self) -> Union[None, bytes]:
+        """检查更新"""
+        local_plugins = await self.get_plugin_info('*')
+        if not local_plugins:
+            return
+        remote_plugins = await self.get_remote_plugins()
+        is_update = False
+        msg = PrettyTable()
+        msg.field_names = ['插件名', '作者', '当前版本', '最新版本']
+        for local_plugin in local_plugins:
+            for remote_plugin in remote_plugins:
+                if local_plugin['name'] == remote_plugin['name'] and local_plugin['author'] == remote_plugin['author']:
+                    if compare_version(remote_plugin['version'], local_plugin['version']):
+                        is_update = True
+                        msg.add_row([local_plugin['name'], local_plugin['author'], local_plugin['version'],
+                                     remote_plugin['version']])
+                        break
+        if is_update:
+            return await create_image(msg.get_string(), cut=150)

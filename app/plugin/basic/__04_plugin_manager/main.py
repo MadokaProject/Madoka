@@ -2,15 +2,19 @@ import asyncio
 from typing import Union
 
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
+from graia.ariadne import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, Image
 from graia.ariadne.model import Friend, Member, Group
 from graia.broadcast.interrupt.waiter import Waiter
+from graia.scheduler import GraiaScheduler, timers
 from loguru import logger
 from prettytable import PrettyTable
 
+from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
+from app.core.config import Config
 from app.core.exceptions import RemotePluginNotFound, LocalPluginNotFound
 from app.core.plugins import PluginManager
 from app.plugin.base import Plugin
@@ -18,6 +22,10 @@ from app.util.control import Permission, Switch
 from app.util.decorator import permission_required
 from app.util.text2image import create_image
 
+core: AppCore = AppCore.get_core_instance()
+app: Ariadne = core.get_app()
+sche: GraiaScheduler = core.get_scheduler()
+config: Config = Config.get_instance()
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 plugin_mgr: PluginManager = PluginManager.get_instance()
 
@@ -66,7 +74,7 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
         headers=manager.headers,
         command='plugin',
         options=[
-            Subcommand('open', help_text='开启插件, <plugin>插件英文名', args=Args['plugin', str, ...], options=[
+            Subcommand('open', help_text='开启插件, <plugin>插件名', args=Args['plugin', str, ...], options=[
                 Option('--all|-a', help_text='开启全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
@@ -74,16 +82,17 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
                 Option('--all|-a', help_text='关闭全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
-            Subcommand('install', help_text='安装插件, <plugin>插件英文名', args=Args['plugin', str], options=[
+            Subcommand('install', help_text='安装插件, <plugin>插件名', args=Args['plugin', str], options=[
                 Option('--upgrade|-u', help_text='更新插件')
             ]),
-            Subcommand('remove', help_text='删除插件, <plugin>插件英文名', args=Args['plugin', str]),
+            Subcommand('remove', help_text='删除插件, <plugin>插件名', args=Args['plugin', str]),
             Subcommand('list', help_text='列出本地插件', options=[
                 Option('--remote|-m', help_text='列出仓库插件')
             ]),
-            Subcommand('load', help_text='加载插件, <plugin>插件英文名', args=Args['plugin', str]),
-            Subcommand('unload', help_text='卸载插件, <plugin>插件英文名', args=Args['plugin', str]),
-            Subcommand('reload', help_text='重载插件[默认全部], <plugin>插件英文名', args=Args['plugin', str, 'all_plugin'])
+            Subcommand('load', help_text='加载插件, <plugin>插件名', args=Args['plugin', str]),
+            Subcommand('unload', help_text='卸载插件, <plugin>插件名', args=Args['plugin', str]),
+            Subcommand('reload', help_text='重载插件[默认全部], <plugin>插件名', args=Args['plugin', str, 'all_plugin']),
+            Subcommand('check', help_text='检查插件更新')
         ],
         help_text='插件管理'
     )
@@ -304,6 +313,13 @@ async def master_admin_process(self: Plugin, subcommand: dict):
                 Plain('插件重载失败，请重试: '),
                 Plain(f"{reload_plugin['name']} - {reload_plugin['author']}")
             ])
+    elif 'check' in subcommand:
+        if msg := await plugin_mgr.check_update():
+            return MessageChain([
+                Plain('检测到插件更新'),
+                Image(data_bytes=msg)
+            ])
+        return MessageChain(Plain('没有检测到插件更新'))
 
 
 async def group_admin_process(self: Plugin, subcommand: Arpamar.subcommands, alc: Alconna):
@@ -345,3 +361,13 @@ async def group_admin_process(self: Plugin, subcommand: Arpamar.subcommands, alc
         return MessageChain([Plain(await change_plugin_status(qq))])
     else:
         return self.args_error()
+
+
+# 检查插件更新
+@sche.schedule(timers.crontabify('30 7 * * * 0'))
+async def check_plugin_update_tasker():
+    if msg := await plugin_mgr.check_update():
+        await app.send_friend_message(config.MASTER_QQ, MessageChain([
+            Plain(f"检测到下列插件有更新啦~\n"),
+            Image(data_bytes=msg),
+        ]))

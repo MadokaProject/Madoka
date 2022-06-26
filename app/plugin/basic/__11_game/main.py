@@ -169,7 +169,7 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
         return self.unkown_error()
 
 
-@sche.schedule(timers.crontabify('0 8 * * * 0'))
+@sche.schedule(timers.crontabify('0 7 * * * 0'))
 async def auto_sing():
     logger.info('auto signin is running...')
     with MysqlDao() as db:
