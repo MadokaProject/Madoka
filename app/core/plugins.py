@@ -281,6 +281,7 @@ class PluginManager:
 
         :param info: 插件信息文件名
         """
+        await asyncio.sleep(1)
         return json.loads(await general_request(self.__base_url + info, method='get'), encoding='utf-8')
 
     async def get_plugin_by_url(self, root_dir, url_lists) -> bool:
@@ -293,6 +294,7 @@ class PluginManager:
             Path(f"{self.__folder_path}/{root_dir}{''.join(f'/{i}' for i in url.split('/')[:-1])}").mkdir(
                 parents=True, exist_ok=True)
             filepath = self.__folder_path.joinpath(f'{root_dir}/{url}')
+            await asyncio.sleep(1)
             if not await to_thread(download, self.__base_url + f'{root_dir}/{url}', filepath):
                 return False
         return True
