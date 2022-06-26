@@ -14,6 +14,9 @@ def get_config(sql) -> list:
         return []
 
 
+config: Config = Config.get_instance()
+
+
 GROUP_PERM = {
     'OWNER': '群主',
     'ADMINISTRATOR': '管理员',
@@ -23,11 +26,11 @@ GROUP_PERM = {
 ACTIVE_GROUP = {int(__gid): str(__permit).split(',') for __gid, __permit in
                 get_config('SELECT uid, permission FROM `group` WHERE active=1')}
 """监听群聊消息列表"""
-ACTIVE_USER = {int(Config().MASTER_QQ): '*'}
+ACTIVE_USER = {config.MASTER_QQ: '*'}
 """监听好友消息列表"""
 BANNED_USER = [int(__qid[0]) for __qid in get_config('SELECT uid FROM user WHERE level=0')]
 """黑名单用户列表"""
-ADMIN_USER = [int(Config().MASTER_QQ)]
+ADMIN_USER = [config.MASTER_QQ]
 """具有超级管理权限以上QQ列表"""
 GROUP_ADMIN_USER = [int(__qid[0]) for __qid in get_config('SELECT uid FROM user WHERE level=2')]
 """具有群管理权限QQ列表"""

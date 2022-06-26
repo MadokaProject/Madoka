@@ -128,7 +128,7 @@ class PluginManager:
     async def loads_basic_plugin(self) -> None:
         """加载基础插件"""
         plugins = {}
-        for plugin in self.__base_path.joinpath('basic').rglob(pattern='*.py'):
+        for plugin in sorted(self.__base_path.joinpath('basic').rglob(pattern='*.py')):
             if plugin.name not in self.__ignore and plugin.is_file():
                 plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
                 plugins.update({plugin_name: PluginType.Basic})
@@ -138,7 +138,7 @@ class PluginManager:
         """加载扩展插件"""
         plugins = {}
         self.__folder_path.mkdir(exist_ok=True)
-        for plugin in self.__folder_path.rglob(pattern='*.py'):
+        for plugin in sorted(self.__folder_path.rglob(pattern='*.py')):
             if plugin.name not in self.__ignore and plugin.is_file():
                 plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
                 plugins.update({plugin_name: PluginType.Extension})

@@ -74,11 +74,11 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
         headers=manager.headers,
         command='plugin',
         options=[
-            Subcommand('open', help_text='开启插件, <plugin>插件名', args=Args['plugin', str, ...], options=[
+            Subcommand('on', help_text='开启插件, <plugin>插件名', args=Args['plugin', str, ...], options=[
                 Option('--all|-a', help_text='开启全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
-            Subcommand('close', help_text='关闭插件, <plugin_cmd>插件触发命令', args=Args['plugin', str, ...], options=[
+            Subcommand('off', help_text='关闭插件, <plugin_cmd>插件触发命令', args=Args['plugin', str, ...], options=[
                 Option('--all|-a', help_text='关闭全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
@@ -333,26 +333,26 @@ async def group_admin_process(self: Plugin, subcommand: Arpamar.subcommands, alc
 
     perm = ''
     qq = 0
-    if open_ := subcommand.get("open"):
-        if frd := open_.get("friend"):
+    if on_ := subcommand.get("on"):
+        if frd := on_.get("friend"):
             qq: int = frd['qq']
-        if 'all' in open_:
+        if 'all' in on_:
             perm = '*'
-        elif open_['plugin']:
+        elif on_['plugin']:
             for plg in manager.get_delegates().values():
-                if open_['plugin'] == plg.entry:
-                    perm = open_['plugin']
-    elif close_ := subcommand.get("close"):
-        if frd := close_.get("friend"):
+                if on_['plugin'] == plg.entry:
+                    perm = on_['plugin']
+    elif off_ := subcommand.get("off"):
+        if frd := off_.get("friend"):
             qq: int = frd['qq']
-        if 'all' in close_:
+        if 'all' in off_:
             perm = '-'
-        elif close_['plugin']:
+        elif off_['plugin']:
             for plg in manager.get_delegates().values():
-                if close_['plugin'] == plg.entry:
-                    if close_['plugin'] == alc.command:
+                if off_['plugin'] == plg.entry:
+                    if off_['plugin'] == alc.command:
                         return MessageChain('禁止关闭本插件管理工具')
-                    perm = '-' + close_['plugin']
+                    perm = '-' + off_['plugin']
             if not perm:
                 return MessageChain("未找到该插件！")
     else:
