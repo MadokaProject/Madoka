@@ -35,7 +35,7 @@ async def check_version(app: Ariadne, config: Config):
         remote_info = await general_request(config.REMOTE_VERSION_URL, method='get', _type='json')
         remote_version = remote_info['version']
         remote_update_logs = remote_info['update_log']
-        logger.info(f'Remote version: {remote_version}')
+        logger.info(f'Remote Version: {remote_version}')
         if compare_version(remote_version, config.INFO_VERSION):
             log_msg = ''
             for log in remote_update_logs:
@@ -61,5 +61,6 @@ async def version_notice(app: Ariadne, config: Config):
     logger.info(f'欢迎使用{config.INFO_NAME}')
     logger.info(f'Docs: {config.INFO_DOCS}')
     logger.info(f'Repo: {config.INFO_REPO}')
-    logger.info(f'Native version: {config.INFO_VERSION}')
+    logger.info(f'Remote Plugin Repo: {config.REMOTE_REPO_VERSION}')
+    logger.info(f'Native Version: {config.INFO_VERSION}')
     await check_version(app, config)

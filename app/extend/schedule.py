@@ -16,7 +16,8 @@ async def custom_schedule(scheduler: GraiaScheduler, bot: Ariadne):
     for ips, qq, delay in LISTEN_MC_SERVER:
         @scheduler.schedule(timers.every_custom_seconds(delay))
         async def mc_listen_schedule():
-            await mc_listener(bot, path, ips, qq, delay)
+            if config.ONLINE:
+                await mc_listener(bot, path, ips, qq, delay)
 
     @scheduler.schedule(timers.crontabify('0 6 * * * 0'))
     @logger.catch

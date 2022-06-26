@@ -18,7 +18,7 @@ from app.util.dao import MysqlDao
 from app.util.send_message import safeSendFriendMessage
 from app.util.text2image import create_image
 from app.util.tools import to_thread
-from .game_res.sign_image_generator import get_sign_image
+from .sign_image_generator import get_sign_image
 
 core: AppCore = AppCore.get_core_instance()
 config = core.get_config()

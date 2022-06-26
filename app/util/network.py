@@ -84,9 +84,9 @@ async def general_request(url, method='GET', _type='TEXT', params=None, headers=
     } if not headers else headers
     async with aiohttp.request(method=method, url=url, params=params, headers=headers, data=data) as r:
         if _type in ['TEXT', 'text']:
-            response = await r.text(encoding=r.get_encoding())
+            response = await r.text(encoding='utf-8')
         elif _type in ['JSON', 'json']:
-            response = await r.json()
+            response = await r.json(encoding='utf-8')
         elif _type in ['HEADER', 'header']:
             response = r.headers
         elif _type in ['BYTE', 'byte']:
