@@ -81,11 +81,11 @@ class CommandDelegateManager(metaclass=Singleton):
     ):
         """注册命令
 
-        :param entry: 插件入口点参数
-        :param brief_help: 简短帮助，显示在主帮助菜单
-        :param alc: class Alconna
-        :param enable: 插件默认开关: Default: True
-        :param hidden: 隐藏插件: Default: False
+        :param entry: 命令入口
+        :param brief_help: 插件简介
+        :param alc: Alconna实例
+        :param enable: 是否启用
+        :param hidden: 是否隐藏
         :param many: 插件序号: 仅单文件多插件时使用（不推荐单文件多插件，暂时无法管理）
         """
 
@@ -93,11 +93,11 @@ class CommandDelegateManager(metaclass=Singleton):
             module = func.__module__
             path_parts = module.split('.')
             alc.reset_namespace(f'{path_parts[-3]}_{path_parts[-2]}')
-            if not self.__delegates.get(path_parts[-3]):
-                self.__delegates[path_parts[-3]] = {}
+            if not self.__delegates.get(path_parts[-4]):
+                self.__delegates[path_parts[-4]] = {}
             if many:
                 module += str(many)
-            self.__delegates[path_parts[-3]].update({module: PluginInfo(entry, brief_help, enable, hidden, alc, func)})
+            self.__delegates[path_parts[-4]].update({module: PluginInfo(entry, brief_help, enable, hidden, alc, func)})
 
             @functools.wraps(func)
             def wrapper(*args, **kwargs):

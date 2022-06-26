@@ -121,7 +121,7 @@ def get_sign_image(
 
     # 魔法阵
     mahojin_size = avatar_size + 2 * mahojin_size_offset
-    mahojin = Image.open(str(base_path.joinpath('2.png')))
+    mahojin = Image.open(str(base_path.joinpath('magic.png')))
     mahojin = mahojin.resize((mahojin_size, mahojin_size), Image.LANCZOS)
     canvas.paste(mahojin, (avatar_xy - mahojin_size_offset, avatar_xy - mahojin_size_offset), mask=mahojin.split()[3])
 
@@ -182,13 +182,13 @@ def get_sign_image(
 
     datetime_text = f'现在是 {get_time()}，祝你天天开心捏~'
 
-    primogem = Image.open(str(base_path.joinpath('原石.png'))).convert('RGBA')
+    primogem = Image.open(str(base_path.joinpath('primogems.png'))).convert('RGBA')
     primogem = primogem.resize((font_2.getsize(gift_1)[1], font_2.getsize(gift_1)[1]), Image.LANCZOS)
     canvas.paste(primogem, (avatar_xy + 30, y + 5), mask=primogem.split()[3])
     draw.text((avatar_xy + primogem.size[0] + 50, y), gift_1, font=font_2, fill='#ffffff')
     y += font_2.getsize(gift_1)[1] + 30
 
-    intertwined_fate = Image.open(str(base_path.joinpath('纠缠之缘.png'))).convert('RGBA')
+    intertwined_fate = Image.open(str(base_path.joinpath('intertwined_fate.png'))).convert('RGBA')
     intertwined_fate = intertwined_fate.resize((font_2.getsize(gift_2)[1], font_2.getsize(gift_2)[1]), Image.LANCZOS)
     canvas.paste(intertwined_fate, (avatar_xy + 30, y + 5), mask=intertwined_fate.split()[3])
     draw.text((avatar_xy + intertwined_fate.size[0] + 50, y), gift_2, font=font_2, fill='#ffffff')

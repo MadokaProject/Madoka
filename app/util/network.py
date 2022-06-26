@@ -1,6 +1,8 @@
 import random
+import time
 import urllib.request
 from pathlib import Path
+from urllib import error
 from urllib.parse import urlparse
 
 import aiohttp
@@ -84,9 +86,9 @@ async def general_request(url, method='GET', _type='TEXT', params=None, headers=
     } if not headers else headers
     async with aiohttp.request(method=method, url=url, params=params, headers=headers, data=data) as r:
         if _type in ['TEXT', 'text']:
-            response = await r.text(encoding=r.get_encoding())
+            response = await r.text(encoding='utf-8')
         elif _type in ['JSON', 'json']:
-            response = await r.json()
+            response = await r.json(encoding='utf-8')
         elif _type in ['HEADER', 'header']:
             response = r.headers
         elif _type in ['BYTE', 'byte']:
@@ -109,6 +111,11 @@ def download(url: str, file_path: Path) -> bool:
     else:
         try:
             urllib.request.urlretrieve(url, filename=file_path)
+        except error.HTTPError as e:
+            if e.code == 429:
+                logger.warning('请求频率过快，将等待3秒后重试')
+                time.sleep(3)
+                return download(url, file_path)
         except Exception as e:
             logger.error(f"下载文件时发生错误，错误信息: {e}")
             return False

@@ -68,6 +68,11 @@ class RemotePluginNotFound(Exception):
     pass
 
 
+class LocalPluginNotFound(Exception):
+    """未在本地找到该插件"""
+    pass
+
+
 class DatabaseManagerInitialized(Exception):
     """数据库管理器未初始化"""
     pass

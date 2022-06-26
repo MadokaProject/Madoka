@@ -162,20 +162,21 @@ class AppCore:
     async def bot_launch_init(self):
         try:
             await self.__plugins.loads_all_plugin()
+            importlib.__import__("app.core.console")
+            importlib.__import__("app.core.event")
+            await self.__database.start()
             from app.extend.schedule import custom_schedule
             self.__loop.create_task(custom_schedule(self.__scheduler, self.__app))
-            await self.__database.start()
+            self.__loop.create_task(power(self.__app, sys.argv))
             if self.__config.WEBSERVER_ENABLE:
                 logger.success("WebServer is starting")
                 threading.Thread(daemon=True, target=WebServer).start()
-            self.__loop.create_task(power(self.__app, sys.argv))
             group_list = await self.__app.get_group_list()
             logger.info("本次启动活动群组如下：")
             for group in group_list:
                 logger.info(f"群ID: {str(group.id).ljust(14)}群名: {group.name}")
 
-            importlib.__import__("app.core.event")
-            importlib.__import__("app.core.console")
+            logger.success("Madoka is ready")
         except Exception as e:
             logger.exception(e)
             self.__app.stop()
