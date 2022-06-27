@@ -285,7 +285,7 @@ class PluginManager:
         :param info: 插件信息文件名
         """
         await asyncio.sleep(1)
-        return json.loads(await general_request(self.__base_url + info, method='get'), encoding='utf-8')
+        return json.loads(await general_request(self.__base_url + info, method='get'))
 
     async def get_plugin_by_url(self, root_dir, url_lists) -> bool:
         """通过远程插件地址获取插件
