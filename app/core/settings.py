@@ -16,7 +16,6 @@ def get_config(sql) -> list:
 
 config: Config = Config.get_instance()
 
-
 GROUP_PERM = {
     'OWNER': '群主',
     'ADMINISTRATOR': '管理员',
