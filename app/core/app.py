@@ -165,8 +165,7 @@ class AppCore:
             importlib.__import__("app.core.console")
             importlib.__import__("app.core.event")
             await self.__database.start()
-            from app.extend.schedule import custom_schedule
-            self.__loop.create_task(custom_schedule(self.__scheduler, self.__app))
+            importlib.__import__("app.extend.schedule")
             self.__loop.create_task(power(self.__app, sys.argv))
             if self.__config.WEBSERVER_ENABLE:
                 logger.success("WebServer is starting")
