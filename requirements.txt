@@ -1,9 +1,8 @@
 aiohttp~=3.8.1
 arclet-alconna==1.0.0
 arclet-alconna-graia==0.2.0
-graia-ariadne[full]==0.7.14
+graia-ariadne[standard]==0.7.14
 graia-broadcast==0.18.1
-graia-scheduler==0.0.8
 jsonpath==0.82
 loguru~=0.6.0
 pillow==9.0.1
