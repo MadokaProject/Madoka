@@ -1,4 +1,5 @@
 import random
+from textwrap import fill
 
 from arclet.alconna import Alconna, Option, Args, Arpamar
 from graia.ariadne.app import Ariadne
@@ -139,25 +140,30 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             ])
         elif options.get('rank'):
             with MysqlDao() as db:
-                res = db.query(
-                    "SELECT qid, coins FROM game ORDER BY coins DESC"
-                )
-                group_user = {item.id: item.name for item in await self.app.get_member_list(self.group.id)}
-                resp = MessageChain([Plain(f'群内{config.COIN_NAME}排行:\n')])
-                index = 1
-                msg = PrettyTable()
-                msg.field_names = ['序号', '群昵称', f'{config.COIN_NAME}']
-                for qid, point in res:
-                    if point == 0 or int(qid) not in group_user.keys():
-                        continue
-                    msg.add_row([index, group_user[int(qid)], point])
-                    index += 1
-                msg.align = 'r'
-                msg.align['群昵称'] = 'l'
-                resp.extend(MessageChain([
-                    Image(data_bytes=await create_image(msg.get_string()))
-                ]))
-                return resp
+                res = db.query("SELECT qid, coins FROM game ORDER BY coins DESC")
+            group_user = {item.id: item.name for item in await self.app.get_member_list(self.group.id)}
+            resp = MessageChain([Plain(f'群内{config.COIN_NAME}排行:\n')])
+            user = (getattr(self, 'friend', None) or getattr(self, 'member', None)).id
+            index = 1
+            msg = PrettyTable()
+            msg.field_names = ['序号', '群昵称', f'{config.COIN_NAME}']
+            _user_rank = []
+            for qid, point in res:
+                if user == int(qid):
+                    _user_rank = [index, fill(group_user[int(qid)], width=20), point]
+                if point == 0 or int(qid) not in group_user.keys():
+                    continue
+                if index <= 30:
+                    msg.add_row([index, fill(group_user[int(qid)], width=20), point])
+                if index > 30 and _user_rank:
+                    msg.add_row(['====', ''.join('=' for _ in range(40)), '====='])
+                    msg.add_row(_user_rank)
+                    break
+                index += 1
+            msg.align = 'r'
+            msg.align['群昵称'] = 'l'
+            resp.extend(MessageChain([Image(data_bytes=await create_image(msg.get_string()))]))
+            return resp
         elif auto := options.get('auto'):
             status = 1 if auto['status'] else 0
             await BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id).auto_signin(status)
