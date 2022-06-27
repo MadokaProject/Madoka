@@ -1,4 +1,5 @@
 import asyncio
+from textwrap import fill
 from typing import Union
 
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
@@ -132,7 +133,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
         upgrade = 'upgrade' in install
 
         if upgrade:  # 更新插件
-            plugins = await plugin_mgr.get_plugin_info(plugin)
+            plugins = await plugin_mgr.get_info(plugin)
             if len(plugins) == 1:
                 install_plugin = plugins[0]
             elif len(plugins) > 1:
@@ -146,11 +147,11 @@ async def master_admin_process(self: Plugin, subcommand: dict):
                 install_plugin = plugins[ret - 1]
             else:
                 return MessageChain(Plain(f"未在本地找到{plugin}插件"))
-            if await plugin_mgr.find_plugin_exist(install_plugin['root_dir']):
-                plugin_mgr.delete_plugin(install_plugin['root_dir'])
+            if await plugin_mgr.exist(install_plugin['root_dir']):
+                plugin_mgr.delete(install_plugin['root_dir'])
             await self.app.send_message(user, Plain('插件正在更新中...'))
         else:
-            if plugins := await plugin_mgr.get_plugin_info(plugin):
+            if plugins := await plugin_mgr.get_info(plugin):
                 await self.app.send_message(user, MessageChain([
                     Plain(f"本地已存在下列插件: \n"),
                     Plain(
@@ -162,7 +163,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
                     return MessageChain([Plain('取消安装')])
 
             install_plugin_list = []  # 记录可能的安装插件
-            remote_plugin_list = await plugin_mgr.get_remote_plugins()  # 获取仓库插件
+            remote_plugin_list = await plugin_mgr.get_remote_info()  # 获取仓库插件
             for remote_plugin in remote_plugin_list:
                 if remote_plugin['name'] == plugin:
                     install_plugin_list.append(remote_plugin)  # 将插件加入可能的安装列表
@@ -180,14 +181,14 @@ async def master_admin_process(self: Plugin, subcommand: dict):
                     return self.args_error()
                 install_plugin: dict = install_plugin_list[ret - 1]
 
-            if await plugin_mgr.find_plugin_exist(install_plugin):
+            if await plugin_mgr.exist(install_plugin):
                 return MessageChain([Plain('该插件已存在, 请使用 --upgrade 更新插件')])
             await self.app.send_message(user, Plain('插件正在安装中...'))
 
         await self.app.send_message(user, MessageChain(
             f"正在尝试安装插件: {install_plugin['name']} - {install_plugin['author']}"
         ))
-        if await plugin_mgr.install_plugin(install_plugin):
+        if await plugin_mgr.install(install_plugin):
             return MessageChain([
                 Plain('插件升级成功: ' if upgrade else '插件安装成功: '),
                 Plain(f"{install_plugin['name']} - {install_plugin['author']}")
@@ -198,7 +199,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
         ])
     elif remove := subcommand.get("remove"):
         plugin = remove['plugin']
-        plugins = await plugin_mgr.get_plugin_info(plugin)
+        plugins = await plugin_mgr.get_info(plugin)
         if len(plugins) == 1:
             delete_plugin = plugins[0]
         elif len(plugins) > 1:
@@ -212,22 +213,34 @@ async def master_admin_process(self: Plugin, subcommand: dict):
             delete_plugin = plugins[ret - 1]
         else:
             return MessageChain(Plain(f"未在本地找到{plugin}插件"))
-        plugin_mgr.delete_plugin(delete_plugin)
+        plugin_mgr.delete(delete_plugin)
         return MessageChain([Plain(f"插件删除成功: {delete_plugin['name']} - {delete_plugin['author']}")])
     elif 'list' in subcommand:
         msg = PrettyTable()
         msg.field_names = ['序号', '插件名', '作者', '版本号', '介绍']
         if subcommand['list']:
-            for index, plugin in enumerate(await plugin_mgr.get_remote_plugins()):
-                msg.add_row([index + 1, plugin['name'], plugin['author'], plugin['version'], plugin['description']])
+            for index, plugin in enumerate(await plugin_mgr.get_remote_info()):
+                msg.add_row([
+                    index + 1,
+                    plugin['name'],
+                    plugin['author'],
+                    plugin['version'],
+                    fill(plugin['description'], width=15)
+                ])
         else:
-            for index, plugin in enumerate(await plugin_mgr.get_plugin_info('*')):
-                msg.add_row([index + 1, plugin['name'], plugin['author'], plugin['version'], plugin['description']])
+            for index, plugin in enumerate(await plugin_mgr.get_info('*')):
+                msg.add_row([
+                    index + 1,
+                    plugin['name'],
+                    plugin['author'],
+                    plugin['version'],
+                    fill(plugin['description'], width=15)
+                ])
         msg.align = 'c'
         return MessageChain([Image(data_bytes=await create_image(msg.get_string(), cut=150))])
     elif load := subcommand.get("load"):
         plugin = load['plugin']
-        plugins = await plugin_mgr.get_plugin_info(plugin)
+        plugins = await plugin_mgr.get_info(plugin)
         if len(plugins) == 1:
             load_plugin = plugins[0]
         elif len(plugins) > 1:
@@ -244,7 +257,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
         await self.app.send_message(user, MessageChain(
             f"正在尝试加载插件: {load_plugin['name']} - {load_plugin['author']}"
         ))
-        if await plugin_mgr.load_plugin(load_plugin):
+        if await plugin_mgr.load(load_plugin):
             return MessageChain([
                 Plain('插件加载成功: '),
                 Plain(f"{load_plugin['name']} - {load_plugin['author']}")
@@ -255,7 +268,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
         ])
     elif unloaded := subcommand.get("unload"):
         plugin = unloaded['plugin']
-        plugins = await plugin_mgr.get_plugin_info(plugin)
+        plugins = await plugin_mgr.get_info(plugin)
         if len(plugins) == 1:
             unloaded_plugin = plugins[0]
         elif len(plugins) > 1:
@@ -272,7 +285,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
         await self.app.send_message(user, MessageChain(
             f"正在尝试卸载插件: {unloaded_plugin['name']} - {unloaded_plugin['author']}"
         ))
-        if plugin_mgr.unload_plugin(unloaded_plugin['root_dir']):
+        if plugin_mgr.unload(unloaded_plugin['root_dir']):
             return MessageChain([
                 Plain('插件卸载成功: '),
                 Plain(f"{unloaded_plugin['name']} - {unloaded_plugin['author']}")
@@ -284,10 +297,10 @@ async def master_admin_process(self: Plugin, subcommand: dict):
     elif reload := subcommand.get("reload"):
         plugin = reload['plugin']
         if plugin == 'all_plugin':
-            plugin_mgr.reload_plugin()
+            plugin_mgr.reload()
             return MessageChain([Plain('所有插件重载成功')])
         else:
-            plugins = await plugin_mgr.get_plugin_info(plugin)
+            plugins = await plugin_mgr.get_info(plugin)
             if len(plugins) == 1:
                 reload_plugin = plugins[0]
             elif len(plugins) > 1:
@@ -304,7 +317,7 @@ async def master_admin_process(self: Plugin, subcommand: dict):
             await self.app.send_message(user, MessageChain(
                 f"正在尝试重载插件: {reload_plugin['name']} - {reload_plugin['author']}"
             ))
-            if plugin_mgr.reload_plugin(reload_plugin['root_dir']):
+            if plugin_mgr.reload(reload_plugin['root_dir']):
                 return MessageChain([
                     Plain('插件重载成功: '),
                     Plain(f"{reload_plugin['name']} - {reload_plugin['author']}")

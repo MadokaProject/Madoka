@@ -161,7 +161,7 @@ class AppCore:
 
     async def bot_launch_init(self):
         try:
-            await self.__plugins.loads_all_plugin()
+            await self.__plugins.loads_all()
             importlib.__import__("app.core.console")
             importlib.__import__("app.core.event")
             await self.__database.start()

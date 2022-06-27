@@ -3,147 +3,147 @@ from io import BytesIO
 
 import httpx
 from PIL import Image as IMG
+from graia.ariadne import Ariadne
+from graia.ariadne.event.mirai import (
+    MemberCardChangeEvent,
+    MemberJoinEvent,
+    MemberLeaveEventKick,
+    MemberLeaveEventQuit,
+    MemberHonorChangeEvent,
+    GroupRecallEvent
+)
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At, Image, Forward, ForwardNode
 from graia.ariadne.model import MemberInfo
 
+from app.core.app import AppCore
 from app.core.config import Config
 from app.core.settings import ADMIN_USER
-from app.event.base import Event
 from app.util.online_config import get_config
-from app.util.send_message import safeSendGroupMessage, safeSendFriendMessage
+from app.util.send_message import safeSendGroupMessage
+
+core: AppCore = AppCore.get_core_instance()
+config = Config.get_instance()
+bcc = core.get_bcc()
+inc = core.get_inc()
 
 
-async def avater_blackandwhite(qq: int) -> bytes:
+async def avatar_black_and_white(qq: int) -> bytes:
     """
     获取群成员头像黑白化
     """
-    url = f"http://q1.qlogo.cn/g?b=qq&nk={str(qq)}&s=4"
+    url = f"https://q1.qlogo.cn/g?b=qq&nk={str(qq)}&s=4"
     async with httpx.AsyncClient() as client:
         resp = await client.get(url)
     img = IMG.open(BytesIO(resp.content))
     img = img.convert("L")
-    img.save(imgbio := BytesIO(), "JPEG")
-    return imgbio.getvalue()
+    img.save(img2io := BytesIO(), "JPEG")
+    return img2io.getvalue()
 
 
-class MemberCardChange(Event):
+@bcc.receiver(MemberCardChangeEvent)
+async def card_change(app: Ariadne, event: MemberCardChangeEvent):
     """群名片被修改"""
-    event_name = "MemberCardChangeEvent"
-
-    async def process(self):
-        config = Config.get_instance()
-        if self.member_card_change.member.id == int(config.LOGIN_QQ):
-            if self.member_card_change.current != config.BOT_NAME:
-                for qq in ADMIN_USER:
-                    await self.app.send_friend_message(qq, MessageChain([
-                        Plain(f"检测到 {config.BOT_NAME} 群名片变动"),
-                        Plain(f"\n群号：{str(self.member_card_change.member.group.id)}"),
-                        Plain(f"\n群名：{self.member_card_change.member.group.name}"),
-                        Plain(f"\n被修改为：{self.member_card_change.current}"),
-                        Plain(f"\n已为你修改回：{config.BOT_NAME}")
-                    ]))
-                await self.app.modify_member_info(
-                    group=self.member_card_change.member.group.id,
-                    member=int(config.LOGIN_QQ),
-                    info=MemberInfo(name=config.BOT_NAME),
-                )
-                await safeSendGroupMessage(
-                    self.member_card_change.member.group.id, MessageChain([Plain("请不要修改我的群名片")])
-                )
-        else:
-            if await get_config('member_card_change', self.member_card_change.member.group.id) and \
-                    self.member_card_change.current not in [None, '']:
-                await safeSendGroupMessage(self.member_card_change.member.group, MessageChain([
-                    At(self.member_card_change.member.id),
-                    Plain(f" 的群名片由 {self.member_card_change.origin} 被修改为 {self.member_card_change.current}")
+    if event.member.id == config.LOGIN_QQ:
+        if event.current != config.BOT_NAME:
+            for qq in ADMIN_USER:
+                await app.send_friend_message(qq, MessageChain([
+                    Plain(f"检测到 {config.BOT_NAME} 群名片变动"),
+                    Plain(f"\n群号：{event.member.group.id}"),
+                    Plain(f"\n群名：{event.member.group.name}"),
+                    Plain(f"\n被修改为：{event.current}"),
+                    Plain(f"\n已为你修改回：{config.BOT_NAME}")
                 ]))
-
-
-class MemberJoin(Event):
-    """有人加入群聊"""
-    event_name = "MemberJoinEvent"
-
-    async def process(self):
-        msg = [
-            Image(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(self.member_join.member.id)}&s=4"),
-            Plain("\n欢迎 "),
-            At(self.member_join.member.id),
-            Plain(" 加入本群"),
-        ]
-        res = await get_config('member_join', self.member_join.member.group.id)
-        if res and res['active']:
-            msg.append(Plain(f"\r\n{res['text']}") if res.__contains__('text') else None)
-            await safeSendGroupMessage(self.member_join.member.group, MessageChain(msg))
-
-
-class MemberLeaveKick(Event):
-    """有人被踢出群聊"""
-    event_name = "MemberLeaveEventKick"
-
-    async def process(self):
-        msg = [
-            Image(data_bytes=await avater_blackandwhite(self.member_leave_kick.member.id)),
-            Plain(f"\n{self.member_leave_kick.member.name} 被 "),
-            At(self.member_leave_kick.operator.id) if self.member_leave_kick.operator else Plain(Config().BOT_NAME),
-            Plain(" 踢出本群"),
-        ]
-        if await get_config('member_kick', self.member_leave_kick.member.group.id):
-            await safeSendGroupMessage(self.member_leave_kick.member.group, MessageChain(msg))
-
-
-class MemberLeaveQuit(Event):
-    """有人退出群聊"""
-    event_name = "MemberLeaveEventQuit"
-
-    async def process(self):
-        msg = [
-            Image(data_bytes=await avater_blackandwhite(self.member_leave_quit.member.id)),
-            Plain(f"\n{self.member_leave_quit.member.name} 退出本群"),
-        ]
-        if await get_config('member_quit', self.member_leave_quit.member.group.id):
-            await safeSendGroupMessage(self.member_leave_quit.member.group, MessageChain(msg))
-
-
-class MemberHonorChange(Event):
-    """有人群荣誉变动"""
-    event_name = "MemberHonorChangeEvent"
-
-    async def process(self):
-        msg = [
-            At(self.member_honor_change.member.id),
-            Plain(
-                f" {'获得了' if self.member_honor_change.action == 'achieve' else '失去了'} 群荣誉 {self.member_honor_change.honor}！"),
-        ]
-        await safeSendGroupMessage(self.member_honor_change.member.group, MessageChain(msg))
-
-
-class GroupRecallEvent(Event):
-    """有人撤回消息"""
-    event_name = "GroupRecallEvent"
-
-    async def process(self):
-        if self.group_recall.operator is None:
-            return
-        _config = Config.get_instance()
-        if _config.EVENT_GROUP_RECALL or await get_config('member_recall', self.group_recall.group.id):
-            message = MessageChain(Forward([
-                ForwardNode(
-                    target=self.group_recall.operator,
-                    time=datetime.now(),
-                    message=MessageChain(
-                        f'{self.group_recall.group.name}: {self.group_recall.group.id} 群有人撤回了一条消息'
-                        if _config.EVENT_GROUP_RECALL else '有人撤回了一条消息'
-                    ),
-                ),
-                ForwardNode(
-                    target=self.group_recall.operator,
-                    time=datetime.now(),
-                    message=MessageChain(
-                        (await self.app.get_message_from_id(self.group_recall.message_id)).message_chain)
-                )
+            await app.modify_member_info(
+                group=event.member.group.id,
+                member=config.LOGIN_QQ,
+                info=MemberInfo(name=config.BOT_NAME),
+            )
+            await safeSendGroupMessage(
+                event.member.group.id, MessageChain([Plain("请不要修改我的群名片")])
+            )
+    else:
+        if await get_config('member_card_change', event.member.group.id) and \
+                event.current not in [None, '']:
+            await safeSendGroupMessage(event.member.group, MessageChain([
+                At(event.member.id),
+                Plain(f" 的群名片由 {event.origin} 被修改为 {event.current}")
             ]))
-            if _config.EVENT_GROUP_RECALL:
-                await safeSendFriendMessage(_config.MASTER_QQ, message)
-            else:
-                await safeSendGroupMessage(self.group_recall.group.id, message)
+
+
+@bcc.receiver(MemberJoinEvent)
+async def join(app: Ariadne, event: MemberJoinEvent):
+    """有人加入群聊"""
+    msg = [
+        Image(url=f"https://q1.qlogo.cn/g?b=qq&nk={event.member.id}&s=4"),
+        Plain("\n欢迎 "),
+        At(event.member.id),
+        Plain(" 加入本群"),
+    ]
+    res = await get_config('member_join', event.member.group.id)
+    if res and res['active']:
+        msg.append(Plain(f"\r\n{res['text']}") if res.__contains__('text') else None)
+        await app.send_group_message(event.member.group, MessageChain(msg))
+
+
+@bcc.receiver(MemberLeaveEventKick)
+async def leave_kick(app: Ariadne, event: MemberLeaveEventKick):
+    """有人被踢出群聊"""
+    msg = [
+        Image(data_bytes=await avatar_black_and_white(event.member.id)),
+        Plain(f"\n{event.member.name} 被 "),
+        At(event.operator.id) if event.operator else Plain(config.BOT_NAME),
+        Plain(" 踢出本群"),
+    ]
+    if await get_config('member_kick', event.member.group.id):
+        await app.send_group_message(event.member.group, MessageChain(msg))
+
+
+@bcc.receiver(MemberLeaveEventQuit)
+async def leave_quit(app: Ariadne, event: MemberLeaveEventQuit):
+    """有人退出群聊"""
+    msg = [
+        Image(data_bytes=await avatar_black_and_white(event.member.id)),
+        Plain(f"\n{event.member.name} 退出本群"),
+    ]
+    if await get_config('member_quit', event.member.group.id):
+        await app.send_group_message(event.member.group, MessageChain(msg))
+
+
+@bcc.receiver(MemberHonorChangeEvent)
+async def honor_change(app: Ariadne, event: MemberHonorChangeEvent):
+    """有人群荣誉变动"""
+    msg = [
+        At(event.member.id),
+        Plain(
+            f" {'获得了' if event.action == 'achieve' else '失去了'} 群荣誉 {event.honor}！"),
+    ]
+    await app.send_group_message(event.member.group, MessageChain(msg))
+
+
+@bcc.receiver(GroupRecallEvent)
+async def recall(app: Ariadne, event: GroupRecallEvent):
+    """有人撤回消息"""
+    if event.operator is None:
+        return
+    if config.EVENT_GROUP_RECALL or await get_config('member_recall', event.group.id):
+        message = MessageChain(Forward([
+            ForwardNode(
+                target=event.operator,
+                time=datetime.now(),
+                message=MessageChain(
+                    f'{event.group.name}: {event.group.id} 群有人撤回了一条消息'
+                    if config.EVENT_GROUP_RECALL else '有人撤回了一条消息'
+                ),
+            ),
+            ForwardNode(
+                target=event.operator,
+                time=datetime.now(),
+                message=MessageChain(
+                    (await app.get_message_from_id(event.message_id)).message_chain)
+            )
+        ]))
+        if config.EVENT_GROUP_RECALL:
+            await app.send_friend_message(config.MASTER_QQ, message)
+        else:
+            await app.send_group_message(event.group.id, message)

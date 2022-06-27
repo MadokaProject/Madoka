@@ -80,7 +80,7 @@ class PluginManager:
     def get_plugins(self):
         return self.__plugins
 
-    async def load_plugin(
+    async def load(
             self,
             plugin_info: Union[str, Dict[str, str]],
             plugin_type: PluginType = PluginType.Extension
@@ -97,11 +97,13 @@ class PluginManager:
         elif isinstance(plugin_info, dict):
             for plugin in self.__base_path.joinpath(plugin_type.value, plugin_info['root_dir']).rglob(pattern='*.py'):
                 if plugin.name not in self.__ignore and plugin.is_file():
-                    plugins.append(f"app.plugin.{plugin_type.value}.{plugin_info['root_dir']}.{plugin.name.split('.')[0]}")
+                    plugins.append(
+                        f"app.plugin.{plugin_type.value}.{plugin_info['root_dir']}.{plugin.name.split('.')[0]}"
+                    )
             plugin_info = f"app.plugin.{plugin_type}.{plugin_info['root_dir']}"
         try:
             for plugin in plugins:
-                if not await self.find_plugin(plugin):
+                if not await self.is_load(plugin):
                     self.__plugins[plugin] = importlib.import_module(plugin)
                 else:
                     logger.warning('该插件已加载!' + plugin)
@@ -115,26 +117,26 @@ class PluginManager:
             logger.error(f"插件加载失败: {plugin_info} - {e}")
             return False
 
-    async def loads_plugin(self, plugins: Dict[str, PluginType]) -> Dict[str, bool]:
+    async def loads(self, plugins: Dict[str, PluginType]) -> Dict[str, bool]:
         """批量加载插件
 
         :param plugins: 插件名称与插件类型的字典
         """
         result = {}
         for plugin_name, plugin_type in plugins.items():
-            result.update({plugin_name: await self.load_plugin(plugin_name, plugin_type)})
+            result.update({plugin_name: await self.load(plugin_name, plugin_type)})
         return result
 
-    async def loads_basic_plugin(self) -> None:
+    async def loads_basic(self) -> None:
         """加载基础插件"""
         plugins = {}
         for plugin in sorted(self.__base_path.joinpath('basic').rglob(pattern='*.py')):
             if plugin.name not in self.__ignore and plugin.is_file():
                 plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
                 plugins.update({plugin_name: PluginType.Basic})
-        await self.loads_plugin({plugin: PluginType.Basic for plugin in plugins})
+        await self.loads({plugin: PluginType.Basic for plugin in plugins})
 
-    async def loads_extension_plugin(self) -> None:
+    async def loads_extension(self) -> None:
         """加载扩展插件"""
         plugins = {}
         self.__folder_path.mkdir(exist_ok=True)
@@ -142,17 +144,17 @@ class PluginManager:
             if plugin.name not in self.__ignore and plugin.is_file():
                 plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
                 plugins.update({plugin_name: PluginType.Extension})
-        await self.loads_plugin(plugins)
+        await self.loads(plugins)
 
-    async def loads_all_plugin(self) -> None:
+    async def loads_all(self) -> None:
         """加载所有插件
         仅允许初始化时使用
         """
         self.__plugins.clear()
-        await self.loads_basic_plugin()
-        await self.loads_extension_plugin()
+        await self.loads_basic()
+        await self.loads_extension()
 
-    def reload_plugin(
+    def reload(
             self,
             plugin_info: Union[str, Dict[str, str]] = 'all_plugin',
             plugin_type: PluginType = PluginType.Extension
@@ -184,7 +186,7 @@ class PluginManager:
                 return False
         return True
 
-    def unload_plugin(self, root_dir: str) -> bool:
+    def unload(self, root_dir: str) -> bool:
         """卸载插件
         仅支持卸载扩展插件
 
@@ -220,7 +222,7 @@ class PluginManager:
                 tasker.stop()
                 self.__sche.schedule_tasks.remove(tasker)
 
-    async def find_plugin(self, plugin: Union[str, ModuleType]) -> bool:
+    async def is_load(self, plugin: Union[str, ModuleType]) -> bool:
         """查找插件是否加载"""
         if isinstance(plugin, ModuleType):
             plugin = plugin.__name__
@@ -228,16 +230,16 @@ class PluginManager:
             return True
         return False
 
-    async def find_plugin_exist(self, plugin_info: Dict[str, str]) -> bool:
+    async def exist(self, plugin_info: Dict[str, str]) -> bool:
         """查找插件是否存在
 
         :param plugin_info: 插件信息字典
         """
-        if await self.get_plugin_info(plugin_info):
+        if await self.get_info(plugin_info):
             return True
         return False
 
-    async def get_plugin_info(self, plugins: Union[str, Dict[str, str]]) -> List[Dict[str, str]]:
+    async def get_info(self, plugins: Union[str, Dict[str, str]]) -> List[Dict[str, str]]:
         """获取插件信息
 
         :param plugins: 插件名称或插件信息字典
@@ -253,33 +255,33 @@ class PluginManager:
                 if plugin['name'] == plugins['name'] and plugin['author'] == plugins['author']:
                     return [plugin]
 
-    async def record_plugin_info(self, plugin_info: Dict[str, str]) -> None:
+    async def record_info(self, plugin_info: Dict[str, str]) -> None:
         """记录插件信息
 
         :param plugin_info: 插件信息
         """
         with open(self.__info_path, 'r') as f:
             plugin_infos: List[Dict] = json.load(f)
-        if local_plugin_info := await self.get_plugin_info(plugin_info):
+        if local_plugin_info := await self.get_info(plugin_info):
             plugin_infos.remove(local_plugin_info[0])
         plugin_infos.append(plugin_info)
         with open(self.__info_path, 'w') as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
-    async def remove_plugin_info(self, plugin_info: Dict[str, str]) -> None:
+    async def remove_info(self, plugin_info: Dict[str, str]) -> None:
         """删除插件信息
 
         :param plugin_info: 插件信息
         """
         with open(self.__info_path, 'r') as f:
             plugin_infos: List[Dict] = json.load(f)
-        if local_plugin_info := await self.get_plugin_info(plugin_info):
+        if local_plugin_info := await self.get_info(plugin_info):
             plugin_infos.remove(local_plugin_info[0])
         with open(self.__info_path, 'w') as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
     @retry(stop_max_attempt_number=5, wait_fixed=1000)
-    async def get_remote_plugins(self, info: str = 'list.json') -> List:
+    async def get_remote_info(self, info: str = 'list.json') -> List:
         """获取远程插件信息
 
         :param info: 插件信息文件名
@@ -287,7 +289,7 @@ class PluginManager:
         await asyncio.sleep(1)
         return json.loads(await general_request(self.__base_url + info, method='get'))
 
-    async def get_plugin_by_url(self, root_dir, url_lists) -> bool:
+    async def download(self, root_dir: str, url_lists: List[str]) -> bool:
         """通过远程插件地址获取插件
 
         :param root_dir: 插件所在目录
@@ -302,16 +304,16 @@ class PluginManager:
                 return False
         return True
 
-    async def install_plugin(self, plugin_info: Dict[str, str]) -> bool:
+    async def install(self, plugin_info: Dict[str, str]) -> bool:
         """安装插件
 
         :param plugin_info: 插件信息
         """
         logger.info(f"正在尝试安装插件: {plugin_info['name']} - {plugin_info['author']}")
-        resource_urls: list = await self.get_remote_plugins(f'{plugin_info["root_dir"]}/resource.json')
+        resource_urls: list = await self.get_remote_info(f'{plugin_info["root_dir"]}/resource.json')
         if plugin_info['pypi']:
             resource_urls.append('requirements.txt')
-        if await self.get_plugin_by_url(plugin_info['root_dir'], resource_urls):
+        if await self.download(plugin_info['root_dir'], resource_urls):
             if plugin_info['pypi']:
                 await to_thread(
                     pip, ['install',
@@ -323,32 +325,32 @@ class PluginManager:
                 if plugin.name not in self.__ignore and plugin.is_file():
                     plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
                     plugins.update({plugin_name: PluginType.Extension})
-            await self.loads_plugin(plugins)
-            await self.record_plugin_info(plugin_info)
+            await self.loads(plugins)
+            await self.record_info(plugin_info)
             logger.success(f"插件安装成功: {plugin_info['name']} - {plugin_info['author']}")
             return True
         else:
             logger.error(f"插件安装失败，请尝试重新安装: {plugin_info['name']} - {plugin_info['author']}")
             return False
 
-    def delete_plugin(self, plugin_info: Dict[str, str]) -> None:
+    def delete(self, plugin_info: Dict[str, str]) -> None:
         """删除插件
 
         仅支持删除扩展插件
 
         :param plugin_info: 插件信息
         """
-        self.unload_plugin(plugin_info['root_dir'])
+        self.unload(plugin_info['root_dir'])
         shutil.rmtree(self.__folder_path.joinpath(plugin_info['root_dir']))
-        asyncio.create_task(self.remove_plugin_info(plugin_info))
+        asyncio.create_task(self.remove_info(plugin_info))
         logger.success(f"插件删除成功: {plugin_info['name']} - {plugin_info['author']}")
 
     async def check_update(self) -> Union[None, bytes]:
         """检查更新"""
-        local_plugins = await self.get_plugin_info('*')
+        local_plugins = await self.get_info('*')
         if not local_plugins:
             return
-        remote_plugins = await self.get_remote_plugins()
+        remote_plugins = await self.get_remote_info()
         is_update = False
         msg = PrettyTable()
         msg.field_names = ['插件名', '作者', '当前版本', '最新版本']
@@ -357,8 +359,11 @@ class PluginManager:
                 if local_plugin['name'] == remote_plugin['name'] and local_plugin['author'] == remote_plugin['author']:
                     if compare_version(remote_plugin['version'], local_plugin['version']):
                         is_update = True
-                        msg.add_row([local_plugin['name'], local_plugin['author'], local_plugin['version'],
-                                     remote_plugin['version']])
+                        msg.add_row([
+                            local_plugin['name'],
+                            local_plugin['author'],
+                            local_plugin['version'],
+                            remote_plugin['version']])
                         break
         if is_update:
             return await create_image(msg.get_string(), cut=150)
