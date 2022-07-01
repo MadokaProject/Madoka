@@ -9,7 +9,7 @@ from app.core.settings import CONFIG, ACTIVE_USER, ACTIVE_GROUP
 from app.util.dao import MysqlDao
 
 
-async def save_config(name: str, uid, value, model: str = None) -> bool:
+async def save_config(name: str, uid: Union[Group, int], value, model: str = None) -> bool:
     """在线配置存储
 
     :param name: 配置名
@@ -18,7 +18,10 @@ async def save_config(name: str, uid, value, model: str = None) -> bool:
     :param model: 模式 [add: 添加, remove: 删除], 若不指定则为覆盖模式
     """
     params = value
-    uid = str(uid)
+    if isinstance(uid, Group):
+        uid = str(uid.id)
+    else:
+        uid = str(uid)
     with MysqlDao() as db:
         try:
             if model in ['add', 'remove']:
@@ -29,8 +32,8 @@ async def save_config(name: str, uid, value, model: str = None) -> bool:
                         params.update(value)
                     else:
                         params.pop(value)
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(e)
         if db.update('REPLACE INTO config(name, uid, value) VALUES (%s, %s, %s)',
                      [name, uid, json.dumps(params)]):
             if not CONFIG.__contains__(uid):
@@ -40,13 +43,16 @@ async def save_config(name: str, uid, value, model: str = None) -> bool:
     return False
 
 
-async def get_config(name: str, uid) -> dict:
+async def get_config(name: str, uid: Union[Group, int]) -> dict:
     """在线配置获取
 
     :param name: 配置名
     :param uid: 配置群组
     """
-    uid = str(uid)
+    if isinstance(uid, Group):
+        uid = str(uid.id)
+    else:
+        uid = str(uid)
     with MysqlDao() as db:
         res = db.query('SELECT value FROM config WHERE name=%s and uid=%s', [name, uid])
         if res:

@@ -1,10 +1,11 @@
 import random
 from textwrap import fill
+from typing import Union
 
 from arclet.alconna import Alconna, Option, Args, Arpamar
 from graia.ariadne.app import Ariadne
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image, Plain, At
+from graia.ariadne.message.element import At
+from graia.ariadne.model import Friend, Member, Group
 from graia.scheduler import GraiaScheduler, timers
 from loguru import logger
 from prettytable import PrettyTable
@@ -14,7 +15,7 @@ from app.core.commander import CommandDelegateManager
 from app.core.database import InitDB
 from app.entities.game import BotGame
 from app.entities.user import BotUser
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.dao import MysqlDao
 from app.util.send_message import safeSendFriendMessage
 from app.util.text2image import create_image
@@ -46,30 +47,29 @@ database: InitDB = InitDB.get_instance()
         help_text='经济系统'
     )
 )
-async def process(self: Plugin, command: Arpamar, _: Alconna):
+async def process(target: Union[Friend, Member], sender: Union[Friend, Group], command: Arpamar):
     options = command.options
     try:
         if not options:
             """查询资金"""
-            user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
+            user = BotGame(target.id)
             coin = await user.get_coins()
-            if hasattr(self, 'group'):
-                return MessageChain([At(self.member.id), Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
+            if isinstance(sender, Group):
+                return MessageChain([At(target), Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
             else:
                 return MessageChain([Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
         if options.get('signin'):
             """签到"""
             coin = random.randint(1, 101)
-            if hasattr(self, 'group'):
-                qq = self.member.id
-                name = self.member.name
+            qq = target.id
+            if isinstance(target, Member):
+                name = target.name
             else:
-                qq = self.friend.id
-                name = self.friend.nickname
+                name = target.nickname
             user = BotGame(qq, coin)
             if await user.get_sign_in_status():
-                if hasattr(self, 'group'):
-                    return MessageChain([At(self.member.id), Plain(' 你今天已经签到过了！')])
+                if isinstance(sender, Group):
+                    return MessageChain([At(target), Plain(' 你今天已经签到过了！')])
                 else:
                     return MessageChain([Plain(' 你今天已经签到过了！')])
             else:
@@ -88,16 +88,15 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             return MessageChain([Image(data_bytes=sign_image)])
         elif options.get('get'):
             """获取今日签到图"""
-            if hasattr(self, 'group'):
-                qq = self.member.id
-                name = self.member.name
+            qq = target.id
+            if isinstance(target, Member):
+                name = target.name
             else:
-                qq = self.friend.id
-                name = self.friend.nickname
+                name = target.nickname
             user = BotGame(qq)
             if not await user.get_sign_in_status():
-                if hasattr(self, 'group'):
-                    return MessageChain([At(self.member.id), Plain(' 你今天还没有签到哦！')])
+                if isinstance(sender, Group):
+                    return MessageChain([At(target), Plain(' 你今天还没有签到哦！')])
                 else:
                     return MessageChain([Plain('你今天还没有签到哦！')])
             sign_image = await to_thread(
@@ -113,8 +112,8 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             )
             return MessageChain([Image(data_bytes=sign_image)])
         elif options.get('迁移'):
-            old_user = BotUser((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
-            new_user = BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id)
+            old_user = BotUser(target.id)
+            new_user = BotGame(target.id)
             coin = await old_user.get_points()
             if coin <= 0:
                 return MessageChain([Plain('迁移失败，您的旧版账户中没有余额！')])
@@ -125,25 +124,25 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             target = tf['at'].target
             coin = tf['money']
             if coin <= 0:
-                return self.args_error()
-            user = BotGame(self.member.id)
+                return args_error()
+            user = BotGame(target.id)
             if int(await user.get_coins()) < coin:
-                return self.point_not_enough()
+                return point_not_enough()
             await user.update_coin(-coin)
             user = BotGame(target, coin)
             await user.update_coin(coin)
             return MessageChain([
-                At(self.member.id),
+                At(target),
                 Plain(' 已转赠给'),
                 At(target),
                 Plain(f' %d{config.COIN_NAME}！' % coin)
             ])
-        elif options.get('rank'):
+        elif options.get('rank') and isinstance(sender, Group):
             with MysqlDao() as db:
                 res = db.query("SELECT qid, coins FROM game ORDER BY coins DESC")
-            group_user = {item.id: item.name for item in await self.app.get_member_list(self.group.id)}
+            group_user = {item.id: item.name for item in await app.get_member_list(sender)}
             resp = MessageChain([Plain(f'群内{config.COIN_NAME}排行:\n')])
-            user = (getattr(self, 'friend', None) or getattr(self, 'member', None)).id
+            user = target.id
             index = 1
             msg = PrettyTable()
             msg.field_names = ['序号', '群昵称', f'{config.COIN_NAME}']
@@ -166,13 +165,13 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
             return resp
         elif auto := options.get('auto'):
             status = 1 if auto['status'] else 0
-            await BotGame((getattr(self, 'friend', None) or getattr(self, 'member', None)).id).auto_signin(status)
+            await BotGame(target.id).auto_signin(status)
             return MessageChain('开启成功，将于每日8点为您自动签到！' if status else '关闭成功！')
         else:
-            return self.args_error()
+            return args_error()
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()
 
 
 @sche.schedule(timers.crontabify('0 7 * * * 0'))

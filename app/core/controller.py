@@ -1,58 +1,74 @@
 import sys
+from typing import Union
 
+from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, Image
+from graia.ariadne.message.element import Plain, Image, Source
+from graia.ariadne.model import Friend, Member, Group
+from graia.broadcast.interrupt import InterruptControl
 
+from app.core.commander import CommandDelegateManager
 from app.core.settings import *
-from app.plugin.base import Plugin
 from app.trigger import *
 from app.util.control import Permission
+from app.util.decorator import ArgsAssigner
 from app.util.permission import check_permit
 from app.util.text2image import create_image
 from app.util.tools import isstartswith, Autonomy
 
 
+@ArgsAssigner
 class Controller:
-    def __init__(self, *args):
+    def __init__(
+            self,
+            app: Ariadne,
+            message: MessageChain,
+            target: Union[Friend, Member],
+            sender: Union[Friend, Group],
+            source: Source,
+            inc: InterruptControl,
+            manager: CommandDelegateManager
+    ):
         """存储消息"""
-        self.args = Plugin(*args)
+        self.app = app
+        self.message = message
+        self.target = target
+        self.sender = sender
+        self.source = source
+        self.inc = inc
+        self.manager = manager
 
     async def process_event(self):
-        msg = self.args.message.display
+        msg = self.message.display
         send_help = False  # 是否为主菜单帮助
         resp = None
         i = 1
 
         # 判断是否在权限允许列表
-        if hasattr(self.args, 'friend'):
-            if self.args.friend.id not in ACTIVE_USER:
+        if isinstance(self.target, Friend):
+            if self.target.id not in ACTIVE_USER:
                 return
-        elif hasattr(self, 'group'):
-            if self.args.group.id not in ACTIVE_GROUP:
+        elif isinstance(self.target, Group):
+            if self.target.id not in ACTIVE_GROUP:
                 return
 
-        # 自定义预触发器
+        # 预触发器
         for trig in trigger.Trigger.__subclasses__():
             obj: trigger.Trigger
-            if hasattr(self.args, 'friend'):
-                obj = trig(self.args.message, self.args.friend, self.args.app)
-            elif hasattr(self.args, 'group'):
-                obj = trig(self.args.message, self.args.group, self.args.member, self.args.app)
-            else:
-                continue
+            obj = trig(self.app, self.target, self.sender, self.message)
             if not obj.enable:
                 continue
             await obj.process()
             if obj.as_last:
                 break
-        if self.args.config.ONLINE and self.args.config.DEBUG:
+        if config.ONLINE and config.DEBUG:
             return
 
         # 判断是否为黑名单用户
-        if (getattr(self.args, 'friend', None) or getattr(self.args, 'member', None)).id in BANNED_USER:
+        if self.target.id in BANNED_USER:
             return
 
-        if msg[0] not in self.args.manager.headers:  # 判断是否为指令
+        if msg[0] not in self.manager.headers:  # 判断是否为指令
             return
 
         # 指令规范化
@@ -62,29 +78,24 @@ class Controller:
         # 判断是否为主菜单帮助
         if isstartswith(msg, ['.help', '.帮助']):
             send_help = True
-            if hasattr(self.args, 'group'):
+            if isinstance(self.sender, Group):
                 resp = (
-                        f"{self.args.config.BOT_NAME} 群菜单 / {self.args.group.id}\n{self.args.group.name}\n"
+                        f"{config.BOT_NAME} 群菜单 / {self.sender.id}\n{self.sender.name}\n"
                         + "========================================================"
                 )
             else:
                 resp = (
-                        f"{self.args.config.BOT_NAME} 好友菜单 / {self.args.friend.id}\n{self.args.friend.nickname}\n"
+                        f"{config.BOT_NAME} 好友菜单 / {self.sender.id}\n{self.sender.nickname}\n"
                         + "========================================================"
                 )
 
         # 加载插件
-        for plg in self.args.manager.get_delegates().copy().values():
+        for plg in self.manager.get_delegates().copy().values():
             enable = plg.enable
             hidden = plg.hidden
-            if hasattr(self.args, 'friend'):
-                if not check_permit(self.args.friend.id, 'friend', plg.entry):
-                    enable = False
-            elif hasattr(self.args, 'group'):
-                if not check_permit(self.args.group.id, 'group', plg.entry):
-                    enable = False
-            if Permission.require(self.args.member if hasattr(self.args, 'group') else self.args.friend,
-                                  Permission.SUPER_ADMIN):
+            if not check_permit(self.target, plg.entry):
+                enable = False
+            if Permission.require(self.target, Permission.SUPER_ADMIN):
                 hidden = False  # 隐藏菜单仅超级管理员以上可见
             if send_help and not hidden:  # 主菜单帮助获取
                 if not enable:
@@ -103,10 +114,19 @@ class Controller:
                     alc_help = Autonomy()
                     sys.stdout = alc_help
                     try:
-                        result = plg.alc.parse(self.args.message)
+                        result = plg.alc.parse(self.message)
                         if result.matched:
                             sys.stdout = current
-                            resp = await plg.func(self.args, result, plg.alc)
+                            resp = await plg.func(
+                                self.app,
+                                self.message,
+                                self.target,
+                                self.sender,
+                                self.source,
+                                self.inc,
+                                result,
+                                plg.alc
+                            )
                         elif result.head_matched:
                             if alc_help.buff:
                                 resp = MessageChain([Image(data_bytes=await create_image(alc_help.buff, 80))])
@@ -135,7 +155,4 @@ class Controller:
         """发送消息"""
         if not isinstance(resp, MessageChain):
             return
-        if hasattr(self.args, 'friend'):  # 发送好友消息
-            await self.args.app.send_friend_message(self.args.friend, resp)
-        elif hasattr(self.args, 'group'):  # 发送群聊消息
-            await self.args.app.send_group_message(self.args.group, resp)
+        await self.app.send_message(self.sender, resp)

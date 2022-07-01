@@ -1,10 +1,11 @@
+from typing import Union
+
 from arclet.alconna import Alconna, Option, Args, Arpamar, AllParam
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
+from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.online_config import save_config, get_config
@@ -12,7 +13,6 @@ from app.util.online_config import save_config, get_config
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
 
-@permission_required(level=Permission.GROUP_ADMIN)
 @manager.register(
     entry='reply',
     brief_help='群自定义回复',
@@ -27,29 +27,30 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='群自定义回复: 仅管理可用!'
     )
 )
-async def process(self: Plugin, command: Arpamar, alc: Alconna):
+@permission_required(level=Permission.GROUP_ADMIN)
+async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, _: Union[Friend, Member]):
     options = command.options
     if not options:
-        return await self.print_help(alc.get_help())
+        return await print_help(alc.get_help())
     try:
-        if not hasattr(self, 'group'):
+        if not isinstance(sender, Group):
             return MessageChain([Plain('请在群聊内使用该命令!')])
         if add := options.get('add'):
-            await save_config('group_reply', self.group.id, {
+            await save_config('group_reply', sender, {
                 add['keyword']: add['text'][0].replace('<br>', '\n')
             }, model='add')
             return MessageChain([Plain('添加/修改成功！')])
         elif remove := options.get('remove'):
             msg = '删除成功!' if (await save_config(
-                'group_reply', self.group.id, remove['keyword'], model='remove'
+                'group_reply', sender, remove['keyword'], model='remove'
             )) else '删除失败!该关键词不存在'
             return MessageChain([Plain(msg)])
         elif options.get('list'):
-            res = await get_config('group_reply', self.group.id)
+            res = await get_config('group_reply', sender)
             return MessageChain(
                 [Plain('\n'.join(f'{key}' for key in res.keys()) if res else '该群组暂未配置！')]
             )
-        return self.args_error()
+        return args_error()
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()

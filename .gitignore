@@ -4,6 +4,7 @@ venv/*
 **/__pycache__/
 app/core/config.ini
 app/tmp/*
+app/plugin/plugin.json
 app/plugin/extension/*
 k8s/config
 k8s/

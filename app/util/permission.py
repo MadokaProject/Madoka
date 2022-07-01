@@ -1,9 +1,13 @@
+from typing import Union
+
+from graia.ariadne.model import Friend, Member
+
 from app.core.settings import *
 
 
-def check_permit(qid, qtype, cmd):
-    assert qtype in ['group', 'friend']
-    if qtype == 'group':
+def check_permit(qid: Union[Friend, Member], cmd: str):
+    qid: int = qid.id
+    if isinstance(qid, Member):
         if qid in ACTIVE_GROUP.keys():
             if '-' + cmd in ACTIVE_GROUP[qid]:
                 return False

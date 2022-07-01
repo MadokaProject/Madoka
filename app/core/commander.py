@@ -6,6 +6,7 @@ from arclet.alconna import Alconna, command_manager as _cmd_mgr
 from arclet.alconna.util import Singleton
 
 from app.core.config import Config
+from app.util.decorator import ArgsAssigner
 from .exceptions import CommandManagerInitialized, CommandManagerAlreadyInitialized
 
 
@@ -90,6 +91,11 @@ class CommandDelegateManager(metaclass=Singleton):
         """
 
         def decorator(func):
+            @ArgsAssigner
+            @functools.wraps(func)
+            def wrapper(*args, **kwargs):
+                return func(*args, **kwargs)
+
             module = func.__module__
             path_parts = module.split('.')
             alc.reset_namespace(f'{path_parts[-3]}_{path_parts[-2]}')
@@ -97,12 +103,9 @@ class CommandDelegateManager(metaclass=Singleton):
                 self.__delegates[path_parts[-4]] = {}
             if many:
                 module += str(many)
-            self.__delegates[path_parts[-4]].update({module: PluginInfo(entry, brief_help, enable, hidden, alc, func)})
 
-            @functools.wraps(func)
-            def wrapper(*args, **kwargs):
-                return func(*args, **kwargs)
-
+            _plg_info = PluginInfo(entry, brief_help, enable, hidden, alc, wrapper)
+            self.__delegates[path_parts[-4]].update({module: _plg_info})
             return wrapper
 
         return decorator

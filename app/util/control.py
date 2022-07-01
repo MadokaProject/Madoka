@@ -35,10 +35,10 @@ class Permission:
         if isinstance(member, Member):
             user = member.id
             user_permission = member.permission
-        if isinstance(member, Friend):
+        elif isinstance(member, Friend):
             user = member.id
             user_permission = cls.DEFAULT
-        if isinstance(member, int):
+        else:
             user = member
             user_permission = cls.DEFAULT
 
@@ -84,7 +84,7 @@ class Switch:
     """用于开关功能的类，不应被实例化"""
 
     @classmethod
-    async def plugin(cls, src: Union[Member, int], perm, dst: Union[Group, int]):
+    async def plugin(cls, src: Union[Member, Friend, int], perm, dst: Union[Group, int]):
         if isinstance(src, Member):
             if not Permission.require(src, Permission.GROUP_ADMIN):
                 return '你的权限不足，无权操作此命令'

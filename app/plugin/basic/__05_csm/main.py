@@ -1,10 +1,13 @@
+from typing import Union
+
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, Source, At
+from graia.ariadne import Ariadne
+from graia.ariadne.message.element import Source, At
+from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.online_config import save_config
@@ -12,7 +15,6 @@ from app.util.online_config import save_config
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
 
-@permission_required(level=Permission.GROUP_ADMIN)
 @manager.register(
     entry='csm',
     brief_help='群管',
@@ -47,37 +49,39 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='群管助手'
     )
 )
-async def process(self: Plugin, command: Arpamar, alc: Alconna):
+@permission_required(level=Permission.GROUP_ADMIN)
+async def process(app: Ariadne, sender: Union[Friend, Group], source: Source, command: Arpamar, alc: Alconna,
+                  _: Union[Friend, Member]):
     components = command.options.copy()
     components.update(command.subcommands)
     if not components:
-        return await self.print_help(alc.get_help())
+        return await print_help(alc.get_help())
     try:
-        if not hasattr(self, 'group'):
+        if not isinstance(sender, Group):
             return MessageChain([Plain('请在群聊内使用该命令!')])
         if status := components.get('status'):
-            if await save_config('status', self.group.id, status['status']):
+            if await save_config('status', sender.id, status['status']):
                 return MessageChain([Plain('开启成功!' if status['status'] else '关闭成功!')])
         elif kick := components.get('kick'):
-            await self.app.kick_member(self.group, kick['at'].target)
+            await app.kick_member(sender, kick['at'].target)
             return MessageChain([Plain('飞机票快递成功!')])
         elif revoke := components.get('revoke'):
-            await self.app.recall_message(self.message[Source][0].id - revoke['id'])
+            await app.recall_message(source.id - revoke['id'])
             return MessageChain([Plain('消息撤回成功!')])
         elif mute := components.get('mute'):
             if mute.get('all'):
-                await self.app.mute_all(self.group.id)
+                await app.mute_all(sender.id)
                 return MessageChain([Plain('开启全员禁言成功!')])
             elif target := mute.get('at'):
                 time = mute['time']['time'] if mute.get('time') else 10
-                await self.app.mute_member(self.group, target.target, time * 60)
+                await app.mute_member(sender, target.target, time * 60)
                 return MessageChain([Plain('禁言成功!')])
         elif unmute := components.get('unmute'):
             if unmute.get('all'):
-                await self.app.unmute_all(self.group.id)
+                await app.unmute_all(sender)
                 return MessageChain([Plain('关闭全员禁言成功!')])
             elif target := unmute.get('at'):
-                await self.app.unmute_member(self.group, target.target)
+                await app.unmute_member(sender, target.target)
                 return MessageChain([Plain('解除禁言成功!')])
         elif func := components.get('func'):
             tag = None
@@ -91,32 +95,32 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                 tag = 'flash_png'
             elif func.get("recall"):
                 tag = 'member_recall'
-            if tag and await save_config(tag, self.group.id, func['status']):
+            if tag and await save_config(tag, sender, func['status']):
                 return MessageChain([Plain('开启成功！' if func['status'] else '关闭成功！')])
         elif repeat := components.get('刷屏检测'):
-            if await save_config('mute', self.group.id, {
+            if await save_config('mute', sender, {
                 'time': repeat['time'],
                 'mute': repeat['mute_time'] * 60,
                 'message': repeat['reply']
             }):
                 return MessageChain([Plain('设置成功!')])
         elif duplicate := components.get('重复消息'):
-            if await save_config('duplicate', self.group.id, {
+            if await save_config('duplicate', sender, {
                 'time': duplicate['time'],
                 'mute': duplicate['mute_time'] * 60,
                 'message': duplicate['reply']
             }):
                 return MessageChain([Plain('设置成功!')])
         elif too_long := components.get('超长消息'):
-            if await save_config('over-length', self.group.id, {
+            if await save_config('over-length', sender, {
                 'text': too_long['len'],
                 'mute': too_long['mute_time'] * 60,
                 'message': too_long['reply']
             }):
                 return MessageChain([Plain('设置成功!')])
-        return self.args_error()
+        return args_error()
     except PermissionError:
-        return self.exec_permission_error()
+        return exec_permission_error()
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()

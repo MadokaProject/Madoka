@@ -31,12 +31,12 @@ manager = core.get_manager()
 
 @bcc.receiver(FriendMessage)
 async def friend_message_handler(_app: Ariadne, message: MessageChain, friend: Friend):
-    await Controller(_app, message, friend, inc, manager, config).process_event()
+    await Controller(_app, message, friend, inc, manager).process_event()
 
 
 @bcc.receiver(GroupMessage)
 async def group_message_handler(_app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
-    await Controller(_app, message, group, member, source, inc, manager, config).process_event()
+    await Controller(_app, message, group, member, source, inc, manager).process_event()
 
 
 @logger.catch

@@ -2,6 +2,7 @@ import random
 
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
+from graia.ariadne.model import Group
 
 from app.core.settings import *
 from app.trigger.trigger import Trigger
@@ -36,16 +37,15 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
-        if hasattr(self, 'friend') or not self.message.display or self.msg[0][0] in '.,;!?。，；！？/\\':
+        if isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
-        config = Config.get_instance()
         message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
         if not message or message[0] in '.,;!?。，；！？/\\':
             return
         message = ''.join(message)
         url = 'http://api.qingyunke.com/api.php'
-        if self.group.id in GROUP_RUNING_LIST or not self.message.has(At) or self.message.get_first(At).target != int(
-                config.LOGIN_QQ):
+        if self.target.id in GROUP_RUNING_LIST or \
+                self.message.has(At) and self.message.get_first(At).target == config.LOGIN_QQ:
             return
         params = {
             'key': 'free',
@@ -53,7 +53,7 @@ class Chat(Trigger):
             'msg': message,
         }
         response = json.loads(await general_request(url=url, method='GET', params=params))
-        resp = MessageChain([At(self.member.id)])
+        resp = MessageChain([At(self.target)])
         if response['result'] == 0:
             resp.extend(MessageChain([
                 Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))

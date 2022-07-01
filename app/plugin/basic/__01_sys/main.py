@@ -1,11 +1,12 @@
+from typing import Union
+
 from arclet.alconna import Alconna, Option, Args, Arpamar
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
+from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
 from app.core.database import InitDB
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
@@ -16,7 +17,6 @@ database: InitDB = InitDB.get_instance()
 configs = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}
 
 
-@permission_required(level=Permission.MASTER)
 @manager.register(
     entry='sys',
     brief_help='系统',
@@ -31,19 +31,20 @@ configs = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}
         help_text='系统设置: 仅主人可用!'
     )
 )
-async def process(self: Plugin, command: Arpamar, alc: Alconna):
-    options = command.options
+@permission_required(level=Permission.MASTER)
+async def process(sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna, _: Union[Friend, Member]):
+    options = cmd.options
     if not options:
-        return await self.print_help(alc.get_help())
+        return await print_help(alc.get_help())
     try:
-        if not hasattr(self, 'group'):
+        if not isinstance(sender, Group):
             return MessageChain([Plain('请在群聊内使用该命令!')])
         config_name = configs[list(options.keys())[0]]
-        if await save_config(config_name, self.group.id, command.query('bool')):
-            return MessageChain([Plain('开启成功！' if command.query('bool') else '关闭成功！')])
+        if await save_config(config_name, sender.id, cmd.query('bool')):
+            return MessageChain([Plain('开启成功！' if cmd.query('bool') else '关闭成功！')])
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()
 
 
 @database.init()

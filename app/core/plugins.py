@@ -244,28 +244,35 @@ class PluginManager:
 
         :param plugins: 插件名称或插件信息字典
         """
-        with open(self.__info_path, 'r') as f:
-            plugin_infos = json.load(f)
-        if isinstance(plugins, str):
-            if plugins == '*':
-                return plugin_infos
-            return [plugin for plugin in plugin_infos if plugin['name'] == plugins]
-        elif isinstance(plugins, dict):
-            for plugin in plugin_infos:
-                if plugin['name'] == plugins['name'] and plugin['author'] == plugins['author']:
-                    return [plugin]
+        try:
+            with open(self.__info_path, 'r', encoding='UTF-8') as f:
+                plugin_infos = json.load(f)
+            if isinstance(plugins, str):
+                if plugins == '*':
+                    return plugin_infos
+                return [plugin for plugin in plugin_infos if plugin['name'] == plugins]
+            elif isinstance(plugins, dict):
+                for plugin in plugin_infos:
+                    if plugin['name'] == plugins['name'] and plugin['author'] == plugins['author']:
+                        return [plugin]
+        except FileNotFoundError:
+            return []
 
     async def record_info(self, plugin_info: Dict[str, str]) -> None:
         """记录插件信息
 
         :param plugin_info: 插件信息
         """
-        with open(self.__info_path, 'r') as f:
-            plugin_infos: List[Dict] = json.load(f)
-        if local_plugin_info := await self.get_info(plugin_info):
-            plugin_infos.remove(local_plugin_info[0])
+        plugin_infos: List[Dict] = []
+        try:
+            with open(self.__info_path, 'r', encoding='UTF-8') as f:
+                plugin_infos = json.load(f)
+            if local_plugin_info := await self.get_info(plugin_info):
+                plugin_infos.remove(local_plugin_info[0])
+        except FileNotFoundError:
+            pass
         plugin_infos.append(plugin_info)
-        with open(self.__info_path, 'w') as f:
+        with open(self.__info_path, 'w', encoding='UTF-8') as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
     async def remove_info(self, plugin_info: Dict[str, str]) -> None:
@@ -273,11 +280,15 @@ class PluginManager:
 
         :param plugin_info: 插件信息
         """
-        with open(self.__info_path, 'r') as f:
-            plugin_infos: List[Dict] = json.load(f)
-        if local_plugin_info := await self.get_info(plugin_info):
-            plugin_infos.remove(local_plugin_info[0])
-        with open(self.__info_path, 'w') as f:
+        plugin_infos: List[Dict] = []
+        try:
+            with open(self.__info_path, 'r', encoding='UTF-8') as f:
+                plugin_infos = json.load(f)
+            if local_plugin_info := await self.get_info(plugin_info):
+                plugin_infos.remove(local_plugin_info[0])
+        except FileNotFoundError:
+            pass
+        with open(self.__info_path, 'w', encoding='UTF-8') as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
     @retry(stop_max_attempt_number=5, wait_fixed=1000)

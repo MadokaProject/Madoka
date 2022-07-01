@@ -2,15 +2,15 @@ import json
 import socket
 import struct
 import time
+from typing import Union
 
 import jsonpath
 from arclet.alconna import Alconna, Option, Args, Arpamar
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
+from graia.ariadne.model import Friend, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.decorator import permission_required
@@ -34,7 +34,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='检测MC服务器信息'
     )
 )
-async def process(self: Plugin, command: Arpamar, _: Alconna):
+async def process(command: Arpamar, _: Union[Friend, Member]):
     try:
         with MysqlDao() as db:
             res = db.query('SELECT ip,port FROM mc_server WHERE `default`=1')
@@ -43,7 +43,7 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
         ip_ = options['ip']['ip'] if options.get('ip') else '127.0.0.1'
         port_ = options['port']['port'] if options.get('port') else 25565
         if command.options.get('set'):
-            return await set_default_mc(ip_, port_)
+            return await set_default_mc(_, ip_, port_)
         if command.options.get('view'):
             return MessageChain([Plain(f'默认服务器: {default[0]}:{default[1]}')])
         timeout_ = options['timeout']['timeout'] if options.get('timeout') else 10
@@ -53,14 +53,14 @@ async def process(self: Plugin, command: Arpamar, _: Alconna):
         logger.warning(e)
         return MessageChain([Plain('由于目标计算机积极拒绝，无法连接。服务器可能已关闭。')])
     except ValueError:
-        return self.arg_type_error()
+        return arg_type_error()
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()
 
 
 @permission_required(level=Permission.MASTER)
-async def set_default_mc(ip='127.0.0.1', port=25565):
+async def set_default_mc(_: Union[Friend, Member], ip='127.0.0.1', port=25565):
     default_ip, default_port = ip, port
     with MysqlDao() as db:
         db.update(

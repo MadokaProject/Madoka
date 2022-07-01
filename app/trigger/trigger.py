@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Union
 
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
@@ -12,19 +12,19 @@ class Trigger:
     enable = True
     as_last = False
 
-    def __init__(self, message, *args):
+    def __init__(
+            self,
+            app: Ariadne,
+            target: Union[Friend, Member],
+            sender: Union[Friend, Group],
+            message: MessageChain
+    ):
         """根据需求可重写此构造方法"""
-        self.msg: List[str] = parse_args(message.display, keep_head=True)
+        self.app = app
+        self.target = target
+        self.sender = sender
         self.message: MessageChain = message
-        for arg in args:
-            if isinstance(arg, Friend):
-                self.friend: Friend = arg  # 消息来源 好友
-            elif isinstance(arg, Group):
-                self.group: Group = arg  # 消息来源 群聊
-            elif isinstance(arg, Member):
-                self.member: Member = arg  # 群聊消息发送者
-            elif isinstance(arg, Ariadne):
-                self.app: Ariadne = arg  # 程序执行主体
+        self.msg: List[str] = parse_args(message.display, keep_head=True)
         self.resp = None
 
     async def process(self):
@@ -41,7 +41,7 @@ class Trigger:
 
     def check_admin(self, level: int):
         """检查是否管理员"""
-        if Permission.require(self.member if hasattr(self, 'group') else self.friend, level):
+        if Permission.require(self.target, level):
             return True
         return False
 

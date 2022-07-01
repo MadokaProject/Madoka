@@ -1,11 +1,13 @@
+from typing import Union
+
 from arclet.alconna import Alconna, Option, Arpamar
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Image, Plain
+from graia.ariadne import Ariadne
+from graia.ariadne.model import Friend, Group
 from loguru import logger
 from prettytable import PrettyTable
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.dao import MysqlDao
 from app.util.text2image import create_image
 
@@ -24,21 +26,21 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='查询各类榜单'
     )
 )
-async def process(self: Plugin, command: Arpamar, alc: Alconna):
+async def process(app: Ariadne, sender: Union[Friend, Group], command: Arpamar, alc: Alconna):
     options = command.options
     if not options:
-        return await self.print_help(alc.get_help())
+        return await print_help(alc.get_help())
     try:
         if 'msg' in options:
             """发言榜"""
-            if not hasattr(self, 'group'):
+            if not isinstance(sender, Group):
                 return MessageChain('请在群聊内发送该命令！')
             with MysqlDao() as db:
                 res = db.query(
                     "SELECT qid, count(qid) FROM msg WHERE uid=%s GROUP BY qid ORDER BY count(qid) DESC",
-                    [self.group.id]
+                    [sender.id]
                 )
-                members = await self.app.get_member_list(self.group.id)
+                members = await app.get_member_list(sender)
                 group_user = {item.id: item.name for item in members}
                 index = 1
                 resp = MessageChain([Plain('群内发言排行：\r\n')])
@@ -55,7 +57,7 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                     Image(data_bytes=await create_image(msg.get_string()))
                 ]))
                 return resp
-        return self.args_error()
+        return args_error()
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()

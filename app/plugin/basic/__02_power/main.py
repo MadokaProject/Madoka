@@ -1,22 +1,26 @@
 import subprocess
+from typing import Union
 
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
+from graia.ariadne import Ariadne
 from graia.ariadne.console import Console
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import At, Plain
+from graia.ariadne.message.element import At
+from graia.ariadne.model import Friend, Member, Group
 from loguru import logger
 
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.tools import restart
 
+core: AppCore = AppCore.get_core_instance()
+app: Ariadne = core.get_app()
+con: Console = core.get_console()
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
 
-@permission_required(level=Permission.MASTER)
 @manager.register(
     entry='p',
     brief_help='电源',
@@ -34,21 +38,20 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='电源控制, 仅主人可用'
     )
 )
-async def process(self: Plugin, command: Arpamar, alc: Alconna):
-    components = command.options.copy()
-    components.update(command.subcommands)
+@permission_required(level=Permission.MASTER)
+async def process(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna):
+    components = cmd.options.copy()
+    components.update(cmd.subcommands)
     if not components:
-        return await self.print_help(alc.get_help())
+        return await print_help(alc.get_help())
     try:
-        shell = ''
-        con: Console = AppCore.get_console(AppCore.get_core_instance())
-        if hasattr(self, 'group'):
-            shell = [f'-g {self.group.id}', f'-t {self.member.id}']
-        elif hasattr(self, 'friend'):
-            shell = f'-t {self.friend.id}'
+        if isinstance(sender, Group):
+            shell = [f'-g {sender.id}', f'-t {target.id}']
+        else:
+            shell = f'-t {sender.id}'
         if 'u' in components:
             u = components['u']
-            timeout = u['timeout']['timeout'] if command.find('timeout') else 10
+            timeout = u['timeout']['timeout'] if cmd.find('timeout') else 10
             try:
                 ret = subprocess.call('git pull', timeout=timeout, shell=True)
                 con.stop()
@@ -58,8 +61,8 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                     restart('-u', 'false', *shell)
             except subprocess.TimeoutExpired:
                 logger.warning('升级超时！')
-                if hasattr(self, 'group'):
-                    return MessageChain([At(self.member.id), Plain(" 升级超时！")])
+                if isinstance(sender, Group):
+                    return MessageChain([At(target.id), Plain(" 升级超时！")])
                 else:
                     return MessageChain([Plain("升级超时！")])
         elif 'r' in components:
@@ -67,9 +70,9 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
             restart('-r', *shell)
         elif 'k' in components:
             con.stop()
-            self.app.stop()
+            app.stop()
         else:
-            return self.args_error()
+            return args_error()
     except Exception as e:
         logger.exception(e)
-        return self.unkown_error()
+        return unknown_error()

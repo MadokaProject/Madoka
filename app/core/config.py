@@ -77,7 +77,8 @@ class Config:
         if cls.__instance:
             return cls.__instance
         else:
-            raise ConfigInitialized()
+            Config()
+            return cls.get_instance()
 
     def change_debug(self):
         if not self.ONLINE:

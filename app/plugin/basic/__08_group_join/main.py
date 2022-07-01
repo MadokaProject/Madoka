@@ -1,10 +1,11 @@
+from typing import Union
+
 from arclet.alconna import Alconna, Option, Args, Arpamar, AllParam
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
+from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import Plugin
+from app.plugin.base import *
 from app.util.control import Permission
 from app.util.decorator import permission_required
 from app.util.online_config import save_config, get_config
@@ -12,7 +13,6 @@ from app.util.online_config import save_config, get_config
 manager: CommandDelegateManager = CommandDelegateManager.get_instance()
 
 
-@permission_required(level=Permission.GROUP_ADMIN)
 @manager.register(
     entry='join',
     brief_help='入群欢迎',
@@ -27,21 +27,22 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='入群欢迎(仅管理可用)'
     )
 )
-async def process(self: Plugin, command: Arpamar, alc: Alconna):
+@permission_required(level=Permission.GROUP_ADMIN)
+async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, _: Union[Friend, Member]):
     options = command.options
     if not options:
-        return await self.print_help(alc.get_help())
+        return await print_help(alc.get_help())
     try:
-        if not hasattr(self, 'group'):
+        if not isinstance(sender, Group):
             return MessageChain([Plain('请在群组使用该命令!')])
         if set_ := options.get('set'):
-            await save_config('member_join', self.group.id, {
+            await save_config('member_join', sender, {
                 'active': 1,
                 'text': '\n'.join([f'{value}' for value in set_['msg']])
             })
             return MessageChain([Plain('设置成功！')])
         elif 'view' in options:
-            res = await get_config('member_join', self.group.id)
+            res = await get_config('member_join', sender)
             if not res:
                 return MessageChain([Plain("该群组未配置欢迎消息！")])
             return MessageChain([
@@ -49,9 +50,9 @@ async def process(self: Plugin, command: Arpamar, alc: Alconna):
                 Plain(f"\n开启状态：{res['active']}")
             ])
         elif status := options.get('status'):
-            await save_config('member_join', self.group.id, {'active': status['bool']}, model='add')
+            await save_config('member_join', sender, {'active': status['bool']}, model='add')
             return MessageChain([Plain("开启成功!" if status['bool'] else '关闭成功!')])
-        return self.args_error()
+        return args_error()
     except Exception as e:
         logger.exception(e)
-        self.unkown_error()
+        unknown_error()
