@@ -8,7 +8,7 @@ from graia.ariadne.model import BotMessage, Group, Friend
 
 from app.core.app import AppCore
 
-app: Ariadne = AppCore.get_core_instance().get_app()
+app: Ariadne = AppCore().get_app()
 
 
 async def safeSendMessage(

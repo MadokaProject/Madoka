@@ -9,10 +9,10 @@ from app.extend.mc import mc_listener
 from app.util.tools import app_path
 from app.util.version import check_version
 
-core: AppCore = AppCore.get_core_instance()
+config: Config = Config()
+core: AppCore = AppCore()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
-config = Config.get_instance()
 
 path = app_path().joinpath('tmp/mcserver')
 path.mkdir(parents=True, exist_ok=True)

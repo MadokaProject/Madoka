@@ -6,14 +6,13 @@ from loguru import logger
 
 from app.core.commander import CommandDelegateManager
 from app.core.database import InitDB
-from app.plugin.base import *
 from app.util.control import Permission
 from app.util.dao import MysqlDao
-from app.util.decorator import permission_required
 from app.util.online_config import save_config
+from app.util.phrases import *
 
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
-database: InitDB = InitDB.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
+database: InitDB = InitDB()
 configs = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}
 
 
@@ -31,7 +30,7 @@ configs = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}
         help_text='系统设置: 仅主人可用!'
     )
 )
-@permission_required(level=Permission.MASTER)
+@Permission.require(level=Permission.MASTER)
 async def process(sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna, _: Union[Friend, Member]):
     options = cmd.options
     if not options:

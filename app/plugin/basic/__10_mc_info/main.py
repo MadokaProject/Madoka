@@ -10,12 +10,11 @@ from graia.ariadne.model import Friend, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import *
 from app.util.control import Permission
 from app.util.dao import MysqlDao
-from app.util.decorator import permission_required
+from app.util.phrases import *
 
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
 
 
 @manager.register(
@@ -59,7 +58,7 @@ async def process(command: Arpamar, _: Union[Friend, Member]):
         return unknown_error()
 
 
-@permission_required(level=Permission.MASTER)
+@Permission.require(level=Permission.MASTER)
 async def set_default_mc(_: Union[Friend, Member], ip='127.0.0.1', port=25565):
     default_ip, default_port = ip, port
     with MysqlDao() as db:

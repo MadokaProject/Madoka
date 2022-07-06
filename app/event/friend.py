@@ -8,7 +8,7 @@ from graia.ariadne.message.element import Plain
 from app.core.app import AppCore
 from app.core.settings import ADMIN_USER
 
-core: AppCore = AppCore.get_core_instance()
+core: AppCore = AppCore()
 bcc = core.get_bcc()
 inc = core.get_inc()
 

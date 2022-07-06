@@ -3,36 +3,18 @@ from typing import Callable, List
 
 from loguru import logger
 
-from .exceptions import DatabaseManagerInitialized, DatabaseManagerAlreadyInitialized
+from app.util.decorator import Singleton
 
 
-class InitDB:
-    __instance = None
-    __first_init: bool = False
-    __databases: List[Callable]
-
-    def __new__(cls):
-        if not cls.__instance:
-            cls.__instance = object.__new__(cls)
-        return cls.__instance
+class InitDB(metaclass=Singleton):
+    _databases: List[Callable]
 
     def __init__(self):
-        if not self.__first_init:
-            self.__databases = []
-            self.__first_init = True
-        else:
-            raise DatabaseManagerAlreadyInitialized("数据库管理器重复初始化")
-
-    @classmethod
-    def get_instance(cls):
-        if cls.__instance:
-            return cls.__instance
-        else:
-            raise DatabaseManagerInitialized("数据库管理器未初始化")
+        self._databases = []
 
     def init(self):
         def decorator(func: Callable):
-            self.__databases.append(func)
+            self._databases.append(func)
 
             @wraps(func)
             def wrapper(*args, **kwargs):
@@ -44,7 +26,7 @@ class InitDB:
 
     async def start(self):
         try:
-            for db in self.__databases:
+            for db in self._databases:
                 await db()
             logger.success('初始化数据库成功')
         except Exception as e:

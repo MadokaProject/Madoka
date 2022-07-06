@@ -22,8 +22,8 @@ from app.core.settings import ADMIN_USER
 from app.util.online_config import get_config
 from app.util.send_message import safeSendGroupMessage
 
-core: AppCore = AppCore.get_core_instance()
-config = Config.get_instance()
+config: Config = Config()
+core: AppCore = AppCore()
 bcc = core.get_bcc()
 inc = core.get_inc()
 

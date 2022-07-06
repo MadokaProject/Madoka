@@ -6,7 +6,7 @@ from graia.ariadne.console import Console
 from app.console.util import *
 from app.core.app import AppCore
 
-con: Console = AppCore.get_core_instance().get_console()
+con: Console = AppCore().get_console()
 
 
 @con.register([AlconnaDispatcher(

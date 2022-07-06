@@ -11,7 +11,7 @@ from app.core.app import AppCore
 from app.core.config import Config
 from app.util.tools import restart
 
-con: Console = AppCore.get_core_instance().get_console()
+con: Console = AppCore().get_console()
 
 
 @con.register([AlconnaDispatcher(

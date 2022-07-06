@@ -14,8 +14,10 @@ from pip import main as pip
 from prettytable import PrettyTable
 from retrying import retry
 
+from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
+from app.util.decorator import Singleton
 from app.util.network import general_request, download
 from app.util.tools import app_path, to_thread
 from .exceptions import *
@@ -41,41 +43,21 @@ class PluginType(Enum):
         return type_map[self.value]
 
 
-class PluginManager:
+class PluginManager(metaclass=Singleton):
     """
     Madoka 插件管理器
     """
-    __instance = None
-    __first_init: bool = False
     __plugins: Dict[str, ModuleType]
     __ignore = ["__init__.py", "__pycache__"]
     __base_path = app_path().joinpath('plugin')
-    __base_url = f"https://madokaproject.coding.net/p/p/d/plugins/git/raw/{Config.REMOTE_REPO_VERSION}/"
+    __base_url = f"https://madokaproject.coding.net/p/p/d/plugins/git/raw/{Config().REMOTE_REPO_VERSION}/"
     __folder_path = __base_path.joinpath('extension')
     __info_path = __base_path.joinpath('plugin.json')
 
-    def __new__(cls):
-        if not cls.__instance:
-            cls.__instance = object.__new__(cls)
-        return cls.__instance
-
     def __init__(self):
-        if not self.__first_init:
-            self.__plugins = {}
-            self.__first_init = True
-            self.__manager: CommandDelegateManager = CommandDelegateManager.get_instance()
-            from app.core.app import AppCore
-            self.__sche: GraiaScheduler = AppCore.get_core_instance().get_scheduler()
-        else:
-            raise PluginManagerAlreadyInitialized
-
-    @classmethod
-    def get_instance(cls):
-        """获取插件管理器实例"""
-        if cls.__instance:
-            return cls.__instance
-        else:
-            raise PluginManagerInitialized
+        self.__plugins = {}
+        self.__manager: CommandDelegateManager = CommandDelegateManager()
+        self.__sche: GraiaScheduler = AppCore().get_scheduler()
 
     def get_plugins(self):
         return self.__plugins

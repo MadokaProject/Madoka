@@ -3,7 +3,7 @@ from typing import Union
 from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
 from graia.ariadne import Ariadne
 from graia.ariadne.message.element import At
-from graia.ariadne.model import Friend, Member, Group
+from graia.ariadne.model import Friend, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
@@ -11,13 +11,12 @@ from app.core.database import InitDB
 from app.core.settings import *
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
-from app.plugin.base import *
 from app.util.control import Permission
 from app.util.dao import MysqlDao
-from app.util.decorator import permission_required
+from app.util.phrases import *
 
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
-database: InitDB = InitDB.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
+database: InitDB = InitDB()
 
 
 @manager.register(
@@ -56,22 +55,22 @@ async def process(app: Ariadne, target: Union[Friend, Member], command: Arpamar,
         return await print_help(alc.get_help())
     try:
         if grant:
-            if Permission.require(target, 3):
+            if Permission.manual(target, 3):
                 _target = grant['qq'].target if isinstance(grant['qq'], At) else grant['qq']
                 level = grant['level']
-                if target.id == target and level != 4 and Permission.require(target, 4):
+                if target.id == target and level != 4 and Permission.manual(target, 4):
                     return MessageChain([Plain(f'怎么有master想给自己改权限呢？{config.BOT_NAME}很担心你呢，快去脑科看看吧！')])
                 if await BotUser(_target).get_level() == 0:
                     return MessageChain([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
                 if 1 <= level <= 2:
                     if result := await BotUser(_target).get_level():
                         if result == 4:
-                            if Permission.require(target, 4):
+                            if Permission.manual(target, 4):
                                 return MessageChain([Plain('就算是master也不能修改master哦！（怎么能有两个master呢')])
                             else:
                                 return MessageChain([Plain('master level 不可更改！若想进行修改请直接修改配置文件！')])
                         elif result == 3:
-                            if Permission.require(target, 4):
+                            if Permission.manual(target, 4):
                                 ADMIN_USER.remove(target)
                                 if level == 2:
                                     GROUP_ADMIN_USER.append(target)
@@ -87,7 +86,7 @@ async def process(app: Ariadne, target: Union[Friend, Member], command: Arpamar,
                                 GROUP_ADMIN_USER.append(target)
                             return await grant_permission_process(_target, level)
                 elif level == 3:
-                    if Permission.require(target, 4):
+                    if Permission.manual(target, 4):
                         if target in GROUP_ADMIN_USER:
                             GROUP_ADMIN_USER.remove(_target)
                         ADMIN_USER.append(target)
@@ -113,7 +112,7 @@ async def process(app: Ariadne, target: Union[Friend, Member], command: Arpamar,
         return unknown_error()
 
 
-@permission_required(level=Permission.SUPER_ADMIN)
+@Permission.require(level=Permission.SUPER_ADMIN)
 async def master_grant_user(app: Ariadne, target: Union[Friend, Member], user_: dict):
     if add := user_.get('add'):
         _target = add['qq'].target if isinstance(add['qq'], At) else add['qq']
@@ -147,7 +146,7 @@ async def master_grant_user(app: Ariadne, target: Union[Friend, Member], user_: 
         return MessageChain([Plain(msg)])
 
 
-@permission_required(level=Permission.SUPER_ADMIN)
+@Permission.require(level=Permission.SUPER_ADMIN)
 async def master_grant_blacklist(target: Union[Friend, Member], blacklist: dict):
     if add := blacklist.get('add'):
         _target = add['qq'].target if isinstance(add['qq'], At) else add['qq']
@@ -170,7 +169,7 @@ async def master_grant_blacklist(target: Union[Friend, Member], blacklist: dict)
         return MessageChain([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无黑名单用户')])
 
 
-@permission_required(level=Permission.SUPER_ADMIN)
+@Permission.require(level=Permission.SUPER_ADMIN)
 async def master_grant_group(app: Ariadne, group: dict, _: Union[Friend, Member]):
     if add := group.get('add'):
         BotGroup(add['group'], active=1)

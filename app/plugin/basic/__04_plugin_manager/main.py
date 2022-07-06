@@ -17,17 +17,17 @@ from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.exceptions import RemotePluginNotFound, LocalPluginNotFound
 from app.core.plugins import PluginManager
-from app.plugin.base import *
-from app.util.control import Permission, Switch
-from app.util.decorator import permission_required
+from app.util.control import Permission
+from app.util.control import Switch
+from app.util.phrases import *
 from app.util.text2image import create_image
 
-core: AppCore = AppCore.get_core_instance()
+config: Config = Config()
+core: AppCore = AppCore()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
-config: Config = Config.get_instance()
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
-plugin_mgr: PluginManager = PluginManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
+plugin_mgr: PluginManager = PluginManager()
 
 
 class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
@@ -91,12 +91,12 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
         help_text='插件管理'
     )
 )
-@permission_required(level=Permission.GROUP_ADMIN)
+@Permission.require(level=Permission.GROUP_ADMIN)
 async def process(target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, command: Arpamar,
                   alc: Alconna):
     subcommand = command.subcommands
 
-    @permission_required(level=Permission.MASTER)
+    @Permission.require(level=Permission.MASTER)
     async def master_admin_process(_: Union[Friend, Member]):
         if install := subcommand.get("install"):
             plugin = install['plugin']

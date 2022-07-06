@@ -10,15 +10,14 @@ from loguru import logger
 
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import *
 from app.util.control import Permission
-from app.util.decorator import permission_required
+from app.util.phrases import *
 from app.util.tools import restart
 
-core: AppCore = AppCore.get_core_instance()
+core: AppCore = AppCore()
 app: Ariadne = core.get_app()
 con: Console = core.get_console()
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
 
 
 @manager.register(
@@ -38,7 +37,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='电源控制, 仅主人可用'
     )
 )
-@permission_required(level=Permission.MASTER)
+@Permission.require(level=Permission.MASTER)
 async def process(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna):
     components = cmd.options.copy()
     components.update(cmd.subcommands)

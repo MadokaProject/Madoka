@@ -1,7 +1,7 @@
 """
 Xenon 管理 https://github.com/McZoo/Xenon/blob/master/lib/control.py
 """
-
+from functools import wraps
 from typing import Union
 
 from graia.ariadne.model import Friend, Group, Member, MemberPerm
@@ -9,6 +9,7 @@ from graia.ariadne.model import Friend, Group, Member, MemberPerm
 from app.core.config import Config
 from app.core.settings import ADMIN_USER, GROUP_ADMIN_USER, BANNED_USER
 from app.util.online_config import set_plugin_switch
+from app.util.phrases import not_admin
 
 
 class Permission:
@@ -22,7 +23,7 @@ class Permission:
     USER = 1
     BANNED = 0
     DEFAULT = USER
-    config = Config.get_instance()
+    config: Config = Config()
 
     @classmethod
     def get(cls, member: Union[Member, Friend, int]) -> int:
@@ -55,7 +56,32 @@ class Permission:
         return res
 
     @classmethod
-    def require(cls, member: Union[Member, Friend, int], level: int = DEFAULT) -> bool:
+    def require(cls, level: int = GROUP_ADMIN):
+        """
+        插件鉴权
+        :param level: 允许的权限
+        """
+
+        def perm_check(func):
+            @wraps(func)
+            async def wrapper(*args, **kwargs):
+                for arg in args:
+                    if isinstance(arg, Friend) or isinstance(arg, Member):
+                        target = arg
+                        break
+                else:
+                    raise TypeError("被装饰函数必须包含一个 Friend 或 Member 参数")
+                if cls.manual(target, level):
+                    return await func(*args, **kwargs)
+                else:
+                    return not_admin()
+
+            return wrapper
+
+        return perm_check
+
+    @classmethod
+    def manual(cls, member: Union[Member, Friend, int], level: int = DEFAULT) -> bool:
         """
         指示需要 `level` 以上等级才能触发，默认为至少 USER 权限
         :param member: 用户实例或QQ号
@@ -86,10 +112,10 @@ class Switch:
     @classmethod
     async def plugin(cls, src: Union[Member, Friend, int], perm, dst: Union[Group, int]):
         if isinstance(src, Member):
-            if not Permission.require(src, Permission.GROUP_ADMIN):
+            if not Permission.manual(src, Permission.GROUP_ADMIN):
                 return '你的权限不足，无权操作此命令'
         else:
-            if not Permission.require(src, Permission.SUPER_ADMIN) and not Permission.compare(src, dst):
+            if not Permission.manual(src, Permission.SUPER_ADMIN) and not Permission.compare(src, dst):
                 return '你的权限不足，无权操作此命令'
         if await set_plugin_switch(dst, perm):
             return '操作成功'

@@ -1,13 +1,11 @@
 import functools
 from types import ModuleType
-from typing import Dict, Union, Optional
+from typing import Dict, Union, Optional, List
 
 from arclet.alconna import Alconna, command_manager as _cmd_mgr
-from arclet.alconna.util import Singleton
 
 from app.core.config import Config
-from app.util.decorator import ArgsAssigner
-from .exceptions import CommandManagerInitialized, CommandManagerAlreadyInitialized
+from app.util.decorator import ArgsAssigner, Singleton
 
 
 class PluginInfo:
@@ -24,29 +22,11 @@ class CommandDelegateManager(metaclass=Singleton):
     """
     Alconna 命令委托管理器
     """
-    __instance = None
-    __first_init: bool = False
     __delegates: Dict[str, Dict[str, PluginInfo]]
-    headers = Config().COMMAND_HEADERS
-
-    def __new__(cls):
-        if not cls.__instance:
-            cls.__instance = object.__new__(cls)
-        return cls.__instance
+    headers: List[str] = Config().COMMAND_HEADERS
 
     def __init__(self):
-        if not self.__first_init:
-            self.__delegates = {}
-            self.__first_init = True
-        else:
-            raise CommandManagerAlreadyInitialized("命令管理器重复初始化")
-
-    @classmethod
-    def get_instance(cls):
-        if cls.__instance:
-            return cls.__instance
-        else:
-            raise CommandManagerInitialized("命令管理器未初始化")
+        self.__delegates = {}
 
     @staticmethod
     def get_commands(namespace: Optional[str] = None):
@@ -84,7 +64,7 @@ class CommandDelegateManager(metaclass=Singleton):
 
         :param entry: 命令入口
         :param brief_help: 插件简介
-        :param alc: Alconna实例
+        :param alc: Alconna 实例
         :param enable: 是否启用
         :param hidden: 是否隐藏
         :param many: 插件序号: 仅单文件多插件时使用（不推荐单文件多插件，暂时无法管理）

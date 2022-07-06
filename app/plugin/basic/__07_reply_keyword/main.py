@@ -5,12 +5,11 @@ from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import *
 from app.util.control import Permission
-from app.util.decorator import permission_required
 from app.util.online_config import save_config, get_config
+from app.util.phrases import *
 
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
 
 
 @manager.register(
@@ -27,7 +26,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='群自定义回复: 仅管理可用!'
     )
 )
-@permission_required(level=Permission.GROUP_ADMIN)
+@Permission.require(level=Permission.GROUP_ADMIN)
 async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, _: Union[Friend, Member]):
     options = command.options
     if not options:

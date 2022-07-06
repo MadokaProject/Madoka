@@ -12,17 +12,16 @@ from loguru import logger
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.settings import REPO
-from app.plugin.base import *
 from app.util.control import Permission
-from app.util.decorator import permission_required
 from app.util.network import general_request
 from app.util.online_config import save_config
+from app.util.phrases import *
 from app.util.tools import app_path
 
-core: AppCore = AppCore.get_core_instance()
+core: AppCore = AppCore()
 app = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
 
 
 @manager.register(
@@ -46,7 +45,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='Github监听, 仅管理可用'
     )
 )
-@permission_required(level=Permission.GROUP_ADMIN)
+@Permission.require(level=Permission.GROUP_ADMIN)
 async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, _: Union[Friend, Member]):
     add = command.subcommands.get('add')
     modify = command.subcommands.get('modify')

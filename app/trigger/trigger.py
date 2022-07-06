@@ -41,7 +41,7 @@ class Trigger:
 
     def check_admin(self, level: int):
         """检查是否管理员"""
-        if Permission.require(self.target, level):
+        if Permission.manual(self.target, level):
             return True
         return False
 

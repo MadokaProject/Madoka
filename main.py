@@ -9,24 +9,25 @@ from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.app import AppCore
+from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.controller import Controller
 from app.util.other import online_notice, offline_notice
 from app.util.version import version_notice
 
-config = Config.get_instance()
+config = Config()
 
 LOG_PATH = Path(__file__).parent.joinpath("app/tmp/logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
 logger.add(LOG_PATH.joinpath("common.log"), level="INFO", retention=f"{config.COMMON_RETENTION} days", encoding="utf-8")
 logger.add(LOG_PATH.joinpath("error.log"), level="ERROR", retention=f"{config.ERROR_RETENTION} days", encoding="utf-8")
 
-core = AppCore(config)
+core = AppCore()
 
 app = core.get_app()
 bcc = core.get_bcc()
 inc = core.get_inc()
-manager = core.get_manager()
+manager = CommandDelegateManager()
 
 
 @bcc.receiver(FriendMessage)

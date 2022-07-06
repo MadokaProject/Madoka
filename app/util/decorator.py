@@ -1,11 +1,19 @@
 import inspect
-from functools import wraps
 from typing import Callable
 
-from graia.ariadne.model import Friend, Member
 
-from app.plugin.base import not_admin
-from app.util.control import Permission
+class Singleton(type):
+    """单例模式"""
+    _instances = {}
+
+    def __call__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+        return cls._instances[cls]
+
+    @classmethod
+    def remove(mcs, cls):
+        mcs._instances.pop(cls, None)
 
 
 class ArgsAssigner:
@@ -32,28 +40,3 @@ class ArgsAssigner:
                     else:
                         self.args.append(i.default)
         return self.func(*self.args, **kwargs)
-
-
-def permission_required(level: int = Permission.GROUP_ADMIN):
-    """插件鉴权
-
-    :param level: 允许的权限
-    """
-
-    def decorator(func):
-        @wraps(func)
-        async def with_wrapper(*args, **kwargs):
-            for arg in args:
-                if isinstance(arg, Friend) or isinstance(arg, Member):
-                    target = arg
-                    break
-            else:
-                raise TypeError("被装饰函数必须包含一个 Friend 或 Member 参数")
-            if Permission.require(target, level):
-                return await func(*args, **kwargs)
-            else:
-                return not_admin()
-
-        return with_wrapper
-
-    return decorator

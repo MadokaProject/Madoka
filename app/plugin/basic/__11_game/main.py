@@ -15,19 +15,19 @@ from app.core.commander import CommandDelegateManager
 from app.core.database import InitDB
 from app.entities.game import BotGame
 from app.entities.user import BotUser
-from app.plugin.base import *
 from app.util.dao import MysqlDao
+from app.util.phrases import *
 from app.util.send_message import safeSendFriendMessage
 from app.util.text2image import create_image
 from app.util.tools import to_thread
 from .sign_image_generator import get_sign_image
 
-core: AppCore = AppCore.get_core_instance()
+core: AppCore = AppCore()
 config = core.get_config()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
-database: InitDB = InitDB.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
+database: InitDB = InitDB()
 
 
 @manager.register(

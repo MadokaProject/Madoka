@@ -7,11 +7,11 @@ from loguru import logger
 from prettytable import PrettyTable
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import *
 from app.util.dao import MysqlDao
+from app.util.phrases import *
 from app.util.text2image import create_image
 
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
 
 
 @manager.register(

@@ -3,8 +3,6 @@ import importlib
 import sys
 import threading
 from asyncio.events import AbstractEventLoop
-from types import ModuleType
-from typing import List
 
 from graia.ariadne.app import Ariadne
 from graia.ariadne.connection.config import (
@@ -20,80 +18,54 @@ from loguru import logger
 from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
-from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.database import InitDB
 from app.core.exceptions import *
-from app.core.plugins import PluginManager
 from app.extend.power import power
+from app.util.decorator import Singleton
 from webapp.main import WebServer
 
 
-class AppCore:
-    __instance = None
-    __first_init: bool = False
+class AppCore(metaclass=Singleton):
     __app: Ariadne = None
     __console: Console = None
     __loop: AbstractEventLoop = None
     __bcc: Broadcast = None
     __inc: InterruptControl = None
     __scheduler: GraiaScheduler = None
-    __manager: CommandDelegateManager = None
-    __plugins: PluginManager = None
-    __database: InitDB = None
     __thread_pool = None
-    __config: Config = None
+    __config: Config = Config()
     __launched: bool = False
     __group_handler_chain = {}
 
-    def __new__(cls, config: Config):
-        if not cls.__instance:
-            cls.__instance = object.__new__(cls)
-        return cls.__instance
-
-    def __init__(self, config: Config):
-        if not self.__first_init:
-            logger.info("Madoka is starting")
-            logger.info("Initializing")
-            self.__loop = asyncio.get_event_loop()
-            self.__bcc = Broadcast(loop=self.__loop)
-            Ariadne.config(loop=self.__loop, broadcast=self.__bcc)
-            self.__app = Ariadne(
-                connection=cfg(
-                    config.LOGIN_QQ,
-                    config.VERIFY_KEY,
-                    HttpClientConfig(host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}'),
-                    WebsocketClientConfig(host=f'http://{config.LOGIN_HOST}:{config.LOGIN_PORT}')
-                )
+    def __init__(self):
+        logger.info("Madoka is starting")
+        logger.info("Initializing")
+        self.__loop = asyncio.get_event_loop()
+        self.__bcc = Broadcast(loop=self.__loop)
+        Ariadne.config(loop=self.__loop, broadcast=self.__bcc)
+        self.__app = Ariadne(
+            connection=cfg(
+                self.__config.LOGIN_QQ,
+                self.__config.VERIFY_KEY,
+                HttpClientConfig(host=f'http://{self.__config.LOGIN_HOST}:{self.__config.LOGIN_PORT}'),
+                WebsocketClientConfig(host=f'http://{self.__config.LOGIN_HOST}:{self.__config.LOGIN_PORT}')
             )
-            self.__inc = InterruptControl(self.__bcc)
-            self.__scheduler = self.__app.create(GraiaScheduler)
-            self.__config = config
-            self.__console = Console(
-                broadcast=self.__bcc,
-                prompt=HTML('<split_1></split_1><madoka> Madoka </madoka><split_2></split_2> '),
-                style=Style(
-                    [
-                        ('split_1', 'fg:#61afef'),
-                        ('madoka', 'bg:#61afef fg:#ffffff'),
-                        ('split_2', 'fg:#61afef'),
-                    ]
-                )
+        )
+        self.__inc = InterruptControl(self.__bcc)
+        self.__scheduler = self.__app.create(GraiaScheduler)
+        self.__console = Console(
+            broadcast=self.__bcc,
+            prompt=HTML('<split_1></split_1><madoka> Madoka </madoka><split_2></split_2> '),
+            style=Style(
+                [
+                    ('split_1', 'fg:#61afef'),
+                    ('madoka', 'bg:#61afef fg:#ffffff'),
+                    ('split_2', 'fg:#61afef'),
+                ]
             )
-            self.__manager = CommandDelegateManager()
-            self.__plugins = PluginManager()
-            self.__database = InitDB()
-            AppCore.__first_init = True
-            logger.info("Initialize end")
-        else:
-            raise AppCoreAlreadyInitialized()
-
-    @classmethod
-    def get_core_instance(cls):
-        if cls.__instance:
-            return cls.__instance
-        else:
-            raise AppCoreNotInitialized()
+        )
+        AppCore.__first_init = True
+        logger.info("Initialize end")
 
     def get_loop(self) -> AbstractEventLoop:
         if self.__loop:
@@ -130,15 +102,6 @@ class AppCore:
         else:
             raise AppCoreNotInitialized()
 
-    def get_manager(self) -> CommandDelegateManager:
-        if self.__manager:
-            return self.__manager
-        else:
-            raise CommandManagerInitialized
-
-    def get_plugin(self) -> List[ModuleType]:
-        return self.__plugins.get_plugins()
-
     def get_config(self):
         return self.__config
 
@@ -161,10 +124,13 @@ class AppCore:
 
     async def bot_launch_init(self):
         try:
-            await self.__plugins.loads_all()
+            from app.core.plugins import PluginManager
+            from app.core.database import InitDB
+            plg_mgr = PluginManager()
+            await plg_mgr.loads_all()
             importlib.__import__("app.console.loads")
             importlib.__import__("app.core.event")
-            await self.__database.start()
+            await InitDB().start()
             importlib.__import__("app.extend.schedule")
             self.__loop.create_task(power(self.__app, sys.argv))
             if self.__config.WEBSERVER_ENABLE:

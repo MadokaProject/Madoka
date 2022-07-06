@@ -6,11 +6,10 @@ from graia.ariadne.model import Friend, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.plugin.base import *
 from app.util.control import Permission
-from app.util.decorator import permission_required
+from app.util.phrases import *
 
-manager: CommandDelegateManager = CommandDelegateManager.get_instance()
+manager: CommandDelegateManager = CommandDelegateManager()
 
 
 @manager.register(
@@ -27,7 +26,7 @@ manager: CommandDelegateManager = CommandDelegateManager.get_instance()
         help_text='账号管理'
     )
 )
-@permission_required(level=Permission.MASTER)
+@Permission.require(level=Permission.MASTER)
 async def process(app: Ariadne, command: Arpamar, alc: Alconna, _: Union[Friend, Member]):
     options = command.options
     if not options:

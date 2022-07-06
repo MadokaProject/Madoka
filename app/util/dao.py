@@ -6,7 +6,7 @@ from app.core.config import Config
 class MysqlDao:
     def __enter__(self):
         try:
-            config = Config.get_instance()
+            config: Config = Config()
             self.db = pymysql.connect(
                 host=config.MYSQL_HOST,
                 port=config.MYSQL_PORT,

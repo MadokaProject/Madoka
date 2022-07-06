@@ -95,7 +95,7 @@ class Controller:
             hidden = plg.hidden
             if not check_permit(self.target, plg.entry):
                 enable = False
-            if Permission.require(self.target, Permission.SUPER_ADMIN):
+            if Permission.manual(self.target, Permission.SUPER_ADMIN):
                 hidden = False  # 隐藏菜单仅超级管理员以上可见
             if send_help and not hidden:  # 主菜单帮助获取
                 if not enable:
