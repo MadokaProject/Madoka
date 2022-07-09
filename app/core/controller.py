@@ -93,7 +93,7 @@ class Controller:
         for plg in self.manager.get_delegates().copy().values():
             enable = plg.enable
             hidden = plg.hidden
-            if not check_permit(self.target, plg.entry):
+            if not check_permit(self.sender, plg.entry):
                 enable = False
             if Permission.manual(self.target, Permission.SUPER_ADMIN):
                 hidden = False  # 隐藏菜单仅超级管理员以上可见
