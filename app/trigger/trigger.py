@@ -34,10 +34,7 @@ class Trigger:
         """发送消息"""
         if not isinstance(resp, MessageChain):
             return
-        if hasattr(self, 'friend'):  # 发送好友消息
-            await self.app.send_friend_message(self.friend, resp)
-        elif hasattr(self, 'group'):  # 发送群聊消息
-            await self.app.send_group_message(self.group, resp)
+        await self.app.send_message(self.sender, resp)
 
     def check_admin(self, level: int):
         """检查是否管理员"""
