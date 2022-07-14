@@ -9,14 +9,13 @@ from app.util.tools import app_path
 
 class Database:
     @classmethod
-    def init(cls, root_dir: Path = None):
+    def init(cls, root_dir: Path = app_path().joinpath('plugin')):
         """初始化数据表
 
         :param root_dir: 数据表文件所在目录
         """
         try:
-            path = root_dir or app_path().joinpath('plugin')
-            for file in sorted(path.rglob('database.sql')):
+            for file in sorted(root_dir.rglob('database.sql')):
                 with MysqlDao() as db:
                     for sql in file.read_text(encoding='utf-8').replace('\n', ' ').split(';'):
                         if sql := sql.strip():
@@ -27,14 +26,13 @@ class Database:
             exit()
 
     @classmethod
-    def update(cls, root_dir: Path = None):
+    def update(cls, root_dir: Path = app_path().joinpath('plugin')):
         """更新数据表
 
         :param root_dir: 数据库文件所在目录
         """
         with MysqlDao() as db:
-            path = root_dir or app_path().joinpath('plugin')
-            for file in sorted(path.rglob('*.sql')):
+            for file in sorted(root_dir.rglob('*.sql')):
                 _ = file.parent.parent
                 name = f'{_.parent.name}.{_.name}'
                 if ret := db.query('SELECT time FROM update_time WHERE name = %s', [name]):
