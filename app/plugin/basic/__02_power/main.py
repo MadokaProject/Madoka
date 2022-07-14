@@ -39,18 +39,15 @@ manager: CommandDelegateManager = CommandDelegateManager()
 )
 @Permission.require(level=Permission.MASTER)
 async def process(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna):
-    components = cmd.options.copy()
-    components.update(cmd.subcommands)
-    if not components:
+    if not cmd.components:
         return await print_help(alc.get_help())
     try:
         if isinstance(sender, Group):
             shell = [f'-g {sender.id}', f'-t {target.id}']
         else:
             shell = f'-t {sender.id}'
-        if 'u' in components:
-            u = components['u']
-            timeout = u['timeout']['timeout'] if cmd.find('timeout') else 10
+        if cmd.find('u'):
+            timeout = cmd.query('timeout') or 10
             try:
                 ret = subprocess.call('git pull', timeout=timeout, shell=True)
                 con.stop()
@@ -64,10 +61,10 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
                     return MessageChain([At(target.id), Plain(" 升级超时！")])
                 else:
                     return MessageChain([Plain("升级超时！")])
-        elif 'r' in components:
+        elif cmd.find('r'):
             con.stop()
             restart('-r', *shell)
-        elif 'k' in components:
+        elif cmd.find('k'):
             con.stop()
             app.stop()
         else:

@@ -17,12 +17,13 @@ from retrying import retry
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
+from app.core.database import Database
+from app.core.exceptions import *
 from app.util.decorator import Singleton
 from app.util.network import general_request, download
+from app.util.text2image import create_image
 from app.util.tools import app_path, to_thread
-from .exceptions import *
-from ..util.text2image import create_image
-from ..util.version import compare_version
+from app.util.version import compare_version
 
 
 class PluginType(Enum):
@@ -135,6 +136,8 @@ class PluginManager(metaclass=Singleton):
         self.__plugins.clear()
         await self.loads_basic()
         await self.loads_extension()
+        Database.init()
+        Database.update()
 
     def reload(
             self,
@@ -314,11 +317,14 @@ class PluginManager(metaclass=Singleton):
                           '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple']
                 )
             plugins = {}
-            for plugin in self.__folder_path.joinpath(plugin_info['root_dir']).rglob(pattern='*.py'):
+            plugin_path = self.__folder_path.joinpath(plugin_info['root_dir'])
+            for plugin in plugin_path.rglob(pattern='*.py'):
                 if plugin.name not in self.__ignore and plugin.is_file():
                     plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
                     plugins.update({plugin_name: PluginType.Extension})
             await self.loads(plugins)
+            Database.init(plugin_path)
+            Database.update(plugin_path)
             await self.record_info(plugin_info)
             logger.success(f"插件安装成功: {plugin_info['name']} - {plugin_info['author']}")
             return True

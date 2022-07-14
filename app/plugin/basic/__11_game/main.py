@@ -12,7 +12,6 @@ from prettytable import PrettyTable
 
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
-from app.core.database import InitDB
 from app.entities.game import BotGame
 from app.entities.user import BotUser
 from app.util.dao import MysqlDao
@@ -27,7 +26,6 @@ config = core.get_config()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
 manager: CommandDelegateManager = CommandDelegateManager()
-database: InitDB = InitDB()
 
 
 @manager.register(
@@ -203,22 +201,3 @@ async def tasks():
             Plain(f"今日收取了 {total_rent} {config.COIN_NAME}")
         ])
     )
-
-
-@database.init()
-async def init_db():
-    with MysqlDao() as db:
-        db.update("""create table if not exists game (
-                    uuid char(36) not null comment 'UUID',
-                    qid char(12) not null comment 'QQ号',
-                    consecutive_days int default 0 not null comment '连续签到天数',
-                    total_days int default 0 not null comment '累计签到天数',
-                    last_signin_time date comment '上次签到时间',
-                    auto_signin int default 0 not null comment '自动签到',
-                    coin int comment '今日获得货币',
-                    coins int default 0 not null comment '货币',
-                    intimacy int default 0 not null comment '好感度',
-                    intimacy_level int default 0 not null comment '好感度等级',
-                    english_answer int default 0 comment '英语答题榜',
-                    primary key (uuid, qid)
-            )""")

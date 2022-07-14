@@ -5,14 +5,11 @@ from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.core.database import InitDB
 from app.util.control import Permission
-from app.util.dao import MysqlDao
 from app.util.online_config import save_config
 from app.util.phrases import *
 
 manager: CommandDelegateManager = CommandDelegateManager()
-database: InitDB = InitDB()
 configs = {'禁言退群': 'bot_mute_event', '上线通知': 'online_notice'}
 
 
@@ -44,33 +41,3 @@ async def process(sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna, _: U
     except Exception as e:
         logger.exception(e)
         return unknown_error()
-
-
-@database.init()
-async def init_db():
-    with MysqlDao() as db:
-        """初始化系统数据表"""
-        db.update(
-            "create table if not exists msg( \
-                id int auto_increment comment '序号' primary key, \
-                uid char(10) null comment '群号', \
-                qid char(12) null comment 'QQ', \
-                datetime datetime not null comment '时间', \
-                content varchar(800) not null comment '内容')"
-        )
-        db.update(
-            "create table if not exists mc_server( \
-                ip char(15) not null comment 'IP', \
-                port char(5) not null comment '端口', \
-                report varchar(100) null, \
-                `default` int not null, \
-                listen int not null, \
-                delay int not null comment '超时时间')"
-        )
-        db.update(
-            "create table if not exists config ( \
-                name varchar(256) not null comment '配置名', \
-                uid char(10) not null comment '群组', \
-                value varchar(500) not null comment '参数', \
-                primary key (name, uid))"
-        )

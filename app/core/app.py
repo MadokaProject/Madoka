@@ -125,12 +125,10 @@ class AppCore(metaclass=Singleton):
     async def bot_launch_init(self):
         try:
             from app.core.plugins import PluginManager
-            from app.core.database import InitDB
             plg_mgr = PluginManager()
             await plg_mgr.loads_all()
             importlib.__import__("app.console.loads")
             importlib.__import__("app.core.event")
-            await InitDB().start()
             importlib.__import__("app.extend.schedule")
             self.__loop.create_task(power(self.__app, sys.argv))
             if self.__config.WEBSERVER_ENABLE:
