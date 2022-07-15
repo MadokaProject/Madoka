@@ -37,31 +37,42 @@ $ python main.py
 ## 项目目录结构说明
 
 ```
-├───app                         程序主体
-│   ├───api                     api 存放目录
-│   │   └───doHttp.py             通用Http异步请求函数
-│   ├───core                    核心目录
-│   │   └───config.ini           项目配置文件
-│   │   └───controller.py       核心控制器
-│   ├───entities                实体控制
-│   ├───event                   其他监听事件存放目录
-│   ├───extend                  定时、循环执行事件存放目录
-│   ├───plugin                  插件（指令）存放目录
-│   ├───resource                资源文件存放目录
-│   ├───tirgger                 预处理函数存放目录
-│   └───util                    工具函数存放目录
-│       ├───CutString.py        字符串自动断行工具
-│       ├───dao.py              数据库访问接口
-│       ├───decorator.py        管理员鉴权接口
-│       ├───msg.py              消息存储函数
-│       ├───permission.py       鉴权接口
-│       ├───text2image.py       图片生成工具
-│       └───tools.py            工具函数
-├───.gitignore                  git 提交忽略文件
-├───initDB.py                   初始化数据库函数
-├───main.py                     应用执行入口
-├───requirements.txt            项目运行环境依赖包
-├───README.md                   项目说明文件
+madoka
+├── app                         程序主体
+│   ├── console                   控制台模块
+│   ├── core                      核心模块
+│   │   ├── app.py                  应用主体
+│   │   ├── commander.py            命令委托管理器
+│   │   ├── config.py               系统配置读取器
+│   │   ├── env.config.ini          示例系统配置文件
+│   │   └── settings.py             在线配置文件
+│   ├── entities                   实体模块
+│   │   ├── game.py                  游戏实体
+│   │   ├── group.py                 群实体
+│   │   └── user.py                  用户实体
+│   ├── event                     事件模块
+│   ├── extend                    扩展模块
+│   ├── plugin                    插件模块
+│   ├── resource                  资源目录
+│   ├── trigger                   预处理模块
+│   └── util                      工具模块
+│       ├── control.py              管理工具
+│       ├── cut_string.py           字符串断行工具
+│       ├── dao.py                  数据库访问接口
+│       ├── decorator.py            装饰器存放处
+│       ├── msg.py                  消息存储接口
+│       ├── network.py              网络工具
+│       ├── online_config.py        在线配置工具
+│       ├── other.py                其他工具
+│       ├── phrases.py              快捷回复消息
+│       ├── send_message.py         发送消息函数
+│       ├── text2image.py           文本转图片工具
+│       └── tools.py                工具函数
+├── CHANGELOG.md                更新日志
+├── k8s                         Kubernetes 配置
+├── main.py                     应用执行入口
+├── requirements.txt            项目依赖
+└── README.md                   项目介绍
 ```
 
 ## 说明
