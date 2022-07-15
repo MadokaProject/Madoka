@@ -1,4 +1,5 @@
 import json
+import pickle
 import socket
 import struct
 import time
@@ -6,15 +7,25 @@ from typing import Union
 
 import jsonpath
 from arclet.alconna import Alconna, Option, Args, Arpamar
+from graia.ariadne import Ariadne
 from graia.ariadne.model import Friend, Member
+from graia.scheduler import timers, GraiaScheduler
 from loguru import logger
 
+from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
+from app.core.settings import LISTEN_MC_SERVER
 from app.util.control import Permission
 from app.util.dao import MysqlDao
 from app.util.phrases import *
+from app.util.tools import app_path
 
+core: AppCore = AppCore()
+app: Ariadne = core.get_app()
+sche: GraiaScheduler = core.get_scheduler()
 manager: CommandDelegateManager = CommandDelegateManager()
+path = app_path().joinpath('tmp/mcserver')
+path.mkdir(parents=True, exist_ok=True)
 
 
 @manager.register(
@@ -205,3 +216,104 @@ class StatusPing:
                     msg += name[index]
             return msg
         return response
+
+
+class McServer:
+    status = False
+    players = set()
+    description = ''
+
+    def __init__(self, default_ip='127.0.0.1', default_port=25565):
+        self.ip = default_ip
+        self.port = default_port
+        self.update(init=True)
+        self.time = time.time()
+
+    def update(self, init=False):
+        players = self.players.copy()
+        description = self.description
+        try:
+            response = StatusPing(self.ip, self.port).get_status()
+            status = True
+            names = jsonpath.jsonpath(response, '$..sample[..name]')
+            description = jsonpath.jsonpath(response, '$..description')[0]
+            if jsonpath.jsonpath(description, '$..text'):
+                description = jsonpath.jsonpath(description, '$..text')[-1]
+            if names:
+                for index in range(len(names)):
+                    players.update({names[index]})
+            else:
+                players.clear()
+        except (EnvironmentError, Exception):
+            status = False
+            players.clear()
+
+        if init:
+            self.status = status
+            self.players = players
+            self.description = description
+        else:
+            resp = MessageChain([
+                Plain(f'地址：{self.ip}:{self.port}\r\n'),
+                Plain(f'描述：{description}\r\n'),
+                Plain(f'信息：\r\n')
+            ])
+            resp_content = MessageChain([])
+            if status and (status != self.status):
+                resp_content.extend(MessageChain([
+                    Plain('服务器已开启！\r\n')
+                ]))
+            for player in self.players - players:
+                resp_content.extend(MessageChain([
+                    Plain(f'{player}退出了服务器！\r\n')
+                ]))
+            for player in players - self.players:
+                resp_content.extend(MessageChain([
+                    Plain(f'{player}加入了服务器！\r\n')
+                ]))
+            if (not status) and (status != self.status):
+                resp_content.extend(MessageChain([
+                    Plain('服务器已关闭！\r\n')
+                ]))
+            self.status = status
+            self.players = players
+            self.description = description
+            self.time = time.time()
+            if resp_content.__root__:
+                resp.extend(resp_content)
+                return resp
+            return None
+
+
+async def mc_listener(ips, qq, delay_sec):
+    file = path.joinpath(f'{ips[0]}_{str(ips[1])}.dat')
+    if file.exists():
+        with open(file, 'rb') as f:
+            obj = pickle.load(f)
+    else:
+        obj = McServer(*ips)
+    if time.time() - obj.time > int(1.5 * delay_sec):
+        obj = McServer(*ips)
+    resp = obj.update()
+    with open(file, 'wb') as f:
+        pickle.dump(obj, f)
+    if not resp:
+        return
+    for target in qq:
+        if target[0] == 'f':
+            target = await app.get_friend(int(target[1:]))
+            if not target:
+                continue
+            await app.send_friend_message(target, resp)
+        elif target[0] == 'g':
+            target = await app.get_group(int(target[1:]))
+            if not target:
+                continue
+            await app.send_group_message(target, resp)
+
+
+for _ips, _qq, delay in LISTEN_MC_SERVER:
+    @sche.schedule(timers.every_custom_seconds(delay))
+    async def mc_listen_schedule():
+        # if config.ONLINE:
+        await mc_listener(_ips, _qq, delay)
