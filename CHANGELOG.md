@@ -1,5 +1,44 @@
 # Changelog
 
+## [3.0.0](https://github.com/MadokaProject/Madoka/compare/v2.4.1...v3.0.0) (2022-07-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **database:** 重构数据表初始化，支持自动更新数据表 #37
+* **singleton:** 调整类单例模式实现
+* **plugin:** 调整插件参数赋值的方式，改为按需获取
+* **console:** 调整控制台处理
+* **event:** 调整其它事件处理
+* **plugin:** 全新插件管理器 #34
+
+### Features
+
+* **console:** 调整控制台处理 ([32d3635](https://github.com/MadokaProject/Madoka/commit/32d36358199160804bbcf0cae0fc014c19902fc8))
+* **database:** 重构数据表初始化，支持自动更新数据表 [#37](https://github.com/MadokaProject/Madoka/issues/37) ([90ac51b](https://github.com/MadokaProject/Madoka/commit/90ac51b651d9de774a506b211b9fa45de90d58eb))
+* **event:** 调整其它事件处理 ([dfb41ab](https://github.com/MadokaProject/Madoka/commit/dfb41aba98cc9a92d13b66dcc98ccd8c99cfdaf5))
+* **plugin:** 全新插件管理器 [#34](https://github.com/MadokaProject/Madoka/issues/34) ([23c0a84](https://github.com/MadokaProject/Madoka/commit/23c0a849738e23ffdfb98b7537e7b8e7d9eae206))
+* **plugin:** 新增插件更新检测功能 ([68bb584](https://github.com/MadokaProject/Madoka/commit/68bb584dce5afe0ce6560f34f8f9df8eb76407c5))
+* **plugin:** 调整插件参数赋值的方式，改为按需获取 ([461603c](https://github.com/MadokaProject/Madoka/commit/461603c5077d68f7880f992cbc0e50d589c1b2be))
+* **singleton:** 调整类单例模式实现 ([a7b9a7f](https://github.com/MadokaProject/Madoka/commit/a7b9a7f07c08e73ba7256cbb3bedbe932cf7fa38))
+
+
+### Bug Fixes
+
+* **alconna:** bug ([b6fd10e](https://github.com/MadokaProject/Madoka/commit/b6fd10e191a8935dcf7e4997fdbb2488dc143b9c))
+* **controller:** 修复插件开关判断 ([0d47b9a](https://github.com/MadokaProject/Madoka/commit/0d47b9ad915fc36cc54b3723c26db4c0af1d6747))
+* **game:** 优化金币排行输出 ([7e0280f](https://github.com/MadokaProject/Madoka/commit/7e0280fed54245643da87fa3379ad275a7231465))
+* **plugin_mgr:** 更新插件未删除旧插件的问题 ([bcfcba6](https://github.com/MadokaProject/Madoka/commit/bcfcba6f1db728e645b42d8705c8788a0250695c))
+* **plugin:** 修复加载、卸载插件的 bug ([68bb584](https://github.com/MadokaProject/Madoka/commit/68bb584dce5afe0ce6560f34f8f9df8eb76407c5))
+* **plugin:** 修复本地插件信息文件可能的编码问题、修复部分插件未进行鉴权的 bug ([461603c](https://github.com/MadokaProject/Madoka/commit/461603c5077d68f7880f992cbc0e50d589c1b2be))
+* **plugin:** 修改开关插件的命令 ([1f8def7](https://github.com/MadokaProject/Madoka/commit/1f8def79a33a88bb2237671729ad4b259f5f7d9e))
+* **plugin:** 在3.9以上无法正常使用的问题 ([8b9fd8d](https://github.com/MadokaProject/Madoka/commit/8b9fd8d71b6833c5f6efeb4092c916e9f1464802))
+* **plugin:** 控制请求频率 ([23c0a84](https://github.com/MadokaProject/Madoka/commit/23c0a849738e23ffdfb98b7537e7b8e7d9eae206))
+* **plugin:** 插件加载无序的问题 ([1f8def7](https://github.com/MadokaProject/Madoka/commit/1f8def79a33a88bb2237671729ad4b259f5f7d9e))
+* **plugin:** 调整插件管理器api ([dfb41ab](https://github.com/MadokaProject/Madoka/commit/dfb41aba98cc9a92d13b66dcc98ccd8c99cfdaf5))
+* **schedule:** 调整一下 ([833d92f](https://github.com/MadokaProject/Madoka/commit/833d92f1d4c9a037e06d84f6a77791a1d41f861d))
+* **trigger:** 无法发送消息 ([077944c](https://github.com/MadokaProject/Madoka/commit/077944c108907336f460961716033b94375604fa))
+
 ## [2.4.1](https://github.com/MadokaProject/Madoka/compare/v2.4.0...v2.4.1) (2022-06-23)
 
 
