@@ -31,12 +31,12 @@ manager: CommandDelegateManager = CommandDelegateManager()
         headers=manager.headers,
         command='github',
         options=[
-            Subcommand('add', help_text='添加监听仓库', args=Args['repo', str]['api', 'url'], options=[
+            Subcommand('add', help_text='添加监听仓库', args=Args['repo', str]['api', str, 'project/repo'], options=[
                 Option('--branch|-b', args=Args['branch', str, '*'], help_text='指定监听的分支,使用 , 分隔, 默认监听全部分支')
             ]),
             Subcommand('modify', help_text='修改监听仓库配置', args=Args['repo', str], options=[
                 Option('--name|-n', args=Args['name', str], help_text='修改仓库名'),
-                Option('--api|-a', args=Args['api', 'url'], help_text='修改监听API'),
+                Option('--api|-a', args=Args['api', str, 'project/repo'], help_text='修改监听API'),
                 Option('--branch|-b', args=Args['branch', str, '*'], help_text='修改监听的分支, 使用 , 分隔, *: 监听所有分支')
             ]),
             Option('remove', help_text='删除监听仓库', args=Args['repo', str]),
@@ -61,7 +61,7 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
             group_id = str(sender.id)
             if REPO.__contains__(group_id) and add['repo'] in REPO[group_id]:
                 return MessageChain([Plain('添加失败，该仓库名已存在!')])
-            repo_info = {add['repo']: {'api': add['api'], 'branch': branch}}
+            repo_info = {add['repo']: {'api': f"https://api.github.com/repos/{add['api'].strip('/')}/branches", 'branch': branch}}
             if await save_config('repo', sender, repo_info, model='add'):
                 if not REPO.__contains__(group_id):
                     REPO.update({group_id: {}})
@@ -84,7 +84,7 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
                 REPO[group_id][_name] = REPO[group_id].pop(repo)
                 repo = _name
             if _api:
-                _api = _api['api']
+                _api = f"https://api.github.com/repos/{_api['api'].strip('/')}/branches"
                 REPO[group_id][repo]['api'] = _api
                 await save_config('repo', sender, {repo: REPO[group_id][repo]}, model='add')
             if _branch:
