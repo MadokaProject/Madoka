@@ -8,7 +8,7 @@ from app.util.decorator import Singleton
 
 class Config(metaclass=Singleton):
     INFO_NAME = 'Madoka'
-    INFO_VERSION = '3.0.0'
+    INFO_VERSION = '3.1.0'
     INFO_DOCS = 'https://madoka.colsrch.cn'
     INFO_REPO = 'https://github.com/MadokaProject/Madoka'
     REMOTE_REPO_VERSION = 'v3'

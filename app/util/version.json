@@ -1,6 +1,10 @@
 {
-  "version": "3.0.0",
+  "version": "3.1.0",
   "update_log": [
+    {
+      "version": "3.1.0",
+      "info": "修复更新插件的问题，调整github监听命令"
+    },
     {
       "version": "3.0.0",
       "info": "重构了大量模块，修复了已知的Bug;\n更新该版本后需将旧的扩展插件全部删除后重新安装。另外还需将app/tmp/mcserver目录删除。"
