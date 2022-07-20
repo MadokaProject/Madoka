@@ -1,5 +1,18 @@
 # Changelog
 
+## [3.1.0](https://github.com/MadokaProject/Madoka/compare/v3.0.0...v3.1.0) (2022-07-20)
+
+
+### Features
+
+* **github:** 调整github监听命令 ([2ce9da4](https://github.com/MadokaProject/Madoka/commit/2ce9da4f8cf298af2b7a6b9919c2e4f6bc042c82))
+
+
+### Bug Fixes
+
+* **event:** 使用FunctionWaiter ([6015a52](https://github.com/MadokaProject/Madoka/commit/6015a52dd312f6e28f5286ec891458155130ca41))
+* **plugin:** 更新插件的问题 ([8f9852e](https://github.com/MadokaProject/Madoka/commit/8f9852e9597e839f820123e5247fade0a087ded8))
+
 ## [3.0.0](https://github.com/MadokaProject/Madoka/compare/v2.4.1...v3.0.0) (2022-07-16)
 
 
