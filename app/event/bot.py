@@ -16,7 +16,7 @@ from graia.ariadne.event.mirai import (
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from graia.ariadne.model import Friend
-from graia.broadcast.interrupt.waiter import Waiter
+from graia.ariadne.util.interrupt import FunctionWaiter
 from loguru import logger
 
 from app.core.app import AppCore
@@ -30,7 +30,6 @@ from app.util.send_message import safeSendGroupMessage
 config: Config = Config()
 core: AppCore = AppCore()
 bcc = core.get_bcc()
-inc = core.get_inc()
 
 
 @bcc.receiver(BotInvitedJoinGroupRequestEvent)
@@ -54,7 +53,6 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
             Plain(f"\n\n请发送“同意”或“拒绝”")
         ]))
 
-        @Waiter.create_using_function([FriendMessage])
         async def waiter(waiter_friend: Friend, waiter_message: MessageChain):
             if waiter_friend.id == config.MASTER_QQ:
                 saying = waiter_message.display
@@ -68,7 +66,7 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
                     ]))
 
         try:
-            if await asyncio.wait_for(inc.wait(waiter), timeout=300):
+            if await FunctionWaiter(waiter, [FriendMessage]).wait(300):
                 if event.group_id not in ACTIVE_GROUP:
                     BotGroup(event.group_id, active=1)
                     ACTIVE_GROUP.update({event.group_id: '*'})
@@ -122,7 +120,7 @@ async def join_group(app: Ariadne, event: BotJoinGroupEvent):
 
 @bcc.receiver(BotLeaveEventKick)
 async def leave_kick(app: Ariadne, event: BotLeaveEventKick):
-    """被提出群"""
+    """被踢出群"""
     try:
         await BotGroup(event.group.id, 0).group_deactivate()
         ACTIVE_GROUP.pop(event.group.id)
