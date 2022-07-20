@@ -118,6 +118,15 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
                     install_plugin = plugins[ret - 1]
                 else:
                     return MessageChain(Plain(f"未在本地找到{plugin}插件"))
+
+                for remote_plugin in await plugin_mgr.get_remote_info():
+                    if remote_plugin['name'] == install_plugin['name'] and \
+                            remote_plugin['root_dir'] == install_plugin['root_dir']:
+                        install_plugin = remote_plugin
+                        break
+                else:
+                    raise RemotePluginNotFound(plugin)
+
                 if await plugin_mgr.exist(install_plugin):
                     plugin_mgr.delete(install_plugin)
                 await app.send_message(sender, Plain('插件正在更新中...'))
