@@ -119,7 +119,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             await old_user.update_point(-coin)
             return MessageChain([Plain(f'迁移成功！当前账户余额: {await new_user.get_coins()}')])
         elif tf := options.get('tf'):
-            target = tf['at'].target
+            tf_target = tf['at'].target
             coin = tf['money']
             if coin <= 0:
                 return args_error()
@@ -127,12 +127,12 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             if int(await user.get_coins()) < coin:
                 return point_not_enough()
             await user.update_coin(-coin)
-            user = BotGame(target, coin)
+            user = BotGame(tf_target, coin)
             await user.update_coin(coin)
             return MessageChain([
                 At(target),
                 Plain(' 已转赠给'),
-                At(target),
+                At(tf_target),
                 Plain(f' %d{config.COIN_NAME}！' % coin)
             ])
         elif options.get('rank') and isinstance(sender, Group):

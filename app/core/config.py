@@ -11,7 +11,7 @@ class Config(metaclass=Singleton):
     INFO_VERSION = '3.1.0'
     INFO_DOCS = 'https://madoka.colsrch.cn'
     INFO_REPO = 'https://github.com/MadokaProject/Madoka'
-    REMOTE_REPO_VERSION = 'v3'
+    REMOTE_REPO_VERSION = 'release'
     REMOTE_VERSION_URL = 'https://fastly.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json'
 
     CONFIG_FILE = Path(__file__).parent.joinpath('config.ini')
