@@ -6,10 +6,11 @@ from loguru import logger
 
 from app.core.config import Config
 from app.core.settings import CONFIG, ACTIVE_USER, ACTIVE_GROUP
-from app.util.dao import MysqlDao
+from app.plugin.basic.__01_sys.database.database import Config as DBConfig
+from app.plugin.basic.__06_permission.database.database import User as DBUser, Group as DBGroup
 
 
-async def save_config(name: str, uid: Union[Group, int], value, model: str = None) -> bool:
+async def save_config(name: str, uid: Union[Group, int], value, model: str = None) -> None:
     """在线配置存储
 
     :param name: 配置名
@@ -22,25 +23,21 @@ async def save_config(name: str, uid: Union[Group, int], value, model: str = Non
         uid = str(uid.id)
     else:
         uid = str(uid)
-    with MysqlDao() as db:
-        try:
-            if model in ['add', 'remove']:
-                res = db.query('SELECT value FROM config WHERE name=%s and uid=%s', [name, uid])
-                if res:
-                    params = json.loads(res[0][0])
-                    if model == 'add':
-                        params.update(value)
-                    else:
-                        params.pop(value)
-        except Exception as e:
-            logger.warning(e)
-        if db.update('REPLACE INTO config(name, uid, value) VALUES (%s, %s, %s)',
-                     [name, uid, json.dumps(params)]):
-            if not CONFIG.__contains__(uid):
-                CONFIG.update({uid: {}})
-            CONFIG[uid].update({name: params})
-            return True
-    return False
+    try:
+        if model in ['add', 'remove']:
+            if res := DBConfig.get_or_none(name=name, uid=uid):
+                params = json.loads(res.value)
+                if model == 'add':
+                    params.update(value)
+                else:
+                    params.pop(value)
+    except Exception as e:
+        logger.warning(e)
+    DBConfig.replace(name=name, uid=uid, value=json.dumps(params)).execute()
+    if uid not in CONFIG:
+        CONFIG[uid] = {name: params}
+    else:
+        CONFIG[uid].update({name: params})
 
 
 async def get_config(name: str, uid: Union[Group, int]) -> dict:
@@ -53,10 +50,8 @@ async def get_config(name: str, uid: Union[Group, int]) -> dict:
         uid = str(uid.id)
     else:
         uid = str(uid)
-    with MysqlDao() as db:
-        res = db.query('SELECT value FROM config WHERE name=%s and uid=%s', [name, uid])
-        if res:
-            return json.loads(res[0][0])
+    if res := DBConfig.get_or_none(name=name, uid=uid):
+        return json.loads(res.value)
 
 
 async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
@@ -67,32 +62,34 @@ async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
     """
     try:
         if isinstance(uid, Group):
-            with MysqlDao() as db:
-                if perm in ['*', '-']:
-                    db.update('UPDATE `group` SET permission=%s WHERE uid=%s', [perm, uid.id])
-                    ACTIVE_GROUP[uid.id] = perm
-                    if perm == '-':
-                        await set_plugin_switch(uid, 'plugin')
-                else:
-                    res = str(db.query('SELECT permission FROM `group` WHERE uid=%s', [uid.id])[0][0]).split(',')
-                    res = [i for i in res if i not in [perm.strip('-'), f"-{perm.strip('-')}", '-']]
-                    res.append(perm)
-                    ACTIVE_GROUP[uid.id] = res
-                    db.update('UPDATE `group` SET permission=%s WHERE uid=%s', [','.join(f'{i}' for i in res), uid.id])
+            if perm in ['*', '-']:
+                DBGroup.update(permission=perm).where(DBGroup.uid == uid.id).execute()
+                ACTIVE_GROUP[uid.id] = perm
+                if perm == '-':
+                    await set_plugin_switch(uid, 'plugin')
+            else:
+                res = [
+                    i for i in DBGroup.get(DBGroup.uid == uid.id).permission.split(',')
+                    if i not in [perm.strip('-'), f"-{perm.strip('-')}", '-']
+                ]
+                res.append(perm)
+                ACTIVE_GROUP[uid.id] = res
+                DBGroup.update(permission=','.join(res)).where(DBGroup.uid == uid.id).execute()
         else:
             config: Config = Config()
             if uid == config.MASTER_QQ:
                 return False
-            with MysqlDao() as db:
-                if perm in ['*', '-']:
-                    db.update('UPDATE user SET permission=%s WHERE uid=%s', [perm, uid])
-                    ACTIVE_USER[uid] = perm
-                else:
-                    res = str(db.query('SELECT permission FROM user WHERE uid=%s', [uid])[0][0]).split(',')
-                    res = [i for i in res if i not in [perm.strip('-'), f"-{perm.strip('-')}", '-']]
-                    res.append(perm)
-                    ACTIVE_USER[uid] = res
-                    db.update('UPDATE user SET permission=%s WHERE uid=%s', [','.join(f'{i}' for i in res), uid])
+            if perm in ['*', '-']:
+                DBGroup.update(permission=perm).where(DBGroup.uid == uid).execute()
+                ACTIVE_USER[uid] = perm
+            else:
+                res = [
+                    i for i in DBUser.get(DBUser.uid == uid).permission.split(',')
+                    if i not in (perm.strip('-'), f"-{perm.strip('-')}", '-')
+                ]
+                res.append(perm)
+                ACTIVE_USER[uid] = res
+                DBUser.update(permission=','.join(res)).where(DBUser.uid == uid).execute()
         return True
     except Exception as e:
         logger.error(f'没有这个群组/用户 - {e}')

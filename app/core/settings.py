@@ -1,85 +1,66 @@
 import json
 
-import pymysql
+from loguru import logger
+from peewee import *
 
 from app.core.config import Config
-from app.util.dao import MysqlDao
 
+from app.plugin.basic.__01_sys.database.database import Config as DBConfig
+from app.plugin.basic.__06_permission.database.database import User as DBUser, Group as DBGroup
 
-def get_config(sql) -> list:
-    try:
-        with MysqlDao() as __db:
-            return __db.query(sql)
-    except pymysql.ProgrammingError:
-        return []
+try:
+    config = Config()
+    GROUP_PERM = {
+        'OWNER': '群主',
+        'ADMINISTRATOR': '管理员',
+        'MEMBER': '普通成员'
+    }
+    """描述对象在群内的权限对应名称"""
+    ACTIVE_GROUP = {
+        int(_.uid): _.permission for _ in DBGroup.select().where(DBGroup.active == 1)
+    }
+    """监听群聊消息列表"""
+    ACTIVE_USER = {int(_.uid): _.permission.split(',') for _ in DBUser.select().where(DBUser.active == 1)}
+    ACTIVE_USER[config.MASTER_QQ] = '*'
+    """监听好友消息列表"""
+    BANNED_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 0)]
+    """黑名单用户列表"""
+    ADMIN_USER = [config.MASTER_QQ, *(int(_.uid) for _ in DBUser.select().where(DBUser.level >= 3))]
+    """具有超级管理权限以上QQ列表"""
+    GROUP_ADMIN_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 2)]
+    """具有群管理权限QQ列表"""
+    CONFIG = {
+        _.uid: {name: json.loads(value) for name, value in zip(_.group_name.split(','), _.group_value.split(','))}
+        for _ in DBConfig.select(
+            DBConfig.uid, fn.GROUP_CONCAT(DBConfig.name).alias('group_name'), fn.GROUP_CONCAT(DBConfig.value).alias('group_value')
+        ).group_by(DBConfig.uid)
+    }
+    """存储在线配置
+    
+    eg: {group: {name: json.loads(value)}}
+    """
+    REPO = {k: v['repo'] for k, v in CONFIG.items() if 'repo' in v}
+    """Github监听仓库
+    
+    eg: {group: {name: {api:api, branch:branch}}}
+    """
 
+    # 戳一戳记录
+    NUDGE_INFO = {}
 
-config: Config = Config()
+    # 游戏记录
+    MEMBER_RUNING_LIST = []
+    """创建游戏人"""
+    GROUP_RUNING_LIST = []
+    """在游戏的群"""
+    GROUP_GAME_PROCESS = {}
+    """成员答题限次"""
 
-GROUP_PERM = {
-    'OWNER': '群主',
-    'ADMINISTRATOR': '管理员',
-    'MEMBER': '普通成员'
-}
-"""描述对象在群内的权限对应名称"""
-ACTIVE_GROUP = {int(__gid): str(__permit).split(',') for __gid, __permit in
-                get_config('SELECT uid, permission FROM `group` WHERE active=1')}
-"""监听群聊消息列表"""
-ACTIVE_USER = {config.MASTER_QQ: '*'}
-"""监听好友消息列表"""
-BANNED_USER = [int(__qid[0]) for __qid in get_config('SELECT uid FROM user WHERE level=0')]
-"""黑名单用户列表"""
-ADMIN_USER = [config.MASTER_QQ]
-"""具有超级管理权限以上QQ列表"""
-GROUP_ADMIN_USER = [int(__qid[0]) for __qid in get_config('SELECT uid FROM user WHERE level=2')]
-"""具有群管理权限QQ列表"""
-LISTEN_MC_SERVER = []
-"""MC服务器自动监听列表"""
-CONFIG = {}
-"""存储在线配置
-
-eg: {group: {name: json.loads(value)}}
-"""
-REPO = {}
-"""Github监听仓库
-
-eg: {group: {name: {api:api, branch:branch}}}
-"""
-
-# 戳一戳记录
-NUDGE_INFO = {}
-
-# 游戏记录
-MEMBER_RUNING_LIST = []
-"""创建游戏人"""
-GROUP_RUNING_LIST = []
-"""在游戏的群"""
-GROUP_GAME_PROCESS = {}
-"""成员答题限次"""
-
-# 签到模块
-IntimacyLevel = [0, 10000, 15500, 20500, 26000, 31750, 37500, 43500, 49750, 56500]
-"""描述各个好感度等级所需要的好感度"""
-IntimacyGet = [200, 350, 575, 912, 1418, 2177, 3315]
-"""获取的好感度"""
-
-for __qid, __permit in get_config('SELECT uid, permission FROM user WHERE active=1'):
-    ACTIVE_USER.update({int(__qid): str(__permit).split(',')})
-
-for __qid in get_config('SELECT uid FROM user WHERE level>=3'):
-    if int(__qid[0]) not in ADMIN_USER:
-        ADMIN_USER.append(int(__qid[0]))
-
-for (__ip, __port, __report, __delay) in get_config('SELECT ip,port,report,delay FROM mc_server WHERE listen=1'):
-    LISTEN_MC_SERVER.append(
-        [[__ip, int(__port)], [i for i in str(__report).split(',')], __delay]
-    )
-
-for (__name, __uid, __value) in get_config('SELECT name, uid, value FROM config'):
-    if not CONFIG.__contains__(__uid):
-        CONFIG.update({__uid: {}})
-    CONFIG[__uid].update({__name: json.loads(__value)})
-
-for __uid in CONFIG.keys():
-    if CONFIG[__uid].__contains__('repo'):
-        REPO.update({__uid: CONFIG[__uid]['repo']})
+    # 签到模块
+    IntimacyLevel = (0, 10000, 15500, 20500, 26000, 31750, 37500, 43500, 49750, 56500)
+    """描述各个好感度等级所需要的好感度"""
+    IntimacyGet = (200, 350, 575, 912, 1418, 2177, 3315)
+    """获取的好感度"""
+except OperationalError as e:
+    logger.error(e)
+    exit(e)

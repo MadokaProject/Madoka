@@ -7,12 +7,12 @@ from graia.ariadne.model import Friend, Member
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
-from app.core.settings import *
+from app.core.settings import ADMIN_USER, BANNED_USER, ACTIVE_USER, ACTIVE_GROUP, GROUP_ADMIN_USER, GROUP_PERM
 from app.entities.group import BotGroup
 from app.entities.user import BotUser
 from app.util.control import Permission
-from app.util.dao import MysqlDao
 from app.util.phrases import *
+from .database.database import User as DBUser, Group as DBGroup
 
 manager: CommandDelegateManager = CommandDelegateManager()
 
@@ -127,14 +127,12 @@ async def master_grant_user(app: Ariadne, target: Union[Friend, Member], user_: 
                 ACTIVE_USER.pop(target)
             return MessageChain([Plain('取消激活成功!')])
         return not_admin()
-    elif user_.get('lisr'):
-        with MysqlDao() as db:
-            res = db.query("SELECT uid FROM user WHERE active=1")
+    elif user_.get('list'):
         msg = '用户白名单'
-        if res:
+        if res := DBUser.select().where(DBUser.active == 1):
             friends = {i.id: i.nickname for i in await app.get_friend_list()}
             for qq in res:
-                qq = int(qq[0])
+                qq = int(qq.uid)
                 if qq in friends.keys():
                     msg += f'\n{friends[qq]}: {qq}'
                 else:
@@ -162,9 +160,8 @@ async def master_grant_blacklist(target: Union[Friend, Member], blacklist: dict)
             return MessageChain([Plain('解除禁用成功!')])
         return not_admin()
     elif blacklist.get('list'):
-        with MysqlDao() as db:
-            res = db.query("SELECT uid FROM user WHERE level=0")
-        return MessageChain([Plain('\r\n'.join([f'{qq[0]}' for qq in res]) if res else '无黑名单用户')])
+        res = DBUser.select().where(DBUser.level == 0)
+        return MessageChain([Plain('\r\n'.join(qq.uid for qq in res) if res else '无黑名单用户')])
 
 
 @Permission.require(level=Permission.SUPER_ADMIN)
@@ -179,13 +176,11 @@ async def master_grant_group(app: Ariadne, group: dict, _: Union[Friend, Member]
             ACTIVE_GROUP.pop(delete['group'])
         return MessageChain([Plain('禁用成功!')])
     elif group.get('list'):
-        with MysqlDao() as db:
-            res = db.query("SELECT uid FROM `group` WHERE active=1")
         msg = '群组白名单'
-        if res:
+        if res := DBGroup.select().where(DBGroup.active == 1):
             groups = {i.id: {'name': i.name, 'perm': i.account_perm.value} for i in await app.get_group_list()}
             for group_id in res:
-                group_id = int(group_id[0])
+                group_id = int(group_id.uid)
                 if group_id in groups.keys():
                     msg += f"\n{groups[group_id]['name']}: {group_id} - {GROUP_PERM[groups[group_id]['perm']]}"
                 else:

@@ -9,8 +9,8 @@ class SaveMsg(Trigger):
     """消息存储"""
 
     async def process(self):
-        if not isinstance(self.sender, Group) or self.check_admin(Permission.MASTER):
+        if not isinstance(self.sender, Group) or Permission.manual(self.target, Permission.MASTER):
             return
         if self.msg[0][0] in '.,;!?。，；！？/\\':
             return
-        save(self.sender.id, self.target.id, self.message.display)
+        save(self.sender.id, self.target.id, self.message.as_persistent_string())

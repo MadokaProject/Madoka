@@ -1,0 +1,3 @@
+ALTER TABLE mc_server CHANGE ip host VARCHAR(255) NOT NULL;
+ALTER TABLE mc_server MODIFY report VARCHAR(255) NULL;
+ALTER TABLE mc_server ADD PRIMARY KEY (host, port);

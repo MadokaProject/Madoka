@@ -1,12 +1,11 @@
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain, At
 from graia.ariadne.model import MemberPerm, Group
-from loguru import logger
 
 from app.core.settings import *
+from app.plugin.basic.__01_sys.database.database import Msg as DBMsg
 from app.trigger.trigger import Trigger
 from app.util.control import Permission
-from app.util.dao import MysqlDao
 
 
 class CSM(Trigger):
@@ -16,48 +15,48 @@ class CSM(Trigger):
         # 判断是否为黑名单用户
         if self.target.id in BANNED_USER:
             self.as_last = True
-        if not isinstance(self.sender, Group) or self.check_admin(Permission.GROUP_ADMIN) or \
-                not self.sender.account_perm == MemberPerm.Member:
+        if not isinstance(self.sender, Group) or Permission.manual(self.target, Permission.GROUP_ADMIN) or \
+                self.sender.account_perm == MemberPerm.Member:
             return
-        if CONFIG.__contains__(str(self.sender.id)) and CONFIG[str(self.sender.id)].__contains__('status') and \
-                CONFIG[str(self.sender.id)]['status']:  # 默认关闭，需自行开启(.admin status)
+        if str(self.sender.id) in CONFIG and 'status' in CONFIG[str(self.sender.id)] and \
+                CONFIG[str(self.sender.id)]['status']:  # 默认关闭，需自行开启(.csm status)
             if await self.spam():  # 刷屏检测(优先)
                 self.as_last = True
 
     # 刷屏检测
     async def spam(self):
         try:
-            with MysqlDao() as db:
-                # 获取该群组某人的最后三条消息记录
-                res = db.query(
-                    'SELECT * FROM msg where uid=%s and qid=%s ORDER BY id DESC LIMIT 3',
-                    [self.sender.id, self.target.id]
+            res = DBMsg.select().where(
+                DBMsg.uid == self.sender.id,
+                DBMsg.qid == self.target.id
+            ).order_by(DBMsg.id.desc()).limit(3)  # 获取该群组某人的最后三条消息记录
+            if res.count() > 2:
+                time = (res[0].datetime - res[2].datetime).seconds
+                flood = CONFIG[str(self.sender.id)].get('mute', {'time': 5, 'mute': 300, 'message': '请勿刷屏！'})
+                duplicate = CONFIG[str(self.sender.id)].get(
+                    'duplicate', {'time': 30, 'mute': 120, 'message': '请勿发送重复消息！'}
                 )
-                if len(res) > 2:
-                    time = (res[0][3] - res[2][3]).seconds
-                    flood = CONFIG[str(self.sender.id)]['mute'] if CONFIG[str(self.sender.id)].__contains__(
-                        'mute') else {
-                        'time': 5, 'mute': 300, 'message': '请勿刷屏！'}
-                    duplicate = CONFIG[str(self.sender.id)]['duplicate'] if CONFIG[str(self.sender.id)].__contains__(
-                        'duplicate') else {'time': 30, 'mute': 120, 'message': '请勿发送重复消息！'}
-                    if time < flood['time']:  # 刷屏禁言
-                        await self.app.mute_member(self.sender, self.target, flood['mute'])
-                        resp = MessageChain([
-                            At(self.target.id), Plain(' ' + flood['message'])
-                        ])
-                        await self.do_send(resp)
-                        return True
-                    elif res[0][4] == res[1][4] == res[2][4] \
-                            and res[0][4].strip() != '' and time < duplicate['time']:  # 30秒内重复消息禁言
-                        await self.app.mute_member(self.sender, self.target, duplicate['mute'])
-                        resp = MessageChain([
-                            At(self.target), Plain(' ' + duplicate['message'])
-                        ])
-                        await self.do_send(resp)
-                        return True
-            over_length = CONFIG[str(self.sender.id)]['over-length'] if CONFIG[str(self.sender.id)].__contains__(
-                'over-length') else {'text': 500, 'mute': 120, 'message': '请勿发送超长消息'}
-            if len(self.msg) > over_length['text']:
+                temp_content = MessageChain.from_persistent_string(res[0].content)
+                if time < flood['time']:  # 刷屏禁言
+                    await self.app.mute_member(self.sender, self.target, flood['mute'])
+                    resp = MessageChain([
+                        At(self.target.id), Plain(' ' + flood['message'])
+                    ])
+                    await self.do_send(resp)
+                    return True
+                elif all(MessageChain.from_persistent_string(i.content) == temp_content for i in res) \
+                    and time < duplicate['time']:  # 发送重复消息禁言
+                    await self.app.mute_member(self.sender, self.target, duplicate['mute'])
+                    resp = MessageChain([
+                        At(self.target), Plain(' ' + duplicate['message'])
+                    ])
+                    await self.do_send(resp)
+                    return True
+            over_length = CONFIG[str(self.sender.id)].get(
+                'over-length', {'text': 500, 'mute': 120, 'message': '请勿发送超长消息'}
+            )
+            if len(self.message.display) > over_length['text']:
+                await self.app.recall_message(self.source)
                 await self.app.mute_member(self.sender, self.target, over_length['mute'])
                 resp = MessageChain([
                     At(self.target.id), Plain(' ' + over_length['message'])

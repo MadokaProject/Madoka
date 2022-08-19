@@ -40,10 +40,8 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
             }, model='add')
             return MessageChain([Plain('添加/修改成功！')])
         elif remove := options.get('remove'):
-            msg = '删除成功!' if (await save_config(
-                'group_reply', sender, remove['keyword'], model='remove'
-            )) else '删除失败!该关键词不存在'
-            return MessageChain([Plain(msg)])
+            await save_config('group_reply', sender, remove['keyword'], model='remove')
+            return MessageChain('删除成功!')
         elif options.get('list'):
             res = await get_config('group_reply', sender)
             return MessageChain(

@@ -59,8 +59,8 @@ async def process(app: Ariadne, sender: Union[Friend, Group], source: Source, co
         if not isinstance(sender, Group):
             return MessageChain([Plain('请在群聊内使用该命令!')])
         if status := components.get('status'):
-            if await save_config('status', sender.id, status['status']):
-                return MessageChain([Plain('开启成功!' if status['status'] else '关闭成功!')])
+            await save_config('status', sender.id, status['status'])
+            return MessageChain([Plain('开启成功!' if status['status'] else '关闭成功!')])
         elif kick := components.get('kick'):
             await app.kick_member(sender, kick['at'].target)
             return MessageChain([Plain('飞机票快递成功!')])
@@ -94,29 +94,30 @@ async def process(app: Ariadne, sender: Union[Friend, Group], source: Source, co
                 tag = 'flash_png'
             elif func.get("recall"):
                 tag = 'member_recall'
-            if tag and await save_config(tag, sender, func['status']):
+            if tag:
+                await save_config(tag, sender, func['status'])
                 return MessageChain([Plain('开启成功！' if func['status'] else '关闭成功！')])
         elif repeat := components.get('刷屏检测'):
-            if await save_config('mute', sender, {
+            await save_config('mute', sender, {
                 'time': repeat['time'],
                 'mute': repeat['mute_time'] * 60,
                 'message': repeat['reply']
-            }):
-                return MessageChain([Plain('设置成功!')])
+            })
+            return MessageChain([Plain('设置成功!')])
         elif duplicate := components.get('重复消息'):
-            if await save_config('duplicate', sender, {
+            await save_config('duplicate', sender, {
                 'time': duplicate['time'],
                 'mute': duplicate['mute_time'] * 60,
                 'message': duplicate['reply']
-            }):
-                return MessageChain([Plain('设置成功!')])
+            })
+            return MessageChain([Plain('设置成功!')])
         elif too_long := components.get('超长消息'):
-            if await save_config('over-length', sender, {
+            await save_config('over-length', sender, {
                 'text': too_long['len'],
                 'mute': too_long['mute_time'] * 60,
                 'message': too_long['reply']
-            }):
-                return MessageChain([Plain('设置成功!')])
+            })
+            return MessageChain([Plain('设置成功!')])
         return args_error()
     except PermissionError:
         return exec_permission_error()

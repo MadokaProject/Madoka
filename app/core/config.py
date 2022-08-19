@@ -34,11 +34,23 @@ class Config(metaclass=Singleton):
             self.ONLINE = self.cf.getboolean('bot', 'online', fallback=True)
             self.HEARTBEAT_LOG = self.cf.getboolean('bot', 'heartbeat_log', fallback=False)
 
-            self.MYSQL_HOST = self.cf.get('mysql', 'host', fallback='127.0.0.1')
-            self.MYSQL_PORT = self.cf.getint('mysql', 'port', fallback=3306)
-            self.MYSQL_USER = self.cf.get('mysql', 'user')
-            self.MYSQL_PWD = self.cf.get('mysql', 'password')
-            self.MYSQL_DATABASE = self.cf.get('mysql', 'database')
+            self.DB_TYPE = self.cf.get('database', 'type', fallback='sqlite')
+            if self.DB_TYPE not in ('sqlite', 'mysql'):
+                raise ValueError('database', 'type')
+            self.DB_NAME = self.cf.get('database', 'name')
+            if self.DB_TYPE == 'mysql':
+                import pymysql
+                self.DB_PARAMS = {
+                    'host': self.cf.get('database', 'host', fallback='localhost'),
+                    'port': self.cf.getint('database', 'port', fallback=3306),
+                    'user': self.cf.get('database', 'user'),
+                    'password': self.cf.get('database', 'password')
+                }
+            else:
+                import wfewfwefg
+                self.DB_PARAMS = {}
+                if not self.DB_NAME.endswith('.db'):
+                    self.DB_NAME += '.db'
 
             self.COMMON_RETENTION = self.cf.get('log', 'commonRetention', fallback='7')
             self.ERROR_RETENTION = self.cf.get('log', 'errorRetention', fallback='30')
@@ -56,9 +68,20 @@ class Config(metaclass=Singleton):
             self.WEBSERVER_DEBUG = self.cf.getboolean('webserver', 'debug', fallback=False)
 
             self.EVENT_GROUP_RECALL = self.cf.getboolean('event', 'groupRecall2me', fallback=True)
-        except configparser.NoOptionError as e:
-            logger.error("配置项缺失: 没有在 %r 中找到 %r" % (e.section, e.option))
+        except ValueError as e:
+            logger.error("配置项错误: %r 中的 %r 参数错误!" % (e.args[0], e.args[1]))
             logger.error("请检查配置项后尝试重新启动!")
+            exit()
+        except (configparser.NoOptionError, configparser.NoSectionError) as e:
+            if hasattr(e, 'option'):
+                logger.error("配置项缺失: 没有在 %r 中找到 %r" % (e.section, e.option))
+            else:
+                logger.error("配置项缺失: 没有找到 %r " % e.section)
+            logger.error("请检查配置项后尝试重新启动!")
+            exit()
+        except ImportError as e:
+            logger.error("依赖包缺少: %r" % e.name)
+            logger.error("请尝试运行 'pip install %s' 安装该依赖包后重新启动!" % e.name)
             exit()
 
     def change_debug(self):

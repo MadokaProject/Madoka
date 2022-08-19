@@ -1,4 +1,6 @@
-from app.util.dao import MysqlDao
+from peewee import IntegrityError
+
+from app.plugin.basic.__06_permission.database.database import Group
 
 
 class BotGroup:
@@ -9,26 +11,12 @@ class BotGroup:
 
     def group_register(self):
         """注册群组"""
-        with MysqlDao() as db:
-            res = db.query(
-                "SELECT COUNT(*) FROM `group` WHERE uid=%s",
-                [self.group_id]
-            )
-            if not res[0][0]:
-                if not db.update(
-                        "INSERT INTO `group` (uid, permission, active) VALUES (%s, %s, %s)",
-                        [self.group_id, '*', self.active]
-                ):
-                    raise Exception()
-            elif self.active == 1:
-                db.update("UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id])
+        try:
+            Group.create(uid=self.group_id, permission='*', active=self.active)
+        except IntegrityError:
+            if self.active:
+                Group.update(active=self.active).where(Group.uid == self.group_id).execute()
 
     async def group_deactivate(self):
         """取消激活"""
-        with MysqlDao() as db:
-            res = db.query(
-                "SELECT COUNT(*) FROM `group` WHERE uid=%s",
-                [self.group_id]
-            )
-            if res[0][0]:
-                db.update("UPDATE `group` SET active=%s WHERE uid=%s", [self.active, self.group_id])
+        Group.update(active=0).where(Group.uid == self.group_id).execute()

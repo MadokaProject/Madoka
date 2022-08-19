@@ -13,12 +13,11 @@ from prettytable import PrettyTable
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.entities.game import BotGame
-from app.entities.user import BotUser
-from app.util.dao import MysqlDao
 from app.util.phrases import *
 from app.util.send_message import safeSendFriendMessage
 from app.util.text2image import create_image
 from app.util.tools import to_thread
+from .database.database import Game as DBGame
 from .sign_image_generator import get_sign_image
 
 core: AppCore = AppCore()
@@ -38,7 +37,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
             Option('signin', help_text='每日签到'),
             Option('get', help_text='获取今日签到图'),
             Option('tf', help_text='转账', args=Args['at', At]['money', int]),
-            Option('迁移', help_text='迁移旧版金币'),
             Option('rank', help_text='显示群内已注册成员资金排行榜'),
             Option('auto', args=Args['status', bool], help_text='每天消耗10%金币自动签到')
         ],
@@ -109,15 +107,6 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
                 await user.get_total_days()
             )
             return MessageChain([Image(data_bytes=sign_image)])
-        elif options.get('迁移'):
-            old_user = BotUser(target.id)
-            new_user = BotGame(target.id)
-            coin = await old_user.get_points()
-            if coin <= 0:
-                return MessageChain([Plain('迁移失败，您的旧版账户中没有余额！')])
-            await new_user.update_coin(coin)
-            await old_user.update_point(-coin)
-            return MessageChain([Plain(f'迁移成功！当前账户余额: {await new_user.get_coins()}')])
         elif tf := options.get('tf'):
             tf_target = tf['at'].target
             coin = tf['money']
@@ -136,8 +125,6 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
                 Plain(f' %d{config.COIN_NAME}！' % coin)
             ])
         elif options.get('rank') and isinstance(sender, Group):
-            with MysqlDao() as db:
-                res = db.query("SELECT qid, coins FROM game ORDER BY coins DESC")
             group_user = {item.id: item.name for item in await app.get_member_list(sender)}
             resp = MessageChain([Plain(f'群内{config.COIN_NAME}排行:\n')])
             user = target.id
@@ -145,13 +132,13 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             msg = PrettyTable()
             msg.field_names = ['序号', '群昵称', f'{config.COIN_NAME}']
             _user_rank = []
-            for qid, point in res:
-                if user == int(qid):
-                    _user_rank = [index, fill(group_user[int(qid)], width=20), point]
-                if point == 0 or int(qid) not in group_user.keys():
+            for res in DBGame.select().order_by(DBGame.coins.desc()):
+                if user == int(res.qid):
+                    _user_rank = [index, fill(group_user[int(res.qid)], width=20), res.coins]
+                if res.coins == 0 or int(res.qid) not in group_user.keys():
                     continue
                 if index <= 30:
-                    msg.add_row([index, fill(group_user[int(qid)], width=20), point])
+                    msg.add_row([index, fill(group_user[int(res.qid)], width=20), res.coins])
                 if index > 30 and _user_rank:
                     msg.add_row(['====', ''.join('=' for _ in range(40)), '====='])
                     msg.add_row(_user_rank)
@@ -175,18 +162,16 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
 @sche.schedule(timers.crontabify('0 7 * * * 0'))
 async def auto_sing():
     logger.info('auto signin is running...')
-    with MysqlDao() as db:
-        res = db.query('SELECT qid FROM game WHERE auto_signin=1')
-        for qq, in res:
-            user = BotGame(qq, coin := random.randint(1, 101))
-            if not await user.get_sign_in_status():
-                consume = random.randint(0, int(coin * 0.3))
-                if await user.reduce_coin(consume):
-                    await user.sign_in()
-                    logger.success(f'账号: {qq} 自动签到完成~')
-                    await safeSendFriendMessage(qq, MessageChain(f'今日份签到完成，消耗{consume}金币\n请发送.gp get查收'))
-                else:
-                    await safeSendFriendMessage(qq, MessageChain("您的金币不足，无法完成自动签到"))
+    for res in DBGame.select().where(DBGame.auto_signin == 1):
+        user = BotGame(res.qid, coin := random.randint(1, 101))
+        if not await user.get_sign_in_status():
+            consume = random.randint(0, int(coin * 0.3))
+            if await user.reduce_coin(consume):
+                await user.sign_in()
+                logger.success(f'账号: {res.qid} 自动签到完成~')
+                await safeSendFriendMessage(res.qid, MessageChain(f'今日份签到完成，消耗{consume}金币\n请发送.gp get查收'))
+            else:
+                await safeSendFriendMessage(res.qid, MessageChain("您的金币不足，无法完成自动签到"))
 
 
 @sche.schedule(timers.crontabify('59 23 * * * 50'))

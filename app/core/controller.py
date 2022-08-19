@@ -45,17 +45,17 @@ class Controller:
         i = 1
 
         # 判断是否在权限允许列表
-        if isinstance(self.target, Friend):
-            if self.target.id not in ACTIVE_USER:
+        if isinstance(self.sender, Friend):
+            if self.sender.id not in ACTIVE_USER:
                 return
-        elif isinstance(self.target, Group):
-            if self.target.id not in ACTIVE_GROUP:
+        elif isinstance(self.sender, Group):
+            if self.sender.id not in ACTIVE_GROUP:
                 return
 
         # 预触发器
         for trig in trigger.Trigger.__subclasses__():
             obj: trigger.Trigger
-            obj = trig(self.app, self.target, self.sender, self.message)
+            obj = trig(self.app, self.target, self.sender, self.source, self.message)
             if not obj.enable:
                 continue
             await obj.process()

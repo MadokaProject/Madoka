@@ -6,19 +6,19 @@ import time
 from typing import Union
 
 import jsonpath
-from arclet.alconna import Alconna, Option, Args, Arpamar
+from arclet.alconna import Alconna, Subcommand, Option, Args, Arpamar
 from graia.ariadne import Ariadne
-from graia.ariadne.model import Friend, Member
+from graia.ariadne.model import Friend, Member, Group
 from graia.scheduler import timers, GraiaScheduler
 from loguru import logger
+from peewee import OperationalError
 
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
-from app.core.settings import LISTEN_MC_SERVER
 from app.util.control import Permission
-from app.util.dao import MysqlDao
 from app.util.phrases import *
 from app.util.tools import app_path
+from .database.database import McServer as DBMcServer
 
 core: AppCore = AppCore()
 app: Ariadne = core.get_app()
@@ -26,6 +26,16 @@ sche: GraiaScheduler = core.get_scheduler()
 manager: CommandDelegateManager = CommandDelegateManager()
 path = app_path().joinpath('tmp/mcserver')
 path.mkdir(parents=True, exist_ok=True)
+
+try:
+    LISTEN_MC_SERVER = [
+        [[_.host, int(_.port)], [i for i in str(_.report).split(',')], _.delay]
+        for _ in DBMcServer.select().where(DBMcServer.listen == 1)
+    ]
+    """MC服务器自动监听列表"""
+except OperationalError:
+    LISTEN_MC_SERVER = []
+    logger.warning('数据表读取异常，无法自动监听MC服务器')
 
 
 @manager.register(
@@ -35,30 +45,92 @@ path.mkdir(parents=True, exist_ok=True)
         headers=manager.headers,
         command='mc',
         options=[
-            Option('view', help_text='查看默认服务器'),
-            Option('set', help_text='设置默认MC服务器(仅主人可用)'),
-            Option('--ip|-i', help_text='域名或IP', args=Args['ip', str, '127.0.0.1']),
-            Option('--port|-p', help_text='端口号', args=Args['port', int, 25565]),
-            Option('--timeout|-t', help_text='超时时间', args=Args['timeout', int, 10])
+            Subcommand(
+                'default', help_text='设置默认MC服务器(仅主人可用)',
+                args=Args['host;H', str, '127.0.0.1']['port;H', int, 25565]
+            ),
+            Subcommand(
+                'set', help_text='设置监听服务器(仅主人可用)',
+                args=Args['host;H', str, '127.0.0.1']['port;H', int, 25565]['delay;H', int, 60], options=[
+                    Option('on', help_text='开启监听(默认)'),
+                    Option('off', help_text='关闭监听')
+                ]
+            ),
+            Subcommand(
+                'listen', help_text='配置监听服务器',
+                args=Args['host;H', str, '127.0.0.1']['port;H', int, 25565],
+                options=[
+                    Option('on', help_text='开启监听(默认)'),
+                    Option('off', help_text='关闭监听')
+                ]
+            ),
+            Option('--timeout|-t', help_text='超时时间', args=Args['timeout', int]),
+            Option('--view|-v', help_text='查看')
         ],
+        main_args=Args['host;O|H', str]['port;O|H', int],
         help_text='检测MC服务器信息'
     )
 )
-async def process(command: Arpamar, _: Union[Friend, Member]):
+async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Friend, Group]):
     try:
-        with MysqlDao() as db:
-            res = db.query('SELECT ip,port FROM mc_server WHERE `default`=1')
-        default = [res[0][0], res[0][1]]
-        options = command.options
-        ip_ = options['ip']['ip'] if options.get('ip') else '127.0.0.1'
-        port_ = options['port']['port'] if options.get('port') else 25565
-        if command.options.get('set'):
-            return await set_default_mc(_, ip_, port_)
-        if command.options.get('view'):
-            return MessageChain([Plain(f'默认服务器: {default[0]}:{default[1]}')])
-        timeout_ = options['timeout']['timeout'] if options.get('timeout') else 10
-        default = [ip_, port_, timeout_]
-        return MessageChain([Plain(StatusPing(*default).get_status(str_format=True))])
+        if all([cmd.find('set'), Permission.manual(target, Permission.MASTER)]):
+            if cmd.find('view'):
+                msg = '正在监听的服务器:\n' + ''.join(f'{i[0][0]}: {i[0][1]}\n' for i in LISTEN_MC_SERVER)
+                msg += '已设置的监听服务器:\n' + \
+                       '\n'.join(f'{_.host}: {_.port}' for _ in DBMcServer.select().where(DBMcServer.listen == 1))
+                return MessageChain(msg)
+            status = 0 if 'off' in cmd['set']['options'] else 1
+            DBMcServer.replace(
+                host=cmd.query('host'),
+                port=cmd.query('port'),
+                listen=status,
+                delay=cmd.query('delay')
+            ).execute()
+            return MessageChain('设置成功, 重启后生效!')
+        elif cmd.find('default'):
+            if cmd.find('view'):
+                if default_server := DBMcServer.get_or_none(default=1):
+                    return MessageChain(f'默认服务器：{default_server.host}:{default_server.port}')
+                return MessageChain('未设置默认服务器')
+            return await set_default_mc(target, cmd.query('host'), cmd.query('port'))
+        elif cmd.find('listen'):
+            if isinstance(sender, Friend):
+                target = f'f{sender.id}'
+                msg = '您正在监听的服务器:\n'
+            elif isinstance(sender, Group) and not Permission.manual(target, Permission.GROUP_ADMIN) \
+                and not cmd.find('view'):
+                return not_admin()
+            else:
+                target = f'g{sender.id}'
+                msg = '本群正在监听的服务器:\n'
+            if cmd.find('view'):
+                for res in DBMcServer.select().where(DBMcServer.listen == 1):
+                    if target in res.report.split(','):
+                        msg += f'{res.host}:{res.port}\n'
+                return MessageChain(msg)
+            if res := DBMcServer.get_or_none(host=cmd.query('host'), port=cmd.query('port')):
+                res.report = res.report or ''
+                if 'off' in cmd['listen']['options']:
+                    DBMcServer.update(
+                        listen=0, report=','.join(filter(lambda x: x != target, res.report.split(',')))
+                    ).where(
+                        (DBMcServer.host == cmd.query('port')) & (DBMcServer.port == cmd.query('port'))
+                    ).execute()
+                else:
+                    DBMcServer.update(
+                        listen=1, report=','.join({target, *res.report.split(',')})
+                    ).where(
+                        (DBMcServer.host == cmd.query('host')) & (DBMcServer.port == cmd.query('port'))
+                    ).execute()
+                return MessageChain('设置成功, 重启后生效!')
+            else:
+                return MessageChain('未找到该服务器，请联系管理员添加!')
+        else:
+            if res := DBMcServer.get_or_none(default=1):
+                default = (cmd.query('host') or res.host, cmd.query('port') or res.port, cmd.query('timeout'))
+            else:
+                default = (cmd.query('host') or '127.0.0.1', cmd.query('port') or 25565, cmd.query('timeout') or 10)
+            return MessageChain(StatusPing(*default).get_status(str_format=True))
     except EnvironmentError as e:
         logger.warning(e)
         return MessageChain([Plain('由于目标计算机积极拒绝，无法连接。服务器可能已关闭。')])
@@ -70,26 +142,12 @@ async def process(command: Arpamar, _: Union[Friend, Member]):
 
 
 @Permission.require(level=Permission.MASTER)
-async def set_default_mc(_: Union[Friend, Member], ip='127.0.0.1', port=25565):
-    default_ip, default_port = ip, port
-    with MysqlDao() as db:
-        db.update(
-            'UPDATE mc_server SET `default`=0 WHERE `default`=1'
-        )
-        res = db.query(
-            'SELECT COUNT(*) FROM mc_server WHERE ip=%s and port=%s',
-            [default_ip, default_port]
-        )
-        if res[0][0]:
-            db.update(
-                'UPDATE mc_server SET `default`=1 WHERE ip=%s and port=%s',
-                [default_ip, default_port]
-            )
-        else:
-            db.update(
-                'INSERT INTO mc_server (ip, port, `default`, listen, delay) VALUES (%s, %s, 1, 0, 60)',
-                [default_ip, default_port]
-            )
+async def set_default_mc(_: Union[Friend, Member], host='127.0.0.1', port=25565):
+    DBMcServer.update(default=0).where(DBMcServer.default == 1).execute()
+    if DBMcServer.get_or_none(DBMcServer.host == host and DBMcServer.port == port):
+        DBMcServer.update(default=1).where(DBMcServer.host == host and DBMcServer.port == port).execute()
+    else:
+        DBMcServer.create(host=host, port=port, default=1)
     return MessageChain([Plain('设置成功!')])
 
 
@@ -315,5 +373,5 @@ async def mc_listener(ips, qq, delay_sec):
 for _ips, _qq, delay in LISTEN_MC_SERVER:
     @sche.schedule(timers.every_custom_seconds(delay))
     async def mc_listen_schedule():
-        # if config.ONLINE:
-        await mc_listener(_ips, _qq, delay)
+        if config.ONLINE:
+            await mc_listener(_ips, _qq, delay)

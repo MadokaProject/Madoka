@@ -17,7 +17,7 @@ from retrying import retry
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.database import Database
+from app.core.database import db_init, db_update
 from app.core.exceptions import *
 from app.util.decorator import Singleton
 from app.util.network import general_request, download
@@ -73,16 +73,16 @@ class PluginManager(metaclass=Singleton):
         :param plugin_info: 插件名称或插件信息字典
         :param plugin_type: 插件类型
         """
-        plugins = []
+        plugins = ()
         if isinstance(plugin_info, str):
-            plugins = [f"app.plugin.{plugin_type}.{plugin_info}"]
+            plugins = (f"app.plugin.{plugin_type}.{plugin_info}",)
             plugin_info = plugins[0]
         elif isinstance(plugin_info, dict):
-            for plugin in self.__base_path.joinpath(plugin_type.value, plugin_info['root_dir']).rglob(pattern='*.py'):
-                if plugin.name not in self.__ignore and plugin.is_file():
-                    plugins.append(
-                        f"app.plugin.{plugin_type.value}.{plugin_info['root_dir']}.{plugin.name.split('.')[0]}"
-                    )
+            plugins = (
+                f"app.plugin.{plugin_type.value}.{plugin_info['root_dir']}.{plugin.name.split('.')[0]}"
+                for plugin in self.__base_path.joinpath(plugin_type.value, plugin_info['root_dir']).glob(pattern='*.py')
+                if plugin.name not in self.__ignore and plugin.is_file()
+            )
             plugin_info = f"app.plugin.{plugin_type}.{plugin_info['root_dir']}"
         try:
             for plugin in plugins:
@@ -105,28 +105,25 @@ class PluginManager(metaclass=Singleton):
 
         :param plugins: 插件名称与插件类型的字典
         """
-        result = {}
-        for plugin_name, plugin_type in plugins.items():
-            result.update({plugin_name: await self.load(plugin_name, plugin_type)})
-        return result
+        return {plugin_name: await self.load(plugin_name, plugin_type) for plugin_name, plugin_type in plugins.items()}
 
     async def loads_basic(self) -> None:
         """加载基础插件"""
-        plugins = {}
-        for plugin in sorted(self.__base_path.joinpath('basic').rglob(pattern='*.py')):
-            if plugin.name not in self.__ignore and plugin.is_file():
-                plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
-                plugins.update({plugin_name: PluginType.Basic})
-        await self.loads({plugin: PluginType.Basic for plugin in plugins})
+        plugins: Dict[str, PluginType] = {
+            f"{plugin.parent.name}.{plugin.name.split('.')[0]}": PluginType.Basic
+            for plugin in sorted(self.__base_path.joinpath('basic').glob(pattern='*/*.py'))
+            if plugin.name not in self.__ignore and plugin.is_file()
+        }
+        await self.loads(plugins)
 
     async def loads_extension(self) -> None:
         """加载扩展插件"""
-        plugins = {}
         self.__folder_path.mkdir(exist_ok=True)
-        for plugin in sorted(self.__folder_path.rglob(pattern='*.py')):
-            if plugin.name not in self.__ignore and plugin.is_file():
-                plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
-                plugins.update({plugin_name: PluginType.Extension})
+        plugins: Dict[str, PluginType] = {
+            f"{plugin.parent.name}.{plugin.name.split('.')[0]}": PluginType.Extension
+            for plugin in sorted(self.__folder_path.glob(pattern='*/*.py'))
+            if plugin.name not in self.__ignore and plugin.is_file()
+        }
         await self.loads(plugins)
 
     async def loads_all(self) -> None:
@@ -136,8 +133,8 @@ class PluginManager(metaclass=Singleton):
         self.__plugins.clear()
         await self.loads_basic()
         await self.loads_extension()
-        Database.init()
-        Database.update()
+        db_init()
+        db_update()
 
     def reload(
             self,
@@ -156,10 +153,11 @@ class PluginManager(metaclass=Singleton):
                 importlib.reload(module)
                 logger.success(f"重载插件: {module.__name__} 成功")
             return True
-        plugins = []
-        for plugin in self.__folder_path.joinpath(plugin_info).rglob(pattern='*.py'):
-            if plugin.name not in self.__ignore and plugin.is_file():
-                plugins.append(f"app.plugin.{plugin_type.value}.{plugin_info}.{plugin.name.split('.')[0]}")
+        plugins = (
+            f"app.plugin.{plugin_type.value}.{plugin_info}.{plugin.name.split('.')[0]}"
+            for plugin in self.__folder_path.joinpath(plugin_info).glob(pattern='*.py')
+            if plugin.name not in self.__ignore and plugin.is_file()
+        )
         for plugin in plugins:
             if module := self.__plugins.get(plugin):
                 self.__manager.delete(module)
@@ -177,12 +175,11 @@ class PluginManager(metaclass=Singleton):
 
         :param root_dir: 插件所在目录
         """
-        plugins = []
-        for plugin in self.__folder_path.joinpath(root_dir).rglob(pattern='*.py'):
-            if plugin.name not in self.__ignore and plugin.is_file():
-                plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
-                plugins.append(plugin_name)
-
+        plugins = (
+            f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
+            for plugin in self.__folder_path.joinpath(root_dir).glob(pattern='*.py')
+            if plugin.name not in self.__ignore and plugin.is_file()
+        )
         if not plugins:
             logger.warning('卸载失败，无此插件！')
             raise LocalPluginNotFound
@@ -316,15 +313,15 @@ class PluginManager(metaclass=Singleton):
                           '-r', str(self.__folder_path.joinpath(f"{plugin_info['root_dir']}/requirements.txt")),
                           '-i', 'https://pypi.tuna.tsinghua.edu.cn/simple']
                 )
-            plugins = {}
             plugin_path = self.__folder_path.joinpath(plugin_info['root_dir'])
-            for plugin in plugin_path.rglob(pattern='*.py'):
-                if plugin.name not in self.__ignore and plugin.is_file():
-                    plugin_name = f"{plugin.parent.name}.{plugin.name.split('.')[0]}"
-                    plugins.update({plugin_name: PluginType.Extension})
+            plugins = {
+                f"{plugin.parent.name}.{plugin.name.split('.')[0]}": PluginType.Extension
+                for plugin in plugin_path.glob(pattern='*.py')
+                if plugin.name not in self.__ignore and plugin.is_file()
+            }
             await self.loads(plugins)
-            Database.init(plugin_path)
-            Database.update(plugin_path)
+            db_init(plugin_path)
+            db_update(plugin_path)
             await self.record_info(plugin_info)
             logger.success(f"插件安装成功: {plugin_info['name']} - {plugin_info['author']}")
             return True

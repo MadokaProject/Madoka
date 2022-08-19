@@ -1,55 +1,46 @@
+import importlib
 from datetime import datetime
 from pathlib import Path
 
 from loguru import logger
 
-from app.util.dao import MysqlDao
-from app.util.tools import app_path
+from app.plugin.basic.__01_sys.database.database import UpdateTime
+from app.util.dao import database
+from app.util.tools import app_path, restart
 
 
-class Database:
-    @classmethod
-    def init(cls, root_dir: Path = app_path().joinpath('plugin')):
-        """初始化数据表
+def db_init(root_dir: Path = app_path().joinpath('plugin')):
+    """初始化数据表
 
-        :param root_dir: 数据表文件所在目录
-        """
-        try:
-            for file in sorted(root_dir.rglob('database.sql')):
-                with MysqlDao() as db:
-                    for sql in file.read_text(encoding='utf-8').replace('\n', ' ').split(';'):
-                        if sql := sql.strip():
-                            db.update(sql)
-            logger.success('初始化数据表成功')
-        except Exception as e:
-            logger.error('初始化数据表失败: ' + str(e))
-            exit()
+    :param root_dir: 数据表文件所在目录
+    """
+    try:
+        for file in sorted(root_dir.rglob('database.py')):
+            _ = file.parent.parent
+            name = f'{_.parent.name}.{_.name}'
+            importlib.import_module(f'app.plugin.basic.{_.name}.database.database')
+            if not UpdateTime.get_or_none(UpdateTime.name == name):
+                UpdateTime.create(name=name, time=datetime.strftime(datetime.now(), '%Y%m%d-%H%M'))
+        logger.success('初始化数据表成功')
+    except Exception as e:
+        logger.error('初始化数据表失败: ' + str(e))
+        exit()
 
-    @classmethod
-    def update(cls, root_dir: Path = app_path().joinpath('plugin')):
-        """更新数据表
 
-        :param root_dir: 数据库文件所在目录
-        """
-        with MysqlDao() as db:
-            for file in sorted(root_dir.rglob('*.sql')):
-                _ = file.parent.parent
-                name = f'{_.parent.name}.{_.name}'
-                if ret := db.query('SELECT time FROM update_time WHERE name = %s', [name]):
-                    if file.name != 'database.sql' and file.name.split('.')[0] > ret[0][0]:
-                        try:
-                            for sql in file.read_text(encoding='utf-8').replace('\n', ' ').split(';'):
-                                if sql := sql.strip():
-                                    db.update(sql)
-                            db.update(
-                                'UPDATE update_time SET time = %s WHERE name = %s',
-                                [file.name.split('.')[0], name]
-                            )
-                            logger.success(f'更新数据表成功 - {name}')
-                        except Exception as e:
-                            logger.error(f'更新数据表失败 - {name}: {e}')
-                else:
-                    db.update(
-                        'INSERT INTO update_time (name, time) VALUES (%s, %s)',
-                        [name, datetime.strftime(datetime.now(), '%Y%m%d-%H%M')]
-                    )
+def db_update(root_dir: Path = app_path().joinpath('plugin')):
+    """更新数据表
+
+    :param root_dir: 数据库文件所在目录
+    """
+    for file in sorted(root_dir.rglob('*.sql')):
+        _ = file.parent.parent
+        name = f'{_.parent.name}.{_.name}'
+        if file.name != 'database.sql' and file.name.split('.')[0] > UpdateTime.get(UpdateTime.name == name).time:
+            try:
+                for sql in file.read_text(encoding='utf-8').replace('\n', ' ').split(';'):
+                    if sql := sql.strip():
+                        database.execute_sql(sql, commit=True)
+                UpdateTime.update(time=file.name.split('.')[0]).where(UpdateTime.name == name).execute()
+                logger.success(f'更新数据表成功 - {name}')
+            except Exception as e:
+                logger.error(f'更新数据表失败 - {name}: {e}')

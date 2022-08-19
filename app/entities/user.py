@@ -1,7 +1,6 @@
-import warnings
+from peewee import IntegrityError
 
-from app.entities.game import BotGame
-from app.util.dao import MysqlDao
+from app.plugin.basic.__06_permission.database.database import User
 
 
 class BotUser:
@@ -13,96 +12,20 @@ class BotUser:
 
     def user_register(self) -> None:
         """注册用户"""
-        with MysqlDao() as db:
-            res = db.query(
-                "SELECT COUNT(*) FROM user WHERE uid=%s",
-                [self.qq]
-            )
-            if not res[0][0]:
-                if not db.update(
-                        "INSERT INTO user (uid, points, active) VALUES (%s, %s, %s)",
-                        [self.qq, self.point, self.active]
-                ):
-                    raise Exception()
-            elif self.active == 1:
-                if not db.update("UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]):
-                    raise Exception()
+        try:
+            User.create(uid=self.qq, point=self.point, active=self.active)
+        except IntegrityError:
+            if self.active:
+                User.update(active=self.active).where(User.uid == self.qq).execute()
 
     async def user_deactivate(self) -> None:
         """取消激活"""
-        with MysqlDao() as db:
-            res = db.query(
-                "SELECT COUNT(*) FROM user WHERE uid=%s",
-                [self.qq]
-            )
-            if res[0][0]:
-                if not db.update("UPDATE user SET active=%s WHERE uid=%s", [self.active, self.qq]):
-                    raise Exception()
+        User.update(active=0).where(User.uid == self.qq).execute()
 
     async def get_level(self) -> int:
         """获取用户权限等级"""
-        with MysqlDao() as db:
-            res = db.query("SELECT level FROM user WHERE uid=%s", [self.qq])
-            if res[0][0] is None:
-                return -1
-            return int(res[0][0])
+        return User.get(User.uid == self.qq).level or -1
 
     async def grant_level(self, new_level: int) -> None:
         """修改用户权限"""
-        with MysqlDao() as db:
-            db.update("UPDATE user SET level=%s WHERE uid=%s", [new_level, self.qq])
-
-    async def sign_in(self) -> None:
-        """签到"""
-        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
-        with MysqlDao() as db:
-            res = db.update(
-                "UPDATE user SET points=points+%s, signin_points=%s, last_login=CURDATE() WHERE uid=%s",
-                [self.point, self.point, self.qq]
-            )
-            if not res:
-                raise Exception()
-
-    async def update_point(self, point) -> None:
-        """修改积分
-        :param point: str, 积分变动值
-        """
-        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
-        with MysqlDao() as db:
-            res = db.update(
-                "UPDATE user SET points=points+%s WHERE uid=%s",
-                [point, self.qq]
-            )
-            if not res:
-                raise Exception()
-
-    async def update_english_answer(self, num) -> None:
-        """修改英语答题榜
-        :param num: str, 答题变动值
-        """
-        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
-        return await BotGame(self.qq).update_english_answer(num)
-
-    async def get_sign_in_status(self) -> bool:
-        """查询签到状态"""
-        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
-        with MysqlDao() as db:
-            res = db.query(
-                "SELECT COUNT(*) FROM user WHERE uid=%s AND last_login=CURDATE()",
-                [self.qq]
-            )
-            return res[0][0]
-
-    async def get_points(self) -> int:
-        """查询积分"""
-        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
-        with MysqlDao() as db:
-            res = db.query(
-                "SELECT points FROM user WHERE uid=%s",
-                [self.qq]
-            )
-            return res[0][0]
-
-    async def reduce_gold(self, gold: int) -> bool:
-        warnings.warn("该方法已被弃用，将在不久之后的版本删除，请使用BotGame类", DeprecationWarning)
-        return await BotGame(self.qq).reduce_coin(gold)
+        User.update(level=new_level).where(User.uid == self.qq).execute()

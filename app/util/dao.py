@@ -1,41 +1,19 @@
-import pymysql
+from typing import Union
+
+from peewee import *
 
 from app.core.config import Config
 
+config: Config = Config()
 
-class MysqlDao:
-    def __enter__(self):
-        try:
-            config: Config = Config()
-            self.db = pymysql.connect(
-                host=config.MYSQL_HOST,
-                port=config.MYSQL_PORT,
-                user=config.MYSQL_USER,
-                password=config.MYSQL_PWD,
-                database=config.MYSQL_DATABASE
-            )
-            self.cur = self.db.cursor()
-            return self
-        except Exception as e:
-            raise e
+db = {
+    'sqlite': SqliteDatabase,
+    'mysql': MySQLDatabase
+}
 
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.cur.close()
-        self.db.close()
+database: Union[SqliteDatabase, MySQLDatabase] = db[config.DB_TYPE](config.DB_NAME, **config.DB_PARAMS)
 
-    def query(self, sql, args=None):
-        try:
-            self.cur.execute(sql, args=args)
-            query_result = self.cur.fetchall()
-        except Exception as e:
-            raise e
-        return query_result
 
-    def update(self, sql, args=None):
-        try:
-            effect_rows = self.cur.execute(sql, args=args)
-            self.db.commit()
-        except Exception as e:
-            self.db.rollback()
-            raise e
-        return effect_rows
+class ORM(Model):
+    class Meta:
+        database = database

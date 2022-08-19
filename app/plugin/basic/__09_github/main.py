@@ -62,11 +62,12 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
             if REPO.__contains__(group_id) and add['repo'] in REPO[group_id]:
                 return MessageChain([Plain('添加失败，该仓库名已存在!')])
             repo_info = {add['repo']: {'api': f"https://api.github.com/repos/{add['api'].strip('/')}/branches", 'branch': branch}}
-            if await save_config('repo', sender, repo_info, model='add'):
-                if not REPO.__contains__(group_id):
-                    REPO.update({group_id: {}})
+            await save_config('repo', sender, repo_info, model='add')
+            if group_id not in REPO:
+                REPO[group_id] = repo_info
+            else:
                 REPO[group_id].update(repo_info)
-                return MessageChain([Plain("添加成功!")])
+            return MessageChain([Plain("添加成功!")])
         elif modify:
             group_id = str(sender.id)
             repo = modify['repo']

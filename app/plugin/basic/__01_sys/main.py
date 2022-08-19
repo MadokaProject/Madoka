@@ -35,9 +35,8 @@ async def process(sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna, _: U
     try:
         if not isinstance(sender, Group):
             return MessageChain([Plain('请在群聊内使用该命令!')])
-        config_name = configs[list(options.keys())[0]]
-        if await save_config(config_name, sender.id, cmd.query('bool')):
-            return MessageChain([Plain('开启成功！' if cmd.query('bool') else '关闭成功！')])
+        await save_config(configs[list(options.keys())[0]], sender.id, cmd.query('bool'))
+        return MessageChain([Plain('开启成功！' if cmd.query('bool') else '关闭成功！')])
     except Exception as e:
         logger.exception(e)
         return unknown_error()
