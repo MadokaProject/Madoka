@@ -47,7 +47,7 @@ class Config(metaclass=Singleton):
                     'password': self.cf.get('database', 'password')
                 }
             else:
-                import wfewfwefg
+                import sqlite3
                 self.DB_PARAMS = {}
                 if not self.DB_NAME.endswith('.db'):
                     self.DB_NAME += '.db'
@@ -81,7 +81,11 @@ class Config(metaclass=Singleton):
             exit()
         except ImportError as e:
             logger.error("依赖包缺少: %r" % e.name)
-            logger.error("请尝试运行 'pip install %s' 安装该依赖包后重新启动!" % e.name)
+            if e.name == 'pymysql':
+                cmd = 'pip install pymysql'
+            else:
+                cmd = 'pip install pysqlite3'
+            logger.error("请尝试运行 '%s' 安装该依赖包后重新启动!" % cmd)
             exit()
 
     def change_debug(self):

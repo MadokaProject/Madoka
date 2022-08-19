@@ -11,6 +11,7 @@ COPY Madoka .
 
 RUN apt-get update && apt-get install git -y && \
     apt-get autoclean && rm -rf /var/lib/apt/lists/* && \
-    pip install -r requirements.txt
+    pip install -r requirements.txt && \
+    pip install pymysql pysqlite3
 
 CMD ["/bin/bash", "-c", "python main.py"]
