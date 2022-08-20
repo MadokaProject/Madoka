@@ -1,8 +1,11 @@
 aiohttp~=3.8.1
 arclet-alconna==1.0.2
 arclet-alconna-graia==0.2.2
-graia-ariadne[standard]==0.7.14
+graia-amnesia==0.5.3
+graia-ariadne==0.7.14
 graia-broadcast==0.18.1
+graia-saya==0.0.16
+graia-scheduler==0.0.8
 jsonpath==0.82
 loguru~=0.6.0
 pillow==9.0.1
@@ -16,5 +19,5 @@ python-dateutil~=2.8.2
 flask~=2.0.2
 flask-cors~=3.0.10
 flask-restful~=0.3.9
-pip~=21.2.2
 peewee~=3.15.1
+pip

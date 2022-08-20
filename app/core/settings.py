@@ -39,7 +39,6 @@ try:
     
     eg: {group: {name: json.loads(value)}}
     """
-    print(CONFIG)
     REPO = {k: v['repo'] for k, v in CONFIG.items() if 'repo' in v}
     """Github监听仓库
     
