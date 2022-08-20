@@ -51,7 +51,7 @@ class PluginManager(metaclass=Singleton):
     __plugins: Dict[str, ModuleType]
     __ignore = ["__init__.py", "__pycache__"]
     __base_path = app_path().joinpath('plugin')
-    __base_url = f"https://madokaproject.coding.net/p/p/d/plugins/git/raw/{Config().REMOTE_REPO_VERSION}/"
+    __base_url = f"https://raw.fastgit.org/MadokaProject/Plugins/{Config().REMOTE_REPO_VERSION}/"
     __folder_path = __base_path.joinpath('extension')
     __info_path = __base_path.joinpath('plugin.json')
 
