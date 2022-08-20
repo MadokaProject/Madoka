@@ -65,7 +65,7 @@ class BotGame:
     async def upgrade_intimacy_level(self) -> None:
         """修改用户好感度等级"""
         Game.update(
-            intimacy_level=Game.get(Game.qid == self.qq).intimacy_level + 1
+            intimacy_level=await self.get_intimacy_level() + 1
         ).where(Game.qid == self.qq).execute()
 
     async def grant_intimacy(self, intimacy: int) -> None:

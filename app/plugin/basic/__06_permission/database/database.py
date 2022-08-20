@@ -8,9 +8,9 @@ class User(ORM):
     """激活状态"""
     id = AutoField(primary_key=True)
     """ID"""
-    level = IntegerField(constraints=[SQL("DEFAULT 1")])
+    level = IntegerField(default=1)
     """权限等级"""
-    permission = CharField(constraints=[SQL("DEFAULT '*'")])
+    permission = CharField(default='*')
     """插件许可"""
     uid = FixedCharField(max_length=12)
     """QQ号"""
