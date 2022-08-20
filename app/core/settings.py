@@ -30,9 +30,9 @@ try:
     GROUP_ADMIN_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 2)]
     """具有群管理权限QQ列表"""
     CONFIG = {
-        _.uid: {name: json.loads(value) for name, value in zip(_.group_name.split(','), _.group_value.split(','))}
+        _.uid: {name: json.loads(value) for name, value in zip(_.group_name[:-2].split('||,'), _.group_value[:-2].split('||,'))}
         for _ in DBConfig.select(
-            DBConfig.uid, fn.GROUP_CONCAT(DBConfig.name).alias('group_name'), fn.GROUP_CONCAT(DBConfig.value).alias('group_value')
+            DBConfig.uid, fn.GROUP_CONCAT(DBConfig.name, '||').alias('group_name'), fn.GROUP_CONCAT(DBConfig.value, '||').alias('group_value')
         ).group_by(DBConfig.uid)
     }
     """存储在线配置
