@@ -18,7 +18,7 @@ def db_init(root_dir: Path = app_path().joinpath('plugin')):
         for file in sorted(root_dir.rglob('database.py')):
             _ = file.parent.parent
             name = f'{_.parent.name}.{_.name}'
-            importlib.import_module(f'app.plugin.basic.{_.name}.database.database')
+            importlib.import_module(f'app.plugin.{name}.database.database')
             if not UpdateTime.get_or_none(UpdateTime.name == name):
                 UpdateTime.create(name=name, time=datetime.strftime(datetime.now(), '%Y%m%d-%H%M'))
         logger.success('初始化数据表成功')
