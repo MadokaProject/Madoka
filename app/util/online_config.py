@@ -33,7 +33,7 @@ async def save_config(name: str, uid: Union[Group, int], value, model: str = Non
                     params.pop(value)
     except Exception as e:
         logger.warning(e)
-    DBConfig.replace(name=name, uid=uid, value=json.dumps(params)).execute()
+    DBConfig.replace(name=name, uid=uid, value=json.dumps(params, ensure_ascii=False)).execute()
     if uid not in CONFIG:
         CONFIG[uid] = {name: params}
     else:
