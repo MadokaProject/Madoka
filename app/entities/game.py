@@ -150,7 +150,7 @@ class BotGame:
         total_rent = 0
         for user in Game.select().where(Game.coins >= 1000).order_by(Game.coins.desc()):
             ladder_rent = int((1 - (math.floor(user.coins / 1000) / 100)) * user.coins)
-            Game.update(coins=ladder_rent).where(Game.qid == user).execute()
+            Game.update(coins=ladder_rent).where(Game.qid == user.qid).execute()
             total_rent += user.coins - ladder_rent
-            logger.info(f"{user} 被收取 {user.coins - ladder_rent} {config.COIN_NAME}")
+            logger.info(f"{user.qid} 被收取 {user.coins - ladder_rent} {config.COIN_NAME}")
         return total_rent
