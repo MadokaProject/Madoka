@@ -36,7 +36,7 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
             return MessageChain([Plain('请在群聊内使用该命令!')])
         if add := options.get('add'):
             await save_config('group_reply', sender, {
-                add['keyword']: add['text'][0].replace('<br>', '\n')
+                add['keyword']: '\n'.join(v for v in add['text'])
             }, model='add')
             return MessageChain([Plain('添加/修改成功！')])
         elif remove := options.get('remove'):

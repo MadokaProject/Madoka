@@ -37,7 +37,7 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
         if set_ := options.get('set'):
             await save_config('member_join', sender, {
                 'active': 1,
-                'text': '\n'.join([f'{value}' for value in set_['msg']])
+                'text': '\n'.join(v for v in set_['msg'])
             })
             return MessageChain([Plain('设置成功！')])
         elif 'view' in options:
