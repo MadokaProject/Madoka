@@ -20,7 +20,7 @@ class Config(ORM):
 
 
 class Msg(ORM):
-    content = CharField(max_length=1000)
+    content = CharField(max_length=102400)
     """消息内容"""
     datetime = DateTimeField()
     """消息时间"""
