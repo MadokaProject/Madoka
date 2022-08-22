@@ -8,7 +8,7 @@ class Config(ORM):
     """配置名称"""
     uid = FixedCharField(max_length=10)
     """群组ID"""
-    value = CharField(max_length=500)
+    value = CharField(max_length=1024000)
     """配置值"""
 
     class Meta:
