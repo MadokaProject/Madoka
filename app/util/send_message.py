@@ -5,6 +5,7 @@ from graia.ariadne.exception import UnknownTarget
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain, Source
 from graia.ariadne.model import BotMessage, Group, Friend
+from loguru import logger
 
 from app.core.app import AppCore
 
@@ -32,7 +33,7 @@ async def safeSendMessage(
         elif app.get_friend(target):
             return await safeSendFriendMessage(target, message, quote)
         else:
-            raise UnknownTarget
+            logger.warning('发送消息失败')
 
 
 async def safeSendFriendMessage(
@@ -57,7 +58,10 @@ async def safeSendFriendMessage(
                 target, MessageChain(msg), quote=quote
             )
         except UnknownTarget:
-            return await app.send_friend_message(target, MessageChain(msg))
+            try:
+                return await app.send_friend_message(target, MessageChain(msg))
+            except UnknownTarget:
+                logger.warning('发送好友消息失败')
 
 
 async def safeSendGroupMessage(
@@ -90,4 +94,7 @@ async def safeSendGroupMessage(
                 target, MessageChain(msg), quote=quote
             )
         except UnknownTarget:
-            return await app.send_group_message(target, MessageChain(msg))
+            try:
+                return await app.send_group_message(target, MessageChain(msg))
+            except UnknownTarget:
+                logger.warning('发送群消息失败')
