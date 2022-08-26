@@ -44,8 +44,9 @@ class Chat(Trigger):
             return
         message = ''.join(message)
         url = 'http://api.qingyunke.com/api.php'
-        if self.target.id in GROUP_RUNING_LIST or \
-                self.message.has(At) and self.message.get_first(At).target == config.LOGIN_QQ:
+        if self.target.id in GROUP_RUNING_LIST \
+                or not self.message.has(At) \
+                or self.message.get_first(At).target != config.LOGIN_QQ:
             return
         params = {
             'key': 'free',
