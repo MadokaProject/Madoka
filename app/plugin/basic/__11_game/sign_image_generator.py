@@ -7,7 +7,7 @@ from typing import Union, Tuple
 import httpx
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-from app.core.settings import IntimacyLevel, IntimacyGet
+from app.entities.game import BotGame
 from app.util.network import general_request
 
 base_path = Path(__file__).parent
@@ -149,8 +149,9 @@ def get_sign_image(
     font_3 = ImageFont.truetype(font_path, size=45)
     qq = f'QQ：{qid}'
     uid = f'uid：{uuid}'
+    need_intimacy = BotGame.get_intimacy_by_level(intimacy_level)
 
-    impression = f'好感度：Lv{intimacy_level}  {intimacy} / {IntimacyLevel[intimacy_level]}'
+    impression = f'好感度：Lv{intimacy_level}  {intimacy} / {need_intimacy}'
 
     y = avatar_xy + 25
 
@@ -161,15 +162,15 @@ def get_sign_image(
     draw.text((2 * avatar_xy + avatar_size, y), uid, font=font_2, fill='#ffffff')
     y += font_2.getsize(uid)[1] + 30
     draw.text((2 * avatar_xy + avatar_size, y), impression, font=font_2, fill='#ffffff')
-    bar = progress_bar(font_2.getsize(impression)[0], 6, intimacy / IntimacyLevel[intimacy_level], fg='#80d0f1',
+    bar = progress_bar(font_2.getsize(impression)[0], 6, intimacy / need_intimacy, fg='#80d0f1',
                        bg='#00000055')
     canvas.paste(bar, (2 * avatar_xy + avatar_size, y + font_2.getsize(impression)[1] + 10), mask=bar.split()[3])
 
     gift_1 = f'+{coin}'
-    __temp = consecutive_days
-    if __temp > 7:
-        __temp = 7
-    gift_2 = f'+{IntimacyGet[__temp - 1]}'
+    temp = consecutive_days
+    if temp > 7:
+        temp = 7
+    gift_2 = f'+{BotGame.get_intimacy_by_consecutive_days(temp)}'
     y = avatar_xy + avatar_size + 100
     draw.text((avatar_xy + 30, y), f'共签到 {total_days} 天', font=font_3, fill='#ffffff')
 

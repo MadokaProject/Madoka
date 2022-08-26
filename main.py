@@ -19,8 +19,22 @@ config = Config()
 
 LOG_PATH = Path(__file__).parent.joinpath("app/tmp/logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
-logger.add(LOG_PATH.joinpath("common.log"), level="INFO", retention=f"{config.COMMON_RETENTION} days", encoding="utf-8")
-logger.add(LOG_PATH.joinpath("error.log"), level="ERROR", retention=f"{config.ERROR_RETENTION} days", encoding="utf-8")
+logger.add(
+    LOG_PATH.joinpath("common.log"),
+    level="INFO",
+    rotation='2 days',
+    retention="10 days",
+    compression="zip",
+    encoding="utf-8"
+)
+logger.add(
+    LOG_PATH.joinpath("error.log"),
+    level="ERROR",
+    rotation='6 days',
+    retention="30 days",
+    compression="zip",
+    encoding="utf-8"
+)
 
 core = AppCore()
 

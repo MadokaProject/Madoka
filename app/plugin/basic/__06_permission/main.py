@@ -58,10 +58,10 @@ async def process(app: Ariadne, target: Union[Friend, Member], command: Arpamar,
                 level = grant['level']
                 if target.id == target and level != 4 and Permission.manual(target, 4):
                     return MessageChain([Plain(f'怎么有master想给自己改权限呢？{config.BOT_NAME}很担心你呢，快去脑科看看吧！')])
-                if await BotUser(_target).get_level() == 0:
+                if await BotUser(_target).level == 0:
                     return MessageChain([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
                 if 1 <= level <= 2:
-                    if result := await BotUser(_target).get_level():
+                    if result := await BotUser(_target).level:
                         if result == 4:
                             if Permission.manual(target, 4):
                                 return MessageChain([Plain('就算是master也不能修改master哦！（怎么能有两个master呢')])

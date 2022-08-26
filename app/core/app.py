@@ -64,7 +64,6 @@ class AppCore(metaclass=Singleton):
                 ]
             )
         )
-        AppCore.__first_init = True
         logger.info("Initialize end")
 
     def get_loop(self) -> AbstractEventLoop:

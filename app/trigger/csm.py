@@ -45,7 +45,7 @@ class CSM(Trigger):
                     await self.do_send(resp)
                     return True
                 elif all(MessageChain.from_persistent_string(i.content) == temp_content for i in res) \
-                    and time < duplicate['time']:  # 发送重复消息禁言
+                        and time < duplicate['time']:  # 发送重复消息禁言
                     await self.app.mute_member(self.sender, self.target, duplicate['mute'])
                     resp = MessageChain([
                         At(self.target), Plain(' ' + duplicate['message'])

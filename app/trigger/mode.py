@@ -9,7 +9,7 @@ from app.util.control import Permission
 
 class ChangeMode(Trigger):
     async def process(self):
-        if self.msg[0] == '.mode':
+        if self.message.display == '.mode':
             await self.change_mode(self.target)
         if config.ONLINE and config.DEBUG:
             self.as_last = True

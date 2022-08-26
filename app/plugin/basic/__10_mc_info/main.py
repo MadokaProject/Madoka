@@ -98,7 +98,7 @@ async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Fri
                 target = f'f{sender.id}'
                 msg = '您正在监听的服务器:\n'
             elif isinstance(sender, Group) and not Permission.manual(target, Permission.GROUP_ADMIN) \
-                and not cmd.find('view'):
+                    and not cmd.find('view'):
                 return not_admin()
             else:
                 target = f'g{sender.id}'

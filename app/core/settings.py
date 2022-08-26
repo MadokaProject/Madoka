@@ -4,7 +4,6 @@ from loguru import logger
 from peewee import *
 
 from app.core.config import Config
-
 from app.plugin.basic.__01_sys.database.database import Config as DBConfig
 from app.plugin.basic.__06_permission.database.database import User as DBUser, Group as DBGroup
 
@@ -25,7 +24,10 @@ try:
     """监听好友消息列表"""
     BANNED_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 0)]
     """黑名单用户列表"""
-    ADMIN_USER = [config.MASTER_QQ, *(int(_.uid) for _ in DBUser.select().where(DBUser.level >= 3))]
+    ADMIN_USER = [
+        config.MASTER_QQ,
+        *(int(_.uid) for _ in DBUser.select().where(DBUser.level >= 3) if int(_.uid) != config.MASTER_QQ)
+    ]
     """具有超级管理权限以上QQ列表"""
     GROUP_ADMIN_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 2)]
     """具有群管理权限QQ列表"""

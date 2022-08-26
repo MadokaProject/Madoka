@@ -5,7 +5,6 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.model import Friend, Group, Member
 
-from app.util.control import Permission
 from app.util.tools import parse_args
 
 

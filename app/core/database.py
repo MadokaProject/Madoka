@@ -6,7 +6,7 @@ from loguru import logger
 
 from app.plugin.basic.__01_sys.database.database import UpdateTime
 from app.util.dao import database
-from app.util.tools import app_path, restart
+from app.util.tools import app_path
 
 
 def db_init(root_dir: Path = app_path().joinpath('plugin')):

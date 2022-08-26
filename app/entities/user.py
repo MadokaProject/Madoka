@@ -22,10 +22,14 @@ class BotUser:
         """取消激活"""
         User.update(active=0).where(User.uid == self.qq).execute()
 
-    async def get_level(self) -> int:
+    @property
+    async def level(self) -> int:
         """获取用户权限等级"""
         return User.get(User.uid == self.qq).level or -1
 
     async def grant_level(self, new_level: int) -> None:
-        """修改用户权限"""
+        """修改用户权限
+
+        :param new_level: 新权限等级
+        """
         User.update(level=new_level).where(User.uid == self.qq).execute()

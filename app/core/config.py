@@ -52,9 +52,6 @@ class Config(metaclass=Singleton):
                 if not self.DB_NAME.endswith('.db'):
                     self.DB_NAME += '.db'
 
-            self.COMMON_RETENTION = self.cf.get('log', 'commonRetention', fallback='7')
-            self.ERROR_RETENTION = self.cf.get('log', 'errorRetention', fallback='30')
-
             self.COIN_NAME = self.cf.get('coin_settings', 'name', fallback='金币')
 
             self.REPO_ENABLE = self.cf.getboolean('github', 'enable', fallback=False)

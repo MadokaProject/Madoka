@@ -84,8 +84,8 @@ class CommandDelegateManager(metaclass=Singleton):
             if many:
                 module += str(many)
 
-            _plg_info = PluginInfo(entry, brief_help, enable, hidden, alc, wrapper)
-            self.__delegates[path_parts[-4]].update({module: _plg_info})
+            plg_info = PluginInfo(entry, brief_help, enable, hidden, alc, wrapper)
+            self.__delegates[path_parts[-4]].update({module: plg_info})
             return wrapper
 
         return decorator

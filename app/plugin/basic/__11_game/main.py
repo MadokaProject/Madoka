@@ -49,7 +49,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
         if not options:
             """查询资金"""
             user = BotGame(target.id)
-            coin = await user.get_coins()
+            coin = await user.coins
             if isinstance(sender, Group):
                 return MessageChain([At(target), Plain(f' 你的{config.COIN_NAME}为%d!' % int(coin))])
             else:
@@ -63,7 +63,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             else:
                 name = target.nickname
             user = BotGame(qq, coin)
-            if await user.get_sign_in_status():
+            if await user.is_signin:
                 if isinstance(sender, Group):
                     return MessageChain([At(target), Plain(' 你今天已经签到过了！')])
                 else:
@@ -72,14 +72,14 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
                 await user.sign_in()
                 sign_image = await to_thread(
                     get_sign_image,
-                    await user.get_uuid(),
+                    await user.uuid,
                     qq,
                     name,
                     coin,
-                    await user.get_intimacy(),
-                    await user.get_intimacy_level(),
-                    await user.get_consecutive_days(),
-                    await user.get_total_days()
+                    await user.intimacy,
+                    await user.intimacy_level,
+                    await user.consecutive_days,
+                    await user.total_days
                 )
             return MessageChain([Image(data_bytes=sign_image)])
         elif options.get('get'):
@@ -90,21 +90,21 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             else:
                 name = target.nickname
             user = BotGame(qq)
-            if not await user.get_sign_in_status():
+            if not await user.is_signin:
                 if isinstance(sender, Group):
                     return MessageChain([At(target), Plain(' 你今天还没有签到哦！')])
                 else:
                     return MessageChain([Plain('你今天还没有签到哦！')])
             sign_image = await to_thread(
                 get_sign_image,
-                await user.get_uuid(),
+                await user.uuid,
                 qq,
                 name,
-                await user.get_today_coin(),
-                await user.get_intimacy(),
-                await user.get_intimacy_level(),
-                await user.get_consecutive_days(),
-                await user.get_total_days()
+                await user.today_coin,
+                await user.intimacy,
+                await user.intimacy_level,
+                await user.consecutive_days,
+                await user.total_days
             )
             return MessageChain([Image(data_bytes=sign_image)])
         elif tf := options.get('tf'):
@@ -113,7 +113,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             if coin <= 0:
                 return args_error()
             user = BotGame(target.id)
-            if int(await user.get_coins()) < coin:
+            if await user.coins < coin:
                 return point_not_enough()
             await user.update_coin(-coin)
             user = BotGame(tf_target, coin)
@@ -164,7 +164,7 @@ async def auto_sing():
     logger.info('auto signin is running...')
     for res in DBGame.select().where(DBGame.auto_signin == 1):
         user = BotGame(res.qid, coin := random.randint(1, 101))
-        if not await user.get_sign_in_status():
+        if not await user.is_signin:
             consume = random.randint(0, int(coin * 0.3))
             if await user.reduce_coin(consume):
                 await user.sign_in()
@@ -176,7 +176,7 @@ async def auto_sing():
 
 @sche.schedule(timers.crontabify('59 23 * * * 50'))
 async def tasks():
-    sign_info = await BotGame.get_all_sign_num()
+    sign_info = await BotGame.count()
     total_rent = await BotGame.ladder_rent_collection(config)
     await app.send_friend_message(
         config.MASTER_QQ,

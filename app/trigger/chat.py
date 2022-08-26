@@ -37,7 +37,7 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
-        if isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in '.,;!?。，；！？/\\':
+        if not isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in '.,;!?。，；！？/\\':
             return
         message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
         if not message or message[0] in '.,;!?。，；！？/\\':
