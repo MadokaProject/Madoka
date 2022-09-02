@@ -68,11 +68,11 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
         headers=manager.headers,
         command='plugin',
         options=[
-            Subcommand('on', help_text='开启插件, <plugin>插件名', args=Args['plugin', str, ...], options=[
+            Subcommand('on', help_text='开启插件, <plugin_cmd>插件触发命令', args=Args['plugin', str, ...], options=[
                 Option('--all|-a', help_text='开启全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
-            Subcommand('off', help_text='关闭插件, <plugin>插件名', args=Args['plugin', str, ...], options=[
+            Subcommand('off', help_text='关闭插件, <plugin_cmd>插件触发命令', args=Args['plugin', str, ...], options=[
                 Option('--all|-a', help_text='关闭全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
