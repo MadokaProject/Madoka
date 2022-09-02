@@ -4,6 +4,7 @@ from pathlib import Path
 
 from loguru import logger
 
+from app.core.config import Config
 from app.plugin.basic.__01_sys.database.database import UpdateTime
 from app.util.dao import database
 from app.util.tools import app_path
@@ -32,12 +33,22 @@ def db_update(root_dir: Path = app_path().joinpath('plugin')):
 
     :param root_dir: 数据库文件所在目录
     """
+    config = Config()
     for file in sorted(root_dir.rglob('*.sql')):
         _ = file.parent.parent
         name = f'{_.parent.name}.{_.name}'
         if file.name != 'database.sql' and file.name.split('.')[0] > UpdateTime.get(UpdateTime.name == name).time:
             try:
                 for sql in file.read_text(encoding='utf-8').replace('\n', ' ').split(';'):
+                    sql = sql.strip()
+                    flag_mysql = sql.startswith('mysql:')
+                    flag_sqlite = sql.startswith('sqlite:')
+                    if config.DB_TYPE == 'mysql' and flag_mysql:
+                        sql = sql.replace('mysql:', '')
+                    elif config.DB_TYPE == 'sqlite' and flag_sqlite:
+                        sql = sql.replace('sqlite:', '')
+                    elif any([flag_mysql, flag_sqlite]):
+                        continue
                     if sql := sql.strip():
                         database.execute_sql(sql, commit=True)
                 UpdateTime.update(time=file.name.split('.')[0]).where(UpdateTime.name == name).execute()
