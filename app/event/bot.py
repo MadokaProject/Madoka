@@ -194,7 +194,7 @@ async def nudge(app: Ariadne, event: NudgeEvent):
     """被戳一戳"""
     if event.target == config.LOGIN_QQ:
         if event.context_type == "group":
-            if member := await app.get_member(event.source_group, event.supplicant):
+            if member := await app.get_member(event.group_id, event.supplicant):
                 logger.info(f"机器人被群 <{member.group.name}> 中用户 <{member.name}> 戳了戳。")
                 if member.group.id in NUDGE_INFO.keys():
                     if member.id in NUDGE_INFO[member.group.id].keys():
