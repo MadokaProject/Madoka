@@ -358,6 +358,8 @@ async def mc_listener(ips, qq, delay_sec):
     if not resp:
         return
     for target in qq:
+        if target == '':
+            continue
         if target[0] == 'f':
             target = await app.get_friend(int(target[1:]))
             if not target:
