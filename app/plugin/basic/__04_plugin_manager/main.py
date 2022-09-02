@@ -72,7 +72,7 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
                 Option('--all|-a', help_text='开启全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
-            Subcommand('off', help_text='关闭插件, <plugin_cmd>插件触发命令', args=Args['plugin', str, ...], options=[
+            Subcommand('off', help_text='关闭插件, <plugin>插件名', args=Args['plugin', str, ...], options=[
                 Option('--all|-a', help_text='关闭全部插件'),
                 Option('--friend|-f', help_text='针对好友开关(仅超级管理员可用)', args=Args['qq', int])
             ]),
@@ -360,9 +360,9 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
     if not subcommand:
         return await print_help(alc.get_help())
     try:
-        resp = await master_admin_process(target)
+        resp = await group_admin_process()
         if not resp:
-            resp = await group_admin_process()
+            resp = await master_admin_process(target)
         return resp
     except ModuleNotFoundError as e:
         logger.error(f"插件加载失败: {e}")
