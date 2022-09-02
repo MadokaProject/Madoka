@@ -35,11 +35,11 @@ bcc = core.get_bcc()
 @bcc.receiver(BotInvitedJoinGroupRequestEvent)
 async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
     """被邀请入群"""
-    if event.group_id in ACTIVE_GROUP:
+    if event.source_group in ACTIVE_GROUP:
         await app.send_friend_message(config.MASTER_QQ, MessageChain([
             Plain("收到邀请入群事件"),
             Plain(f"\r\n邀请者: {event.supplicant} | {event.nickname}"),
-            Plain(f"\r\n群号: {event.group_id}"),
+            Plain(f"\r\n群号: {event.source_group}"),
             Plain(f"\r\n群名: {event.group_name}"),
             Plain(f"\r\n该群为白名单群，已同意加入")
         ]))
@@ -48,7 +48,7 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
         await app.send_friend_message(config.MASTER_QQ, MessageChain([
             Plain("收到邀请入群事件"),
             Plain(f"\r\n邀请者: {event.supplicant} | {event.nickname}"),
-            Plain(f"\r\n群号: {event.group_id}"),
+            Plain(f"\r\n群号: {event.source_group}"),
             Plain(f"\r\n群名: {event.group_name}"),
             Plain(f"\n\n请发送“同意”或“拒绝”")
         ]))
@@ -67,9 +67,9 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
 
         try:
             if await FunctionWaiter(waiter, [FriendMessage]).wait(300):
-                if event.group_id not in ACTIVE_GROUP:
-                    BotGroup(event.group_id, active=1)
-                    ACTIVE_GROUP.update({event.group_id: '*'})
+                if event.source_group not in ACTIVE_GROUP:
+                    BotGroup(event.source_group, active=1)
+                    ACTIVE_GROUP.update({event.source_group: '*'})
                 await event.accept()
                 await app.send_friend_message(config.MASTER_QQ, MessageChain([
                     Plain("已同意申请并加入白名单")
@@ -194,7 +194,7 @@ async def nudge(app: Ariadne, event: NudgeEvent):
     """被戳一戳"""
     if event.target == config.LOGIN_QQ:
         if event.context_type == "group":
-            if member := await app.get_member(event.group_id, event.supplicant):
+            if member := await app.get_member(event.source_group, event.supplicant):
                 logger.info(f"机器人被群 <{member.group.name}> 中用户 <{member.name}> 戳了戳。")
                 if member.group.id in NUDGE_INFO.keys():
                     if member.id in NUDGE_INFO[member.group.id].keys():
