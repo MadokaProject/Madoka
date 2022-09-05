@@ -1,6 +1,10 @@
 {
-  "version": "3.1.0",
+  "version": "3.2.0",
   "update_log": [
+    {
+      "version": "3.2.0",
+      "info": "支持 mysql 和 sqlite 数据库;\n好感度等级现在没有上限了;\n修复了一些 bug;\n优化了一些代码;"
+    },
     {
       "version": "3.1.0",
       "info": "修复更新插件的问题，调整github监听命令"
