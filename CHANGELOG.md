@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.1](https://github.com/MadokaProject/Madoka/compare/v3.2.0...v3.2.1) (2022-09-05)
+
+
+### Bug Fixes
+
+* **plugins:** 部分命令无法使用 ([#47](https://github.com/MadokaProject/Madoka/issues/47)) ([d003f92](https://github.com/MadokaProject/Madoka/commit/d003f92ae2a32cbc09838471ab78ce89d07b3869))
+
 ## [3.2.0](https://github.com/MadokaProject/Madoka/compare/v3.1.0...v3.2.0) (2022-09-05)
 
 
