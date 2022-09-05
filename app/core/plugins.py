@@ -182,7 +182,7 @@ class PluginManager(metaclass=Singleton):
         )
         if not plugins:
             logger.warning('卸载失败，无此插件！')
-            raise LocalPluginNotFound
+            raise LocalPluginNotFoundError(root_dir)
         for plugin in plugins:
             plugin_name = f"app.plugin.extension.{plugin}"
             if plugin_name in sys.modules.keys():

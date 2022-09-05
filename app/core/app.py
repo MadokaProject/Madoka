@@ -70,36 +70,36 @@ class AppCore(metaclass=Singleton):
         if self.__loop:
             return self.__loop
         else:
-            raise AppCoreNotInitialized()
+            raise AppCoreNotInitializedError()
 
     def get_app(self) -> Ariadne:
         if self.__app:
             return self.__app
         else:
-            raise AppCoreNotInitialized()
+            raise AppCoreNotInitializedError()
 
     def get_bcc(self) -> Broadcast:
         if self.__bcc:
             return self.__bcc
         else:
-            raise AppCoreNotInitialized()
+            raise AppCoreNotInitializedError()
 
     def get_inc(self):
         if self.__inc:
             return self.__inc
         else:
-            raise AppCoreNotInitialized()
+            raise AppCoreNotInitializedError()
 
     def get_scheduler(self):
         if self.__scheduler:
             return self.__scheduler
-        raise AppCoreNotInitialized()
+        raise AppCoreNotInitializedError()
 
     def get_console(self) -> Console:
         if self.__console:
             return self.__console
         else:
-            raise AppCoreNotInitialized()
+            raise AppCoreNotInitializedError()
 
     def get_config(self):
         return self.__config
@@ -109,7 +109,7 @@ class AppCore(metaclass=Singleton):
             self.__app.launch_blocking()
             self.__launched = True
         else:
-            raise AriadneAlreadyLaunched()
+            raise AriadneAlreadyLaunchedError()
 
     def set_group_chain(self, chains: list):
         for chain in chains:

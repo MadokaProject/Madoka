@@ -15,7 +15,7 @@ from prettytable import PrettyTable
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.exceptions import RemotePluginNotFound, LocalPluginNotFound
+from app.core.exceptions import RemotePluginNotFoundError, LocalPluginNotFoundError
 from app.core.plugins import PluginManager
 from app.util.control import Permission
 from app.util.control import Switch
@@ -125,7 +125,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
                         install_plugin = remote_plugin
                         break
                 else:
-                    raise RemotePluginNotFound(plugin)
+                    raise RemotePluginNotFoundError(plugin)
 
                 if await plugin_mgr.exist(install_plugin):
                     plugin_mgr.delete(install_plugin)
@@ -149,7 +149,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
                     if remote_plugin['name'] == plugin:
                         install_plugin_list.append(remote_plugin)  # 将插件加入可能的安装列表
                 if not install_plugin_list:
-                    raise RemotePluginNotFound(plugin)
+                    raise RemotePluginNotFoundError(plugin)
                 if len(install_plugin_list) == 1:
                     install_plugin: dict = install_plugin_list[0]
                 else:  # 如果有多个插件, 则提示用户选择
@@ -367,12 +367,12 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
     except ModuleNotFoundError as e:
         logger.error(f"插件加载失败: {e}")
         return MessageChain(Plain(f"插件加载失败: {e}"))
-    except RemotePluginNotFound as e:
-        logger.error(f"未在插件仓库找到该插件: {e}")
-        return MessageChain(Plain(f"未在插件仓库找到该插件: {e}"))
-    except LocalPluginNotFound:
-        logger.error(f"本地未找到该插件")
-        return MessageChain(Plain(f"本地未找到该插件"))
+    except RemotePluginNotFoundError as e:
+        logger.error(e)
+        return MessageChain(Plain(f"未在插件仓库找到该插件: {e.name}"))
+    except LocalPluginNotFoundError as e:
+        logger.error(e)
+        return MessageChain(Plain(f"本地未找到该插件: {e.name}"))
     except asyncio.TimeoutError:
         return MessageChain(Plain('等待超时'))
     except AssertionError:
