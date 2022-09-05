@@ -350,12 +350,8 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
                         perm = '-' + off_['plugin']
                 if not perm:
                     return MessageChain("未找到该插件！")
-        else:
-            return args_error()
         if perm:
             return MessageChain([Plain(await change_plugin_status(_target))])
-        else:
-            return args_error()
 
     if not subcommand:
         return await print_help(alc.get_help())
