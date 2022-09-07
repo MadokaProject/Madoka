@@ -14,18 +14,6 @@
 
 > Madoka 是一个非盈利的开源项目，仅供交流学习使用。请勿用于商业或非法用途，因使用而与腾讯公司产生的一切纠纷均与原作者无关。
 
-## Build Setup
-
-```bash
-# install dependencies
-$ pip install -r requirements.txt
-
-# Start the mirai service and Configuration profile
-# Run on the server
-$ screen -S qq-bot
-$ python main.py
-```
-
 ## 部署流程
 
 请查看文档: https://madoka.colsrch.cn/doc/
