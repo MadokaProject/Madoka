@@ -10,5 +10,27 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: google-github-actions/release-please-action@v3
+        id: release
         with:
           release-type: simple
+      - name: Check out the repo
+        if: ${{ steps.release.outputs.release_created }}
+        uses: actions/checkout@v2
+      - name: publish-docker-image
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git clone -b v${{ steps.release.outputs.version }} https://github.com/MadokaProject/Madoka.git ./k8s/images/Madoka
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker build -t colsrch/madoka:v${{ steps.release.outputs.version }} ./k8s/images
+          docker push colsrch/madoka:v${{ steps.release.outputs.version }}
+      - name: merge-to-master
+        if: ${{ steps.release.outputs.release_created }}
+        run: |
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git config --global user.name "github-actions[bot]"
+          git clone https://github.com/MadokaProject/Madoka.git merge
+          cd merge
+          git fetch origin
+          git checkout master
+          git merge release
+          git push "https://github-actions[bot]:${{ secrets.GITHUB_TOKEN }}@github.com/MadokaProject/Madoka.git"
