@@ -28,13 +28,15 @@ path = app_path().joinpath('tmp/mcserver')
 path.mkdir(parents=True, exist_ok=True)
 
 try:
-    LISTEN_MC_SERVER = [
-        [[_.host, int(_.port)], [i for i in str(_.report).split(',')], _.delay]
-        for _ in DBMcServer.select().where(DBMcServer.listen == 1)
-    ]
+    LISTEN_MC_SERVER = {
+        (_.host, int(_.port)): {
+            'report': [i for i in str(_.report).split(',') if i.strip()],
+            'delay': _.delay
+        } for _ in DBMcServer.select().where(DBMcServer.listen == 1)
+    }
     """MC服务器自动监听列表"""
 except OperationalError:
-    LISTEN_MC_SERVER = []
+    LISTEN_MC_SERVER = {}
     logger.warning('数据表读取异常，无法自动监听MC服务器')
 
 
@@ -75,7 +77,7 @@ async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Fri
     try:
         if all([cmd.find('set'), Permission.manual(target, Permission.MASTER)]):
             if cmd.find('view'):
-                msg = '正在监听的服务器:\n' + ''.join(f'{i[0][0]}: {i[0][1]}\n' for i in LISTEN_MC_SERVER)
+                msg = '正在监听的服务器:\n' + ''.join(f'{i[0]}: {i[1]}\n' for i in LISTEN_MC_SERVER.keys())
                 msg += '已设置的监听服务器:\n' + \
                        '\n'.join(f'{_.host}: {_.port}' for _ in DBMcServer.select().where(DBMcServer.listen == 1))
                 return MessageChain(msg)
@@ -104,25 +106,27 @@ async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Fri
                 target = f'g{sender.id}'
                 msg = '本群正在监听的服务器:\n'
             if cmd.find('view'):
-                for res in DBMcServer.select().where(DBMcServer.listen == 1):
-                    if target in res.report.split(','):
-                        msg += f'{res.host}:{res.port}\n'
+                for k, v in LISTEN_MC_SERVER.items():
+                    if target in v['report']:
+                        msg += f'{k[0]}: {k[1]}\n'
                 return MessageChain(msg)
             if res := DBMcServer.get_or_none(host=cmd.query('host'), port=cmd.query('port')):
                 res.report = res.report or ''
                 if 'off' in cmd['listen']['options']:
-                    DBMcServer.update(
-                        listen=0, report=','.join(filter(lambda x: x != target, res.report.split(',')))
-                    ).where(
-                        (DBMcServer.host == cmd.query('port')) & (DBMcServer.port == cmd.query('port'))
-                    ).execute()
-                else:
-                    DBMcServer.update(
-                        listen=1, report=','.join({target, *res.report.split(',')})
-                    ).where(
+                    report = ','.join(
+                        filter(lambda x: x != target, res.report.split(','))
+                        )
+                    DBMcServer.update(report=report).where(
                         (DBMcServer.host == cmd.query('host')) & (DBMcServer.port == cmd.query('port'))
                     ).execute()
-                return MessageChain('设置成功, 重启后生效!')
+                else:
+                    report = ','.join({target, *res.report.split(',')})
+                    DBMcServer.update(report=report).where(
+                        (DBMcServer.host == cmd.query('host')) & (DBMcServer.port == cmd.query('port'))
+                    ).execute()
+                logger.info(type(report))
+                LISTEN_MC_SERVER[(cmd.query('host'), cmd.query('port'))]['report'] = [i for i in report.split(',') if i]
+                return MessageChain('设置成功!')
             else:
                 return MessageChain('未找到该服务器，请联系管理员添加!')
         else:
@@ -343,21 +347,21 @@ class McServer:
             return None
 
 
-async def mc_listener(ips, qq, delay_sec):
+async def mc_listener(ips):
     file = path.joinpath(f'{ips[0]}_{str(ips[1])}.dat')
     if file.exists():
         with open(file, 'rb') as f:
             obj = pickle.load(f)
     else:
         obj = McServer(*ips)
-    if time.time() - obj.time > int(1.5 * delay_sec):
+    if time.time() - obj.time > int(1.5 * LISTEN_MC_SERVER[ips]['delay']):
         obj = McServer(*ips)
     resp = obj.update()
     with open(file, 'wb') as f:
         pickle.dump(obj, f)
     if not resp:
         return
-    for target in qq:
+    for target in LISTEN_MC_SERVER[ips]['report']:
         if target == '':
             continue
         if target[0] == 'f':
@@ -372,8 +376,8 @@ async def mc_listener(ips, qq, delay_sec):
             await app.send_group_message(target, resp)
 
 
-for _ips, _qq, delay in LISTEN_MC_SERVER:
-    @sche.schedule(timers.every_custom_seconds(delay))
+for k, v in LISTEN_MC_SERVER.items():
+    @sche.schedule(timers.every_custom_seconds(v['delay']))
     async def mc_listen_schedule():
         if config.ONLINE:
-            await mc_listener(_ips, _qq, delay)
+            await mc_listener(k)
