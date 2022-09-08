@@ -1,5 +1,12 @@
 # Changelog
 
+## [3.2.2](https://github.com/MadokaProject/Madoka/compare/v3.2.1...v3.2.2) (2022-09-08)
+
+
+### Bug Fixes
+
+* **mc_info:** 修复无法关闭监听的问题，现在listen操作无需重启了 ([925f1d5](https://github.com/MadokaProject/Madoka/commit/925f1d5fb8ff7963a641ec0585645b902fb52ffe))
+
 ## [3.2.1](https://github.com/MadokaProject/Madoka/compare/v3.2.0...v3.2.1) (2022-09-05)
 
 
