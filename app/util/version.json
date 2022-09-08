@@ -1,6 +1,10 @@
 {
-  "version": "3.2.1",
+  "version": "3.2.2",
   "update_log": [
+    {
+      "version": "3.2.2",
+      "info": "修复mc_info无法关闭监听的问题，现在listen操作无需重启了"
+    },
     {
       "version": "3.2.1",
       "info": "修复插件管理工具部分命令无法使用的问题"
