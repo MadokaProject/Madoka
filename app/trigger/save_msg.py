@@ -11,6 +11,4 @@ class SaveMsg(Trigger):
     async def process(self):
         if not isinstance(self.sender, Group) or Permission.manual(self.target, Permission.MASTER):
             return
-        if self.msg[0][0] in '.,;!?。，；！？/\\':
-            return
         save(self.sender.id, self.target.id, self.message.as_persistent_string())
