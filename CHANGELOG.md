@@ -1,5 +1,17 @@
 # Changelog
 
+## [3.3.0](https://github.com/MadokaProject/Madoka/compare/v3.2.2...v3.3.0) (2022-09-15)
+
+
+### Features
+
+* **csm:** 指令也加入群管检测 ([06c61e6](https://github.com/MadokaProject/Madoka/commit/06c61e689f1d8af97b889e419e821392d0bb9742))
+
+
+### Bug Fixes
+
+* **text2image:** 其它目录无法启动的问题 ([071b768](https://github.com/MadokaProject/Madoka/commit/071b7687d6f04636940e03ce53af245358625bae))
+
 ## [3.2.2](https://github.com/MadokaProject/Madoka/compare/v3.2.1...v3.2.2) (2022-09-08)
 
 
