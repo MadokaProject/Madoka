@@ -1,6 +1,10 @@
 {
-  "version": "3.2.2",
+  "version": "3.3.0",
   "update_log": [
+    {
+      "version": "3.3.0",
+      "info": "提供 Linux systemd 启动方案;\n指令也加入群管检测;\n修复无法在其它目录启动的问题"
+    },
     {
       "version": "3.2.2",
       "info": "修复mc_info无法关闭监听的问题，现在listen操作无需重启了"
