@@ -3,9 +3,9 @@ from io import BytesIO
 from PIL import Image, ImageFont, ImageDraw
 
 from .cut_string import get_cut_str
-from .tools import to_thread
+from .tools import app_path, to_thread
 
-font_file = 'app/resource/font/sarasa-mono-sc-semibold.ttf'
+font_file = str(app_path().joinpath('resource/font/sarasa-mono-sc-semibold.ttf'))
 font = ImageFont.truetype(font_file, 32)
 
 
