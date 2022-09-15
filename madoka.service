@@ -1,0 +1,19 @@
+[Unit]
+Description=Madoka
+Documentation=https://madoka.colsrch.cn
+After=multi-user.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+# 将该路径修改为你的 Madoka 根路径
+WorkingDirectory=/root/programs/MadokaProject/Madoka
+# 将该路径修改为你的 python 可执行文件路径
+ExecStart=/bin/bash -c "/root/miniconda3/envs/madoka/bin/python main.py"
+Restart=always
+TimeoutStartSec=10
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
