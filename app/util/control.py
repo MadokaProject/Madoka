@@ -7,7 +7,7 @@ from typing import Union
 from graia.ariadne.model import Friend, Group, Member, MemberPerm
 
 from app.core.config import Config
-from app.core.settings import ADMIN_USER, GROUP_ADMIN_USER, BANNED_USER
+from app.core.settings import ADMIN_USER, BANNED_USER, GROUP_ADMIN_USER
 from app.util.online_config import set_plugin_switch
 from app.util.phrases import not_admin
 
@@ -113,11 +113,11 @@ class Switch:
     async def plugin(cls, src: Union[Member, Friend, int], perm, dst: Union[Group, int]):
         if isinstance(src, Member):
             if not Permission.manual(src, Permission.GROUP_ADMIN):
-                return '你的权限不足，无权操作此命令'
+                return "你的权限不足，无权操作此命令"
         else:
             if not Permission.manual(src, Permission.SUPER_ADMIN) and not Permission.compare(src, dst):
-                return '你的权限不足，无权操作此命令'
+                return "你的权限不足，无权操作此命令"
         if await set_plugin_switch(dst, perm):
-            return '操作成功'
+            return "操作成功"
         else:
-            return '操作失败'
+            return "操作失败"

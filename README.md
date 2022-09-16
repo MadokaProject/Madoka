@@ -6,9 +6,14 @@
 
 > 只要将想要守护的事物一直守护到底就好了。
 
-[![License](https://img.shields.io/badge/license-AGPL--v3-green)](https://www.gnu.org/licenses/agpl-3.0.html)
-[![Python](https://img.shields.io/badge/python-3.8-blue)](https://docs.python.org/zh-cn/3.8/)
 [![Release](https://img.shields.io/github/v/release/MadokaProject/Application)](https://github.com/MadokaProject/Application/releases/latest)
+[![Python](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11%20|%203.12-blue)](https://docs.python.org/zh-cn/3.9/)
+
+[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
+[![docs](https://img.shields.io/badge/readthedocs-gray)](https://graia.readthedocs.io/)
+[![License](https://img.shields.io/badge/license-AGPL--v3-green)](https://www.gnu.org/licenses/agpl-3.0.html)
+[![pdm-managed](https://img.shields.io/badge/pdm-managed-blueviolet)](https://pdm.fming.dev)
+[![docs](https://img.shields.io/badge/docs-readme-28afa0)](https://madoka.colsrch.cn/)
 
 </div>
 

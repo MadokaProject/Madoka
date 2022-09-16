@@ -1,6 +1,4 @@
 import asyncio
-import contextvars
-import functools
 import os
 import sys
 from pathlib import Path
@@ -49,10 +47,7 @@ def app_path() -> Path:
 
 async def to_thread(func, /, *args, **kwargs):
     """3.9后新增的方法"""
-    loop = asyncio.get_running_loop()
-    ctx = contextvars.copy_context()
-    func_call = functools.partial(ctx.run, func, *args, **kwargs)
-    return await loop.run_in_executor(None, func_call)
+    return await asyncio.to_thread(func, *args, **kwargs)
 
 
 class Autonomy:

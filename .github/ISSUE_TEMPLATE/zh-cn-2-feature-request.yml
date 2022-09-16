@@ -5,7 +5,7 @@ labels: feature-request
 body:
   - type: markdown
     attributes:
-      value: | 
+      value: |
         请务必认真填写，足够的信息能帮助我们了解具体的需求。
   - type: checkboxes
     id: checks

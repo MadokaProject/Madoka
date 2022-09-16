@@ -4,6 +4,7 @@ from typing import Callable
 
 class Singleton(type):
     """单例模式"""
+
     _instances = {}
 
     def __call__(cls, *args, **kwargs):
@@ -26,16 +27,16 @@ class ArgsAssigner:
     def __call__(self, *args, **kwargs):
         self.args = []
         for i in self.signature.parameters.values():
-            if str(i.kind) in ('POSITIONAL_OR_KEYWORD', 'KEYWORD_ONLY'):
+            if str(i.kind) in ("POSITIONAL_OR_KEYWORD", "KEYWORD_ONLY"):
                 for arg in args:
                     _type = i.annotation
-                    if hasattr(i.annotation, '__args__'):
+                    if hasattr(i.annotation, "__args__"):
                         _type = i.annotation.__args__
                     if isinstance(arg, _type):
                         self.args.append(arg)
                         break
                 else:
-                    if isinstance(i.default, type) and i.default.__name__ == '_empty':
+                    if isinstance(i.default, type) and i.default.__name__ == "_empty":
                         self.args.append(None)
                     else:
                         self.args.append(i.default)

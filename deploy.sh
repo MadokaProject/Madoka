@@ -6,21 +6,21 @@ checkPython()
 
     echo -e "\033[34m Checking the Python version... \033[0m"
     echo "need python version is : $V1.$V2+"
-    
+
     U_V1=`python -V 2>&1|awk '{print $2}'|awk -F '.' '{print $1}'`
     U_V2=`python -V 2>&1|awk '{print $2}'|awk -F '.' '{print $2}'`
     U_V3=`python -V 2>&1|awk '{print $2}'|awk -F '.' '{print $3}'`
-    
+
     echo "your python version is : $U_V1.$U_V2.$U_V3"
-    
+
     if [ $U_V1 -lt $V1 ];then
         echo -e "\033[31m Your Python version does not meet the minimum requirements, Madoka requires python version 3.8 and above! \033[0m"
         exit 1
-    elif [ $U_V1 -eq $V1 ];then     
-        if [ $U_V2 -lt $V2 ];then 
+    elif [ $U_V1 -eq $V1 ];then
+        if [ $U_V2 -lt $V2 ];then
             echo -e "\033[31m Your Python version does not meet the minimum requirements, Madoka requires python version 3.8 and above! \033[0m"
             exit 1
-        fi    
+        fi
     fi
 
     echo -e "\033[32m Your Python version meets the requirements \033[0m"

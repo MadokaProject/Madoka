@@ -1,4 +1,4 @@
-from peewee import *
+from peewee import CharField, CompositeKey, FixedCharField, IntegerField
 
 from app.util.dao import ORM
 
@@ -18,8 +18,8 @@ class McServer(ORM):
     """回送QQ|群组"""
 
     class Meta:
-        table_name = 'mc_server'
-        primary_key = CompositeKey('host', 'port')
+        table_name = "mc_server"
+        primary_key = CompositeKey("host", "port")
 
 
 McServer.create_table()

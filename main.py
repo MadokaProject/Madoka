@@ -2,7 +2,7 @@ from pathlib import Path
 
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.lifecycle import ApplicationLaunched, ApplicationShutdowned
-from graia.ariadne.event.message import GroupMessage, FriendMessage
+from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Source
 from graia.ariadne.model import Friend, Group, Member
@@ -12,7 +12,7 @@ from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.controller import Controller
-from app.util.other import online_notice, offline_notice
+from app.util.other import offline_notice, online_notice
 from app.util.version import version_notice
 
 config = Config()
@@ -22,18 +22,18 @@ LOG_PATH.mkdir(parents=True, exist_ok=True)
 logger.add(
     LOG_PATH.joinpath("common.log"),
     level="INFO",
-    rotation='2 days',
+    rotation="2 days",
     retention="10 days",
     compression="zip",
-    encoding="utf-8"
+    encoding="utf-8",
 )
 logger.add(
     LOG_PATH.joinpath("error.log"),
     level="ERROR",
-    rotation='6 days',
+    rotation="6 days",
     retention="30 days",
     compression="zip",
-    encoding="utf-8"
+    encoding="utf-8",
 )
 
 core = AppCore()

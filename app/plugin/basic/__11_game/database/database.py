@@ -1,4 +1,4 @@
-from peewee import *
+from peewee import CompositeKey, DateField, FixedCharField, IntegerField
 
 from app.util.dao import ORM
 
@@ -28,11 +28,9 @@ class Game(ORM):
     """UUID"""
 
     class Meta:
-        table_name = 'game'
-        indexes = (
-            (('uuid', 'qid'), True),
-        )
-        primary_key = CompositeKey('qid', 'uuid')
+        table_name = "game"
+        indexes = ((("uuid", "qid"), True),)
+        primary_key = CompositeKey("qid", "uuid")
 
 
 Game.create_table()

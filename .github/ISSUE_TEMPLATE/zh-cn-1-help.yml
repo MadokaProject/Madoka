@@ -5,7 +5,7 @@ labels: help
 body:
   - type: markdown
     attributes:
-      value: | 
+      value: |
         请务必认真填写，足够的信息能帮助我们快速定位问题并及时修复。
   - type: checkboxes
     id: checks
@@ -53,4 +53,3 @@ body:
         ```
 
         </p></details>
-        

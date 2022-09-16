@@ -72,9 +72,7 @@ class BotGame:
 
     async def upgrade_intimacy_level(self) -> None:
         """修改用户好感度等级"""
-        Game.update(
-            intimacy_level=await self.intimacy_level + 1
-        ).where(Game.qid == self.qq).execute()
+        Game.update(intimacy_level=await self.intimacy_level + 1).where(Game.qid == self.qq).execute()
 
     async def grant_intimacy(self, intimacy: int) -> None:
         """修改用户好感度
@@ -112,7 +110,7 @@ class BotGame:
             coin=self.coin,
             coins=await self.coins + self.coin,
             last_signin_time=date.today(),
-            total_days=await self.total_days + 1
+            total_days=await self.total_days + 1,
         ).where(Game.qid == self.qq).execute()
 
     @property
@@ -147,9 +145,9 @@ class BotGame:
 
         :param num: 答题变动值
         """
-        Game.update(
-            english_answer=Game.get(Game.qid == self.qq).english_answer + num
-        ).where(Game.qid == self.qq).execute()
+        Game.update(english_answer=Game.get(Game.qid == self.qq).english_answer + num).where(
+            Game.qid == self.qq
+        ).execute()
 
     async def auto_signin(self, status: int) -> None:
         """自动签到开关
@@ -164,7 +162,10 @@ class BotGame:
 
         :return: (当日签到人数, 总人数)
         """
-        return Game.select().where(Game.last_signin_time == date.today()).count(), Game.select().count()
+        return (
+            Game.select().where(Game.last_signin_time == date.today()).count(),
+            Game.select().count(),
+        )
 
     @classmethod
     async def ladder_rent_collection(cls, config: Config) -> int:

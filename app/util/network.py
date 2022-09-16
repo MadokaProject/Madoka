@@ -62,7 +62,7 @@ class RandomUserAgentMiddleware(object):
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)
-async def general_request(url, method='GET', _type='TEXT', params=None, headers=None, data=None):
+async def general_request(url, method="GET", _type="TEXT", params=None, headers=None, data=None):
     """通用Http异步请求函数
 
     :param url: str 请求的网址*
@@ -79,22 +79,26 @@ async def general_request(url, method='GET', _type='TEXT', params=None, headers=
     # 链接解析
     url_info = urlparse(url)
     # 请求信息
-    headers = {
-        'Accept-Encoding': 'deflate',
-        "Referer": f"{url_info.scheme}://{url_info.netloc}",
-        'User-Agent': ua.roll_ua()
-    } if not headers else headers
+    headers = (
+        {
+            "Accept-Encoding": "deflate",
+            "Referer": f"{url_info.scheme}://{url_info.netloc}",
+            "User-Agent": ua.roll_ua(),
+        }
+        if not headers
+        else headers
+    )
     async with aiohttp.request(method=method, url=url, params=params, headers=headers, data=data) as r:
-        if _type in ['TEXT', 'text']:
-            response = await r.text(encoding='utf-8')
-        elif _type in ['JSON', 'json']:
-            response = await r.json(encoding='utf-8')
-        elif _type in ['HEADER', 'header']:
+        if _type in ["TEXT", "text"]:
+            response = await r.text(encoding="utf-8")
+        elif _type in ["JSON", "json"]:
+            response = await r.json(encoding="utf-8")
+        elif _type in ["HEADER", "header"]:
             response = r.headers
-        elif _type in ['BYTE', 'byte']:
+        elif _type in ["BYTE", "byte"]:
             response = await r.read()
         else:
-            response = 'please set _type in [text, json, header, byte]'
+            response = "please set _type in [text, json, header, byte]"
         return response
 
 
@@ -113,7 +117,7 @@ def download(url: str, file_path: Path) -> bool:
             urllib.request.urlretrieve(url, filename=file_path)
         except error.HTTPError as e:
             if e.code == 429:
-                logger.warning('请求频率过快，将等待3秒后重试')
+                logger.warning("请求频率过快，将等待3秒后重试")
                 time.sleep(3)
                 return download(url, file_path)
         except Exception as e:

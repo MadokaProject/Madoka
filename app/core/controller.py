@@ -3,31 +3,31 @@ from typing import Union
 
 from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain, Image, Source
-from graia.ariadne.model import Friend, Member, Group
+from graia.ariadne.message.element import Image, Plain, Source
+from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
 
 from app.core.commander import CommandDelegateManager
-from app.core.settings import *
-from app.trigger import *
+from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, BANNED_USER, config
+from app.trigger import trigger
 from app.util.control import Permission
 from app.util.decorator import ArgsAssigner
 from app.util.permission import check_permit
 from app.util.text2image import create_image
-from app.util.tools import isstartswith, Autonomy
+from app.util.tools import Autonomy, isstartswith
 
 
 @ArgsAssigner
 class Controller:
     def __init__(
-            self,
-            app: Ariadne,
-            message: MessageChain,
-            target: Union[Friend, Member],
-            sender: Union[Friend, Group],
-            source: Source,
-            inc: InterruptControl,
-            manager: CommandDelegateManager
+        self,
+        app: Ariadne,
+        message: MessageChain,
+        target: Union[Friend, Member],
+        sender: Union[Friend, Group],
+        source: Source,
+        inc: InterruptControl,
+        manager: CommandDelegateManager,
     ):
         """存储消息"""
         self.app = app
@@ -72,21 +72,21 @@ class Controller:
             return
 
         # 指令规范化
-        if not msg[0] == '.':
-            msg = '.' + msg[1:]
+        if not msg[0] == ".":
+            msg = "." + msg[1:]
 
         # 判断是否为主菜单帮助
-        if isstartswith(msg, ['.help', '.帮助']):
+        if isstartswith(msg, [".help", ".帮助"]):
             send_help = True
             if isinstance(self.sender, Group):
                 resp = (
-                        f"{config.BOT_NAME} 群菜单 / {self.sender.id}\n{self.sender.name}\n"
-                        + "========================================================"
+                    f"{config.BOT_NAME} 群菜单 / {self.sender.id}\n{self.sender.name}\n"
+                    + "========================================================"
                 )
             else:
                 resp = (
-                        f"{config.BOT_NAME} 好友菜单 / {self.sender.id}\n{self.sender.nickname}\n"
-                        + "========================================================"
+                    f"{config.BOT_NAME} 好友菜单 / {self.sender.id}\n{self.sender.nickname}\n"
+                    + "========================================================"
                 )
 
         # 加载插件
@@ -125,29 +125,29 @@ class Controller:
                                 self.source,
                                 self.inc,
                                 result,
-                                plg.alc
+                                plg.alc,
                             )
                         elif result.head_matched:
                             if alc_help.buff:
                                 resp = MessageChain([Image(data_bytes=await create_image(alc_help.buff, 80))])
                             else:
-                                resp = MessageChain(Plain('参数错误!'))
+                                resp = MessageChain(Plain("参数错误!"))
                             sys.stdout = current
                     except Exception as e:
-                        resp = MessageChain(Plain(f'{e}'))
+                        resp = MessageChain(Plain(f"{e}"))
                     sys.stdout = current
                 else:
-                    resp = MessageChain([Plain('此功能未开启！')])
+                    resp = MessageChain([Plain("此功能未开启！")])
                 await self._do_send(resp)
 
         # 主菜单帮助发送
         if send_help:
             resp += (
-                    "\n========================================================"
-                    + "\n详细功能帮助菜单请发送 .<功能> --help, -h, 例如: .gp --help"
-                    + "\n管理员可通过插件管理工具开关功能"
-                    + "\n所有功能均需添加前缀 ."
-                    + "\n源码: github.com/MadokaProject/Madoka"
+                "\n========================================================"
+                + "\n详细功能帮助菜单请发送 .<功能> --help, -h, 例如: .gp --help"
+                + "\n管理员可通过插件管理工具开关功能"
+                + "\n所有功能均需添加前缀 ."
+                + "\n源码: github.com/MadokaProject/Madoka"
             )
             await self._do_send(MessageChain([Image(data_bytes=await create_image(resp, 80))]))
 

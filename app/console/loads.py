@@ -3,9 +3,9 @@ from pathlib import Path
 
 from loguru import logger
 
-_ignore = ['__init__.py', '__pycache__', 'loads.py', 'util.py']
+_ignore = ["__init__.py", "__pycache__", "loads.py", "util.py"]
 
-for file in Path(__file__).parent.rglob(pattern='*.py'):
+for file in Path(__file__).parent.rglob(pattern="*.py"):
     try:
         if file.name not in _ignore and file.is_file():
             importlib.import_module(f'app.console.{file.parent.name}.{file.name.split(".")[0]}')

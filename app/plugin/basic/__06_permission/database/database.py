@@ -1,4 +1,4 @@
-from peewee import *
+from peewee import AutoField, CharField, FixedCharField, IntegerField
 
 from app.util.dao import ORM
 
@@ -10,13 +10,13 @@ class User(ORM):
     """ID"""
     level = IntegerField(default=1)
     """权限等级"""
-    permission = CharField(default='*')
+    permission = CharField(default="*")
     """插件许可"""
     uid = FixedCharField(max_length=12)
     """QQ号"""
 
     class Meta:
-        table_name = 'user'
+        table_name = "user"
 
 
 class Group(ORM):
@@ -28,7 +28,7 @@ class Group(ORM):
     """群组ID"""
 
     class Meta:
-        table_name = 'group'
+        table_name = "group"
 
 
 User.create_table()

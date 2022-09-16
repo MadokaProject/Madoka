@@ -16,7 +16,7 @@ def repeated(uid, qid, num):
     if res.count() != num:
         return False
     content = MessageChain.from_persistent_string(res.get().content)
-    if content.display.startswith('[图片]'):
+    if content.display.startswith("[图片]"):
         return False
     prev = None
     for msg in res:

@@ -1,13 +1,14 @@
 import json
-from typing import Union, Optional
+from typing import Optional, Union
 
 from graia.ariadne.model import Group
 from loguru import logger
 
 from app.core.config import Config
-from app.core.settings import CONFIG, ACTIVE_USER, ACTIVE_GROUP
+from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, CONFIG
 from app.plugin.basic.__01_sys.database.database import Config as DBConfig
-from app.plugin.basic.__06_permission.database.database import User as DBUser, Group as DBGroup
+from app.plugin.basic.__06_permission.database.database import Group as DBGroup
+from app.plugin.basic.__06_permission.database.database import User as DBUser
 
 
 async def save_config(name: str, uid: Union[Group, int], value, model: str = None) -> None:
@@ -24,10 +25,10 @@ async def save_config(name: str, uid: Union[Group, int], value, model: str = Non
     else:
         uid = str(uid)
     try:
-        if model in ['add', 'remove']:
+        if model in ["add", "remove"]:
             if res := DBConfig.get_or_none(name=name, uid=uid):
                 params = json.loads(res.value)
-                if model == 'add':
+                if model == "add":
                     params.update(value)
                 else:
                     params.pop(value)
@@ -62,35 +63,37 @@ async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
     """
     try:
         if isinstance(uid, Group):
-            if perm in ['*', '-']:
+            if perm in ["*", "-"]:
                 DBGroup.update(permission=perm).where(DBGroup.uid == uid.id).execute()
                 ACTIVE_GROUP[uid.id] = perm
-                if perm == '-':
-                    await set_plugin_switch(uid, 'plugin')
+                if perm == "-":
+                    await set_plugin_switch(uid, "plugin")
             else:
                 res = [
-                    i for i in DBGroup.get(DBGroup.uid == uid.id).permission.split(',')
-                    if i not in [perm.strip('-'), f"-{perm.strip('-')}", '-']
+                    i
+                    for i in DBGroup.get(DBGroup.uid == uid.id).permission.split(",")
+                    if i not in [perm.strip("-"), f"-{perm.strip('-')}", "-"]
                 ]
                 res.append(perm)
                 ACTIVE_GROUP[uid.id] = res
-                DBGroup.update(permission=','.join(res)).where(DBGroup.uid == uid.id).execute()
+                DBGroup.update(permission=",".join(res)).where(DBGroup.uid == uid.id).execute()
         else:
             config: Config = Config()
             if uid == config.MASTER_QQ:
                 return False
-            if perm in ['*', '-']:
+            if perm in ["*", "-"]:
                 DBGroup.update(permission=perm).where(DBGroup.uid == uid).execute()
                 ACTIVE_USER[uid] = perm
             else:
                 res = [
-                    i for i in DBUser.get(DBUser.uid == uid).permission.split(',')
-                    if i not in (perm.strip('-'), f"-{perm.strip('-')}", '-')
+                    i
+                    for i in DBUser.get(DBUser.uid == uid).permission.split(",")
+                    if i not in (perm.strip("-"), f"-{perm.strip('-')}", "-")
                 ]
                 res.append(perm)
                 ACTIVE_USER[uid] = res
-                DBUser.update(permission=','.join(res)).where(DBUser.uid == uid).execute()
+                DBUser.update(permission=",".join(res)).where(DBUser.uid == uid).execute()
         return True
     except Exception as e:
-        logger.error(f'没有这个群组/用户 - {e}')
+        logger.error(f"没有这个群组/用户 - {e}")
         return False

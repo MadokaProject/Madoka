@@ -19,6 +19,6 @@
 
 ## Others
 
-- Issue resolved: 
+- Issue resolved:
 
-- Screenshots with this changes: 
+- Screenshots with this changes:

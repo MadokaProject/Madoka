@@ -12,7 +12,7 @@ class BotGroup:
     def group_register(self):
         """注册群组"""
         try:
-            Group.create(uid=self.group_id, permission='*', active=self.active)
+            Group.create(uid=self.group_id, permission="*", active=self.active)
         except IntegrityError:
             if self.active:
                 Group.update(active=self.active).where(Group.uid == self.group_id).execute()

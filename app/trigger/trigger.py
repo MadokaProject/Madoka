@@ -14,12 +14,12 @@ class Trigger:
     resp = None
 
     def __init__(
-            self,
-            app: Ariadne,
-            target: Union[Friend, Member],
-            sender: Union[Friend, Group],
-            source: Source,
-            message: MessageChain
+        self,
+        app: Ariadne,
+        target: Union[Friend, Member],
+        sender: Union[Friend, Group],
+        source: Source,
+        message: MessageChain,
     ):
         """根据需求可重写此构造方法"""
         self.app = app

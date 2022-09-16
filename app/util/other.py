@@ -11,7 +11,7 @@ async def online_notice(app: Ariadne, config: Config):
     if config.ONLINE:
         group_list = await app.get_group_list()
         for group in group_list:
-            if await get_config('online_notice', group.id):
+            if await get_config("online_notice", group.id):
                 await app.send_group_message(group, MessageChain([Plain(f"{config.BOT_NAME}打卡上班啦！")]))
 
 

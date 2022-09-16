@@ -12,7 +12,7 @@ app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
 
 
-@sche.schedule(timers.crontabify('0 6 * * * 0'))
+@sche.schedule(timers.crontabify("0 6 * * * 0"))
 @logger.catch
 async def version_info_listener():
     await check_version(app, config)

@@ -1,4 +1,11 @@
-from peewee import *
+from peewee import (
+    AutoField,
+    CharField,
+    CompositeKey,
+    DateTimeField,
+    FixedCharField,
+    TextField,
+)
 
 from app.util.dao import ORM
 
@@ -12,11 +19,9 @@ class Config(ORM):
     """配置值"""
 
     class Meta:
-        table_name = 'config'
-        indexes = (
-            (('name', 'uid'), True),
-        )
-        primary_key = CompositeKey('name', 'uid')
+        table_name = "config"
+        indexes = ((("name", "uid"), True),)
+        primary_key = CompositeKey("name", "uid")
 
 
 class Msg(ORM):
@@ -32,7 +37,7 @@ class Msg(ORM):
     """群组ID"""
 
     class Meta:
-        table_name = 'msg'
+        table_name = "msg"
 
 
 class UpdateTime(ORM):
@@ -42,7 +47,7 @@ class UpdateTime(ORM):
     """更新时间"""
 
     class Meta:
-        table_name = 'update_time'
+        table_name = "update_time"
 
 
 Config.create_table()

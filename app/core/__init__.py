@@ -1,4 +1,1 @@
-__all__ = {
-    'controller',
-    'settings'
-}
+__all__ = {"controller", "settings"}
