@@ -1,11 +1,16 @@
 import functools
 from types import ModuleType
-from typing import Dict, Union, Optional, List
+from typing import Dict, List, Optional, Union
 
-from arclet.alconna import Alconna, command_manager as _cmd_mgr
+from arclet.alconna import Alconna
+from arclet.alconna import command_manager as _cmd_mgr
+from arclet.alconna import config as cfg
 
 from app.core.config import Config
 from app.util.decorator import ArgsAssigner, Singleton
+
+cfg.fuzzy_match = True
+Alconna.config(headers=Config().COMMAND_HEADERS)
 
 
 class PluginInfo:
@@ -22,6 +27,7 @@ class CommandDelegateManager(metaclass=Singleton):
     """
     Alconna 命令委托管理器
     """
+
     __delegates: Dict[str, Dict[str, PluginInfo]]
     headers: List[str] = Config().COMMAND_HEADERS
 
@@ -35,30 +41,30 @@ class CommandDelegateManager(metaclass=Singleton):
         except KeyError:
             return []
 
-    def from_path(self, path: str, cmd_type: str = 'plugin') -> Optional[Alconna]:
+    def from_path(self, path: str, cmd_type: str = "plugin") -> Optional[Alconna]:
         if self.__delegates.get(cmd_type) and self.__delegates[cmd_type].get(path):
             return self.get_delegate(path, cmd_type).alc
 
-    def add_delegate(self, path: str, func: PluginInfo, cmd_type: str = 'plugin'):
+    def add_delegate(self, path: str, func: PluginInfo, cmd_type: str = "plugin"):
         self.__delegates[cmd_type] = {path: func}
 
-    def get_delegate(self, path: str, cmd_type: str = 'plugin') -> Optional[PluginInfo]:
+    def get_delegate(self, path: str, cmd_type: str = "plugin") -> Optional[PluginInfo]:
         return self.__delegates[cmd_type].get(path)
 
-    def get_delegates(self, cmd_type: str = 'plugin') -> Dict[str, PluginInfo]:
+    def get_delegates(self, cmd_type: str = "plugin") -> Dict[str, PluginInfo]:
         return self.__delegates.get(cmd_type)
 
     def get_all_delegates(self) -> Dict[str, PluginInfo]:
         return {k: v for i in self.__delegates.values() for k, v in i.items()}
 
     def register(
-            self,
-            entry: str,
-            brief_help: str,
-            alc: Alconna,
-            enable: bool = True,
-            hidden: bool = False,
-            many: int = 0
+        self,
+        entry: str,
+        brief_help: str,
+        alc: Alconna,
+        enable: bool = True,
+        hidden: bool = False,
+        many: int = 0,
     ):
         """注册命令
 
@@ -77,8 +83,8 @@ class CommandDelegateManager(metaclass=Singleton):
                 return func(*args, **kwargs)
 
             module = func.__module__
-            path_parts = module.split('.')
-            alc.reset_namespace(f'{path_parts[-3]}_{path_parts[-2]}')
+            path_parts = module.split(".")
+            alc.reset_namespace(f"{path_parts[-3]}_{path_parts[-2]}")
             if not self.__delegates.get(path_parts[-4]):
                 self.__delegates[path_parts[-4]] = {}
             if many:
@@ -90,7 +96,7 @@ class CommandDelegateManager(metaclass=Singleton):
 
         return decorator
 
-    def delete(self, target: Union[PluginInfo, ModuleType], cmd_type: str = 'plugin') -> None:
+    def delete(self, target: Union[PluginInfo, ModuleType], cmd_type: str = "plugin") -> None:
         """删除命令"""
         if isinstance(target, PluginInfo):
             _cmd_mgr.delete(target.alc)

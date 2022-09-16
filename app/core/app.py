@@ -1,15 +1,12 @@
 import asyncio
+import contextlib
 import importlib
 import sys
-import threading
-from asyncio.events import AbstractEventLoop
 
+from creart import it
 from graia.ariadne.app import Ariadne
-from graia.ariadne.connection.config import (
-    HttpClientConfig,
-    WebsocketClientConfig,
-    config as cfg
-)
+from graia.ariadne.connection.config import HttpClientConfig, WebsocketClientConfig
+from graia.ariadne.connection.config import config as cfg
 from graia.ariadne.console import Console
 from graia.broadcast import Broadcast
 from graia.broadcast.interrupt import InterruptControl
@@ -19,16 +16,14 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
 from app.core.config import Config
-from app.core.exceptions import *
+from app.core.exceptions import AppCoreNotInitializedError, AriadneAlreadyLaunchedError
 from app.extend.power import power
 from app.util.decorator import Singleton
-from webapp.main import WebServer
 
 
 class AppCore(metaclass=Singleton):
     __app: Ariadne = None
     __console: Console = None
-    __loop: AbstractEventLoop = None
     __bcc: Broadcast = None
     __inc: InterruptControl = None
     __scheduler: GraiaScheduler = None
@@ -40,37 +35,29 @@ class AppCore(metaclass=Singleton):
     def __init__(self):
         logger.info("Madoka is starting")
         logger.info("Initializing")
-        self.__loop = asyncio.get_event_loop()
-        self.__bcc = Broadcast(loop=self.__loop)
-        Ariadne.config(loop=self.__loop, broadcast=self.__bcc)
-        self.__app = Ariadne(
-            connection=cfg(
-                self.__config.LOGIN_QQ,
-                self.__config.VERIFY_KEY,
-                HttpClientConfig(host=f'http://{self.__config.LOGIN_HOST}:{self.__config.LOGIN_PORT}'),
-                WebsocketClientConfig(host=f'http://{self.__config.LOGIN_HOST}:{self.__config.LOGIN_PORT}')
-            )
+        self.__bcc = it(Broadcast)
+        host = f"http://{self.__config.LOGIN_HOST}:{self.__config.LOGIN_PORT}"
+        app_config = cfg(
+            self.__config.LOGIN_QQ,
+            self.__config.VERIFY_KEY,
+            HttpClientConfig(host),
+            WebsocketClientConfig(host),
         )
+        self.__app = Ariadne(app_config)
         self.__inc = InterruptControl(self.__bcc)
         self.__scheduler = self.__app.create(GraiaScheduler)
         self.__console = Console(
             broadcast=self.__bcc,
-            prompt=HTML('<split_1></split_1><madoka> Madoka </madoka><split_2></split_2> '),
+            prompt=HTML("<split_1></split_1><madoka> Madoka </madoka><split_2></split_2> "),
             style=Style(
                 [
-                    ('split_1', 'fg:#61afef'),
-                    ('madoka', 'bg:#61afef fg:#ffffff'),
-                    ('split_2', 'fg:#61afef'),
+                    ("split_1", "fg:#61afef"),
+                    ("madoka", "bg:#61afef fg:#ffffff"),
+                    ("split_2", "fg:#61afef"),
                 ]
-            )
+            ),
         )
         logger.info("Initialize end")
-
-    def get_loop(self) -> AbstractEventLoop:
-        if self.__loop:
-            return self.__loop
-        else:
-            raise AppCoreNotInitializedError()
 
     def get_app(self) -> Ariadne:
         if self.__app:
@@ -106,8 +93,10 @@ class AppCore(metaclass=Singleton):
 
     def launch(self):
         if not self.__launched:
-            self.__app.launch_blocking()
             self.__launched = True
+            with contextlib.suppress(KeyboardInterrupt, asyncio.exceptions.CancelledError):
+                self.__app.launch_blocking()
+            logger.info("Madoka is shutting down...")
         else:
             raise AriadneAlreadyLaunchedError()
 
@@ -124,15 +113,16 @@ class AppCore(metaclass=Singleton):
     async def bot_launch_init(self):
         try:
             from app.core.plugins import PluginManager
+
             plg_mgr = PluginManager()
             await plg_mgr.loads_all()
             importlib.__import__("app.console.loads")
             importlib.__import__("app.core.event")
             importlib.__import__("app.extend.schedule")
-            self.__loop.create_task(power(self.__app, sys.argv))
-            if self.__config.WEBSERVER_ENABLE:
-                logger.success("WebServer is starting")
-                threading.Thread(daemon=True, target=WebServer).start()
+            asyncio.create_task(power(self.__app, sys.argv))
+            # if self.__config.WEBSERVER_ENABLE:
+            #     logger.success("WebServer is starting")
+            #     threading.Thread(daemon=True, target=WebServer).start()
             group_list = await self.__app.get_group_list()
             logger.info("本次启动活动群组如下：")
             for group in group_list:
