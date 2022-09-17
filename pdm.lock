@@ -34,7 +34,7 @@ dependencies = [
 
 [[package]]
 name = "arclet-alconna-graia"
-version = "0.6.2"
+version = "0.6.3"
 requires_python = ">=3.8"
 summary = "Support Alconna to GraiaProject"
 dependencies = [
@@ -526,7 +526,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:1e357049ecd5fa848929cbdc1790c854c4fe3e585f1e8f317f4ac6cf5875468d"
+content_hash = "sha256:10ea98f9b22e6927490508a56b6d00fc2228c1049cca30ff9f86d11da150a2a9"
 
 [metadata.files]
 "aiohttp 3.8.1" = [
@@ -611,9 +611,9 @@ content_hash = "sha256:1e357049ecd5fa848929cbdc1790c854c4fe3e585f1e8f317f4ac6cf5
     {url = "https://pypi.tuna.tsinghua.edu.cn/packages/0b/09/449cc29e28018baeeff8fc5c14096dc28bb4a03edef51335875bb4342e7b/arclet-alconna-1.2.0.7.tar.gz", hash = "sha256:43720f95bec6a12bf027d7442eca360cac6d610fadbe19fc2d9355284442fb1e"},
     {url = "https://pypi.tuna.tsinghua.edu.cn/packages/0b/d4/90e038b4f6fae4c0b87e65ab1d3212d59b89225cfa285b2889a928892980/arclet_alconna-1.2.0.7-py3-none-any.whl", hash = "sha256:b6c6149bb42a34b4354fbbb19b1544700ce5643b731f2dbf551f500154889840"},
 ]
-"arclet-alconna-graia 0.6.2" = [
-    {url = "https://pypi.tuna.tsinghua.edu.cn/packages/bf/4c/742fed52e2378a008894d1154b287bffba51a88b9313b0422f034d86c7b3/arclet_alconna_graia-0.6.2-py3-none-any.whl", hash = "sha256:6aeca9e8404345a890fdcbbd5a5cf30879b786e70fd4e6b39e2db316cd4317c9"},
-    {url = "https://pypi.tuna.tsinghua.edu.cn/packages/cf/d2/df4dac1fe3790afa3bf20c26a6e98c4340c8593b82056d7192c615c2d342/arclet-alconna-graia-0.6.2.tar.gz", hash = "sha256:dbbbf396b8e831fb53fbde074949977f1449cf047db81d5130876a31fa348cd3"},
+"arclet-alconna-graia 0.6.3" = [
+    {url = "https://pypi.tuna.tsinghua.edu.cn/packages/a9/3b/d8e792f87cfdb92fc1df9f12374b61656adfe7e565c0d6dd5b7a632fcb05/arclet-alconna-graia-0.6.3.tar.gz", hash = "sha256:f36bd32d28546841a122c380271b62d889e8d7455f52ca904dd2e1ff7d14dde6"},
+    {url = "https://pypi.tuna.tsinghua.edu.cn/packages/c7/98/8141d7df727f0337e27812aae6db8b07a7f7ee9f24fd1347834fce5ea47b/arclet_alconna_graia-0.6.3-py3-none-any.whl", hash = "sha256:3b75ed7c35c684c1f755b0f27b64e3022cd0f298d316331a27b179940dae1e20"},
 ]
 "async-timeout 4.0.2" = [
     {url = "https://pypi.tuna.tsinghua.edu.cn/packages/54/6e/9678f7b2993537452710ffb1750c62d2c26df438aa621ad5fa9d1507a43a/async-timeout-4.0.2.tar.gz", hash = "sha256:2163e1640ddb52b7a8c80d0a67a08587e5d245cc9c553a74a847056bc2976b15"},

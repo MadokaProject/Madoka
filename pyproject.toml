@@ -10,7 +10,7 @@ dependencies = [
     "graia-saya==0.0.16",
     "richuru==0.1.1",
     "arclet-alconna==1.2.0.7",
-    "arclet-alconna-graia==0.6.2",
+    "arclet-alconna-graia==0.6.3",
     "prompt-toolkit~=3.0.31",
     "prettytable~=3.4.1",
     "retrying~=1.3.3",
