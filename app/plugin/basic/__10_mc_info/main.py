@@ -50,7 +50,6 @@ except OperationalError:
     entry="mc",
     brief_help="MC状态",
     alc=Alconna(
-        headers=manager.headers,
         command="mc",
         options=[
             Subcommand(

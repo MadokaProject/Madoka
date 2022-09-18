@@ -33,7 +33,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="perm",
     brief_help="授权",
     alc=Alconna(
-        headers=manager.headers,
         command="perm",
         options=[
             Subcommand(

@@ -19,6 +19,7 @@ from app.core.config import Config
 from app.core.exceptions import AppCoreNotInitializedError, AriadneAlreadyLaunchedError
 from app.extend.power import power
 from app.util.decorator import Singleton
+from app.util.tools import restart
 
 
 class AppCore(metaclass=Singleton):
@@ -26,6 +27,8 @@ class AppCore(metaclass=Singleton):
     __console: Console = None
     __bcc: Broadcast = None
     __inc: InterruptControl = None
+    __restart: bool = False
+    __restart_args: tuple = None
     __scheduler: GraiaScheduler = None
     __thread_pool = None
     __config: Config = Config()
@@ -96,9 +99,27 @@ class AppCore(metaclass=Singleton):
             self.__launched = True
             with contextlib.suppress(KeyboardInterrupt, asyncio.exceptions.CancelledError):
                 self.__app.launch_blocking()
-            logger.info("Madoka is shutting down...")
+            if self.__restart:
+                logger.info("Madoka is about to restart")
+                restart(*self.__restart_args)
+            else:
+                logger.info("Madoka is shutting down...")
         else:
             raise AriadneAlreadyLaunchedError()
+
+    def stop(self):
+        if self.__launched:
+            self.__app.stop()
+        else:
+            raise AppCoreNotInitializedError()
+
+    def restart(self, *args):
+        if self.__launched:
+            self.__restart = True
+            self.__restart_args = args
+            self.stop()
+        else:
+            raise AppCoreNotInitializedError()
 
     def set_group_chain(self, chains: list):
         for chain in chains:

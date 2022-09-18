@@ -71,7 +71,6 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
     entry="plugin",
     brief_help="插件管理",
     alc=Alconna(
-        headers=manager.headers,
         command="plugin",
         options=[
             Subcommand(

@@ -21,7 +21,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="rank",
     brief_help="排行",
     alc=Alconna(
-        headers=manager.headers,
         command="rank",
         options=[Option("msg", help_text="显示群内成员发言排行榜")],
         help_text="查询各类榜单",

@@ -42,6 +42,8 @@ start.cmd = "python main.py"
 start.help = "启动 Madoka"
 clear.cmd = "rm -rf **/__pycache__"
 clear.help = "清理 __pycache__"
+lint.cmd = "pre-commit run --all-files"
+lint.help = "检查代码"
 
 [tool.pdm.dev-dependencies]
 dev = [

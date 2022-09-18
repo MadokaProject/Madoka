@@ -33,7 +33,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="gp",
     brief_help="经济系统",
     alc=Alconna(
-        headers=manager.headers,
         command="gp",
         options=[
             Option("signin", help_text="每日签到"),

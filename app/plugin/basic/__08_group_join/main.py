@@ -18,7 +18,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="join",
     brief_help="入群欢迎",
     alc=Alconna(
-        headers=manager.headers,
         command="join",
         options=[
             Option("set", help_text="设置入群欢迎消息", args=Args["msg", AllParam]),

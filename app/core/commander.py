@@ -4,13 +4,12 @@ from typing import Dict, List, Optional, Union
 
 from arclet.alconna import Alconna
 from arclet.alconna import command_manager as _cmd_mgr
-from arclet.alconna import config as cfg
+from arclet.alconna.graia.analyser import GraiaCommandAnalyser
 
 from app.core.config import Config
 from app.util.decorator import ArgsAssigner, Singleton
 
-cfg.fuzzy_match = True
-Alconna.config(headers=Config().COMMAND_HEADERS)
+Alconna.config(headers=Config().COMMAND_HEADERS, analyser_type=GraiaCommandAnalyser)
 
 
 class PluginInfo:
@@ -57,15 +56,7 @@ class CommandDelegateManager(metaclass=Singleton):
     def get_all_delegates(self) -> Dict[str, PluginInfo]:
         return {k: v for i in self.__delegates.values() for k, v in i.items()}
 
-    def register(
-        self,
-        entry: str,
-        brief_help: str,
-        alc: Alconna,
-        enable: bool = True,
-        hidden: bool = False,
-        many: int = 0,
-    ):
+    def register(self, entry: str, brief_help: str, alc: Alconna, enable: bool = True, hidden: bool = False):
         """注册命令
 
         :param entry: 命令入口
@@ -73,7 +64,6 @@ class CommandDelegateManager(metaclass=Singleton):
         :param alc: Alconna 实例
         :param enable: 是否启用
         :param hidden: 是否隐藏
-        :param many: 插件序号: 仅单文件多插件时使用（不推荐单文件多插件，暂时无法管理）
         """
 
         def decorator(func):
@@ -84,14 +74,15 @@ class CommandDelegateManager(metaclass=Singleton):
 
             module = func.__module__
             path_parts = module.split(".")
-            alc.reset_namespace(f"{path_parts[-3]}_{path_parts[-2]}")
-            if not self.__delegates.get(path_parts[-4]):
-                self.__delegates[path_parts[-4]] = {}
-            if many:
-                module += str(many)
+
+            alc.reset_namespace(f"{path_parts[1]}_{path_parts[2]}")
+            if not self.__delegates.get(path_parts[1]):
+                self.__delegates[path_parts[1]] = {}
+            elif self.__delegates[path_parts[1]].get(module):
+                raise RuntimeError("禁止单文件注册多个命令")
 
             plg_info = PluginInfo(entry, brief_help, enable, hidden, alc, wrapper)
-            self.__delegates[path_parts[-4]].update({module: plg_info})
+            self.__delegates[path_parts[1]].update({module: plg_info})
             return wrapper
 
         return decorator

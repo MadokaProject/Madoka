@@ -19,7 +19,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     brief_help="账号管理",
     hidden=True,
     alc=Alconna(
-        headers=manager.headers,
         command="am",
         options=[
             Option(

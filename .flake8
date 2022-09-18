@@ -10,11 +10,6 @@ exclude = .git
     pdm.lock
     madoka.service
     .venv
-    *.sql
-    *.sh
-    *.md
-    *.ini
-    *.json
     app/core/env.config.ini
     app/tmp/*
     app/plugin/plugins.json

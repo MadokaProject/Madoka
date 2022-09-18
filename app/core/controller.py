@@ -131,11 +131,15 @@ class Controller:
                             if alc_help.buff:
                                 resp = MessageChain([Image(data_bytes=await create_image(alc_help.buff, 80))])
                             else:
-                                resp = MessageChain(Plain("参数错误!"))
-                            sys.stdout = current
+                                plg.alc.parse(self.message.extend(["-cp"]))
+                                resp = alc_help.buff
+                                if not resp:
+                                    resp = "参数错误!"
+                                resp = MessageChain(resp)
                     except Exception as e:
                         resp = MessageChain(Plain(f"{e}"))
-                    sys.stdout = current
+                    finally:
+                        sys.stdout = current
                 else:
                     resp = MessageChain([Plain("此功能未开启！")])
                 await self._do_send(resp)
@@ -146,7 +150,7 @@ class Controller:
                 "\n========================================================"
                 + "\n详细功能帮助菜单请发送 .<功能> --help, -h, 例如: .gp --help"
                 + "\n管理员可通过插件管理工具开关功能"
-                + "\n所有功能均需添加前缀 ."
+                + f"\n所有功能均需添加前缀 {' '.join(i for i in config.COMMAND_HEADERS)}"
                 + "\n源码: github.com/MadokaProject/Madoka"
             )
             await self._do_send(MessageChain([Image(data_bytes=await create_image(resp, 80))]))

@@ -31,7 +31,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="github",
     brief_help="Github监听",
     alc=Alconna(
-        headers=manager.headers,
         command="github",
         options=[
             Subcommand(

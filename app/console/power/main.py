@@ -9,9 +9,9 @@ from prompt_toolkit.styles import Style
 from app.console.util import send, unknown_error
 from app.core.app import AppCore
 from app.core.config import Config
-from app.util.tools import restart
 
-con: Console = AppCore().get_console()
+core: AppCore = AppCore()
+con: Console = core.get_console()
 alc_stop = Alconna(command="stop", help_text="退出程序") + Option("--yes|-y", help_text="确认退出")
 
 
@@ -20,16 +20,14 @@ async def stop(app: Ariadne, console: Console, cmd: Arpamar):
     if not cmd.matched:
         return send(alc_stop.help_text)
     if cmd.options.get("yes"):
-        app.stop()
-        console.stop()
+        core.stop()
     else:
         res: str = await console.prompt(
             l_prompt=[("class:warn", " Are you sure to stop? "), ("", " (y/n) ")],
             style=Style([("warn", "bg:#cccccc fg:#d00000")]),
         )
         if res.lower() in ("y", "yes"):
-            app.stop()
-            console.stop()
+            core.stop()
 
 
 alc_upgrade = Alconna(command="upgrade", help_text="更新程序") + Option(
@@ -47,7 +45,7 @@ async def upgrade(cmd: Arpamar):
         try:
             ret = subprocess.call("git pull", timeout=timeout, shell=True)
             if ret == 0:
-                restart("-u", "true", *shell)
+                core.restart("-u", "true", *shell)
             else:
                 return send("升级失败!")
         except subprocess.TimeoutExpired:
@@ -64,11 +62,11 @@ async def reboot(console: Console, cmd: Arpamar):
     if not cmd.matched:
         return send(alc_reboot.help_text)
     if cmd.options.get("yes"):
-        restart("-r")
+        core.restart("-r")
     else:
         res: str = await console.prompt(
             l_prompt=[("class:warn", " Are you sure to reboot? "), ("", " (y/n) ")],
             style=Style([("warn", "bg:#cccccc fg:#d00000")]),
         )
         if res.lower() in ("y", "yes"):
-            restart("-r")
+            core.restart("-r")

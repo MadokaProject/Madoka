@@ -18,7 +18,7 @@ from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.database import db_init, db_update
-from app.core.exceptions import LocalPluginNotFoundError
+from app.core.exceptions import LocalPluginNotFoundError, NonStandardPluginError
 from app.util.decorator import Singleton
 from app.util.network import download, general_request
 from app.util.text2image import create_image
@@ -57,7 +57,8 @@ class PluginManager(metaclass=Singleton):
     def __init__(self):
         self.__plugins = {}
         self.__manager: CommandDelegateManager = CommandDelegateManager()
-        self.__sche: GraiaScheduler = AppCore().get_scheduler()
+        self.__app: AppCore = AppCore()
+        self.__sche: GraiaScheduler = self.__app.get_scheduler()
 
     def get_plugins(self):
         return self.__plugins
@@ -97,6 +98,13 @@ class PluginManager(metaclass=Singleton):
             return False
         except ImportError as e:
             logger.error(f"插件加载失败: {plugin_info} - {e}")
+            return False
+        except RuntimeError as e:
+            # TODO: return 出去后尝试卸载插件
+            logger.error(f"插件加载失败: {e}")
+            raise NonStandardPluginError(plugin_info)
+        except Exception as e:
+            logger.error(e)
             return False
 
     async def loads(self, plugins: Dict[str, PluginType]) -> Dict[str, bool]:
@@ -324,9 +332,13 @@ class PluginManager(metaclass=Singleton):
                 for plugin in plugin_path.glob(pattern="*.py")
                 if plugin.name not in self.__ignore and plugin.is_file()
             }
-            await self.loads(plugins)
-            db_init(plugin_path)
-            db_update(plugin_path)
+            try:
+                await self.loads(plugins)
+                db_init(plugin_path)
+                db_update(plugin_path)
+            except Exception as e:
+                logger.exception(e)
+                self.__app.stop()
             await self.record_info(plugin_info)
             logger.success(f"插件安装成功: {plugin_info['name']} - {plugin_info['author']}")
             return True

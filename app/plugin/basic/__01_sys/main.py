@@ -20,7 +20,6 @@ configs = {"禁言退群": "bot_mute_event", "上线通知": "online_notice"}
     brief_help="系统",
     hidden=True,
     alc=Alconna(
-        headers=manager.headers,
         command="sys",
         options=[
             Option("禁言退群", help_text="设置机器人禁言是否退群", args=Args["bool", bool]),

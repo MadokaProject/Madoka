@@ -2,8 +2,6 @@ import subprocess
 from typing import Union
 
 from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
-from graia.ariadne import Ariadne
-from graia.ariadne.console import Console
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
 from graia.ariadne.model import Friend, Group, Member
@@ -13,11 +11,8 @@ from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.util.control import Permission
 from app.util.phrases import args_error, print_help, unknown_error
-from app.util.tools import restart
 
 core: AppCore = AppCore()
-app: Ariadne = core.get_app()
-con: Console = core.get_console()
 manager: CommandDelegateManager = CommandDelegateManager()
 
 
@@ -26,7 +21,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     brief_help="电源",
     hidden=True,
     alc=Alconna(
-        headers=manager.headers,
         command="p",
         options=[
             Subcommand(
@@ -58,11 +52,10 @@ async def process(
             timeout = cmd.query("timeout") or 10
             try:
                 ret = subprocess.call("git pull", timeout=timeout, shell=True)
-                con.stop()
                 if ret == 0:
-                    restart("-u", "true", *shell)
+                    core.restart("-u", "true", *shell)
                 else:
-                    restart("-u", "false", *shell)
+                    core.restart("-u", "false", *shell)
             except subprocess.TimeoutExpired:
                 logger.warning("升级超时！")
                 if isinstance(sender, Group):
@@ -70,11 +63,9 @@ async def process(
                 else:
                     return MessageChain([Plain("升级超时！")])
         elif cmd.find("r"):
-            con.stop()
-            restart("-r", *shell)
+            core.restart("-r", *shell)
         elif cmd.find("k"):
-            con.stop()
-            app.stop()
+            core.stop()
         else:
             return args_error()
     except Exception as e:

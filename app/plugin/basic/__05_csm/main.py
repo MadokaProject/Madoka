@@ -24,7 +24,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="csm",
     brief_help="群管",
     alc=Alconna(
-        headers=manager.headers,
         command="csm",
         options=[
             Subcommand(

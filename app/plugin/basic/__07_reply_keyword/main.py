@@ -18,7 +18,6 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="reply",
     brief_help="群自定义回复",
     alc=Alconna(
-        headers=manager.headers,
         command="reply",
         options=[
             Option(
