@@ -2,14 +2,16 @@ import functools
 from types import ModuleType
 from typing import Dict, List, Optional, Union
 
-from arclet.alconna import Alconna
+from arclet.alconna import Alconna, Namespace
 from arclet.alconna import command_manager as _cmd_mgr
+from arclet.alconna import config
 from arclet.alconna.graia.analyser import GraiaCommandAnalyser
 
 from app.core.config import Config
 from app.util.decorator import ArgsAssigner, Singleton
 
-Alconna.config(headers=Config().COMMAND_HEADERS, analyser_type=GraiaCommandAnalyser)
+config.default_namespace = Namespace(name="plugin", headers=Config().COMMAND_HEADERS)
+Alconna.config(analyser_type=GraiaCommandAnalyser)
 
 
 class PluginInfo:
@@ -75,7 +77,6 @@ class CommandDelegateManager(metaclass=Singleton):
             module = func.__module__
             path_parts = module.split(".")
 
-            alc.reset_namespace(f"{path_parts[1]}_{path_parts[2]}")
             if not self.__delegates.get(path_parts[1]):
                 self.__delegates[path_parts[1]] = {}
             elif self.__delegates[path_parts[1]].get(module):

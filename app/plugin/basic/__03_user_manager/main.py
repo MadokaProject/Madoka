@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option
 from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
@@ -19,20 +19,10 @@ manager: CommandDelegateManager = CommandDelegateManager()
     brief_help="账号管理",
     hidden=True,
     alc=Alconna(
-        command="am",
-        options=[
-            Option(
-                "list",
-                Args["type", ["friend", "group", "f", "g"]],
-                help_text="列出好友、群列表",
-            ),
-            Option(
-                "delete",
-                Args["type", ["friend", "group", "f", "g"]]["id", int],
-                help_text="删除好友、群",
-            ),
-        ],
-        help_text="账号管理",
+        "am",
+        Option("list", Args["type", ["friend", "group", "f", "g"]], help_text="列出好友、群列表"),
+        Option("delete", Args["type", ["friend", "group", "f", "g"]]["id", int], help_text="删除好友、群"),
+        meta=CommandMeta("账号管理"),
     ),
 )
 @Permission.require(level=Permission.MASTER)

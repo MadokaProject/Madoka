@@ -2,7 +2,7 @@ import random
 from textwrap import fill
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option
 from graia.ariadne.app import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Image, Plain
@@ -33,15 +33,13 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="gp",
     brief_help="经济系统",
     alc=Alconna(
-        command="gp",
-        options=[
-            Option("signin", help_text="每日签到"),
-            Option("get", help_text="获取今日签到图"),
-            Option("tf", help_text="转账", args=Args["at", At]["money", int]),
-            Option("rank", help_text="显示群内已注册成员资金排行榜"),
-            Option("auto", args=Args["status", bool], help_text="每天消耗10%金币自动签到"),
-        ],
-        help_text="经济系统",
+        "gp",
+        Option("signin", help_text="每日签到"),
+        Option("get", help_text="获取今日签到图"),
+        Option("tf", help_text="转账", args=Args["at", At]["money", int]),
+        Option("rank", help_text="显示群内已注册成员资金排行榜"),
+        Option("auto", args=Args["status", bool], help_text="每天消耗10%金币自动签到"),
+        meta=CommandMeta("经济系统"),
     ),
 )
 async def process(target: Union[Friend, Member], sender: Union[Friend, Group], command: Arpamar):

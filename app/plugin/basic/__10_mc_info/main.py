@@ -6,7 +6,7 @@ import time
 from typing import Union
 
 import jsonpath
-from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
@@ -50,36 +50,26 @@ except OperationalError:
     entry="mc",
     brief_help="MC状态",
     alc=Alconna(
-        command="mc",
-        options=[
-            Subcommand(
-                "default",
-                help_text="设置默认MC服务器(仅主人可用)",
-                args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565],
-            ),
-            Subcommand(
-                "set",
-                help_text="设置监听服务器(仅主人可用)",
-                args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]["delay;H", int, 60],
-                options=[
-                    Option("on", help_text="开启监听(默认)"),
-                    Option("off", help_text="关闭监听"),
-                ],
-            ),
-            Subcommand(
-                "listen",
-                help_text="配置监听服务器",
-                args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565],
-                options=[
-                    Option("on", help_text="开启监听(默认)"),
-                    Option("off", help_text="关闭监听"),
-                ],
-            ),
-            Option("--timeout|-t", help_text="超时时间", args=Args["timeout", int]),
-            Option("--view|-v", help_text="查看"),
-        ],
-        main_args=Args["host;O|H", str]["port;O|H", int],
-        help_text="检测MC服务器信息",
+        "mc",
+        Args["host;O|H", str]["port;O|H", int],
+        Subcommand(
+            "default", help_text="设置默认MC服务器(仅主人可用)", args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]
+        ),
+        Subcommand(
+            "set",
+            help_text="设置监听服务器(仅主人可用)",
+            args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]["delay;H", int, 60],
+            options=[Option("on", help_text="开启监听(默认)"), Option("off", help_text="关闭监听")],
+        ),
+        Subcommand(
+            "listen",
+            help_text="配置监听服务器",
+            args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565],
+            options=[Option("on", help_text="开启监听(默认)"), Option("off", help_text="关闭监听")],
+        ),
+        Option("--timeout|-t", help_text="超时时间", args=Args["timeout", int]),
+        Option("--view|-v", help_text="查看"),
+        meta=CommandMeta("检测MC服务器信息"),
     ),
 )
 async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Friend, Group]):

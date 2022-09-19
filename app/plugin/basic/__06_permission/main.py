@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
@@ -33,42 +33,36 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="perm",
     brief_help="授权",
     alc=Alconna(
-        command="perm",
-        options=[
-            Subcommand(
-                "user",
-                help_text="用户白名单",
-                options=[
-                    Option("--add|-a", args=Args["qq", [At, int]], help_text="用户加入白名单"),
-                    Option("--delete|-d", args=Args["qq", [At, int]], help_text="用户移出白名单"),
-                    Option("--list|-l", help_text="查看用户白名单"),
-                ],
-            ),
-            Subcommand(
-                "blacklist",
-                help_text="用户黑名单",
-                options=[
-                    Option("--add|-a", args=Args["qq", [At, int]], help_text="用户加入黑名单"),
-                    Option("--delete|-d", args=Args["qq", [At, int]], help_text="用户移出黑名单"),
-                    Option("--list|-l", help_text="查看用户黑名单"),
-                ],
-            ),
-            Subcommand(
-                "group",
-                help_text="群组白名单",
-                options=[
-                    Option("--add|-a", args=Args["group", int], help_text="群组加入白名单"),
-                    Option("--delete|-d", args=Args["group", int], help_text="群组移出白名单"),
-                    Option("--list|-l", help_text="查看群组白名单"),
-                ],
-            ),
-            Option(
-                "grant",
-                help_text="调整用户权限等级(该功能操作者权限高于操作对象即可",
-                args=Args["qq", [At, int]]["level", int],
-            ),
-        ],
-        help_text="授权, 仅管理可用!",
+        "perm",
+        Subcommand(
+            "user",
+            help_text="用户白名单",
+            options=[
+                Option("--add|-a", args=Args["qq", [At, int]], help_text="用户加入白名单"),
+                Option("--delete|-d", args=Args["qq", [At, int]], help_text="用户移出白名单"),
+                Option("--list|-l", help_text="查看用户白名单"),
+            ],
+        ),
+        Subcommand(
+            "blacklist",
+            help_text="用户黑名单",
+            options=[
+                Option("--add|-a", args=Args["qq", [At, int]], help_text="用户加入黑名单"),
+                Option("--delete|-d", args=Args["qq", [At, int]], help_text="用户移出黑名单"),
+                Option("--list|-l", help_text="查看用户黑名单"),
+            ],
+        ),
+        Subcommand(
+            "group",
+            help_text="群组白名单",
+            options=[
+                Option("--add|-a", args=Args["group", int], help_text="群组加入白名单"),
+                Option("--delete|-d", args=Args["group", int], help_text="群组移出白名单"),
+                Option("--list|-l", help_text="查看群组白名单"),
+            ],
+        ),
+        Option("grant", help_text="调整用户权限等级(该功能操作者权限高于操作对象即可", args=Args["qq", [At, int]]["level", int]),
+        meta=CommandMeta("授权, 仅管理可用!"),
     ),
 )
 async def process(app: Ariadne, target: Union[Friend, Member], command: Arpamar, alc: Alconna):

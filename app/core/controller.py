@@ -6,6 +6,7 @@ from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Plain, Source
 from graia.ariadne.model import Friend, Group, Member
 from graia.broadcast.interrupt import InterruptControl
+from loguru import logger
 
 from app.core.commander import CommandDelegateManager
 from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, BANNED_USER, config
@@ -137,6 +138,7 @@ class Controller:
                                     resp = "参数错误!"
                                 resp = MessageChain(resp)
                     except Exception as e:
+                        logger.exception(e)
                         resp = MessageChain(Plain(f"{e}"))
                     finally:
                         sys.stdout = current

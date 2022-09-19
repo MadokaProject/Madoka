@@ -1,4 +1,4 @@
-from arclet.alconna import Alconna, Args, Arpamar, Option
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option
 from arclet.alconna.graia import AlconnaDispatcher
 from graia.ariadne import Ariadne
 from graia.ariadne.console import Console
@@ -10,13 +10,11 @@ from app.core.app import AppCore
 
 con: Console = AppCore().get_console()
 alc = Alconna(
-    command="send",
-    options=[
-        Option("--friend|-f", help_text="向指定好友发送消息", args=Args["num", int]),
-        Option("--group|-g", help_text="向指定群组发送消息", args=Args["num", int]),
-    ],
-    help_text="发送消息",
-    main_args=Args["msg", str],
+    "send",
+    Args["msg", str],
+    Option("--friend|-f", help_text="向指定好友发送消息", args=Args["num", int]),
+    Option("--group|-g", help_text="向指定群组发送消息", args=Args["num", int]),
+    meta=CommandMeta("发送消息"),
 )
 
 

@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from graia.ariadne.model import Friend, Group, Member
@@ -20,12 +20,10 @@ configs = {"禁言退群": "bot_mute_event", "上线通知": "online_notice"}
     brief_help="系统",
     hidden=True,
     alc=Alconna(
-        command="sys",
-        options=[
-            Option("禁言退群", help_text="设置机器人禁言是否退群", args=Args["bool", bool]),
-            Option("上线通知", help_text="设置机器人上线是否通知该群", args=Args["bool", bool]),
-        ],
-        help_text="系统设置: 仅主人可用!",
+        "sys",
+        Option("禁言退群", help_text="设置机器人禁言是否退群", args=Args["bool", bool]),
+        Option("上线通知", help_text="设置机器人上线是否通知该群", args=Args["bool", bool]),
+        meta=CommandMeta("系统设置: 仅主人可用!"),
     ),
 )
 @Permission.require(level=Permission.MASTER)

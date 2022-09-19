@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Union
 
 import aiohttp.client
-from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from graia.ariadne.model import Friend, Group, Member
@@ -31,42 +31,26 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="github",
     brief_help="Github监听",
     alc=Alconna(
-        command="github",
-        options=[
-            Subcommand(
-                "add",
-                help_text="添加监听仓库",
-                args=Args["repo", str]["api", str, "project/repo"],
-                options=[
-                    Option(
-                        "--branch|-b",
-                        args=Args["branch", str, "*"],
-                        help_text="指定监听的分支,使用 , 分隔, 默认监听全部分支",
-                    )
-                ],
-            ),
-            Subcommand(
-                "modify",
-                help_text="修改监听仓库配置",
-                args=Args["repo", str],
-                options=[
-                    Option("--name|-n", args=Args["name", str], help_text="修改仓库名"),
-                    Option(
-                        "--api|-a",
-                        args=Args["api", str, "project/repo"],
-                        help_text="修改监听API",
-                    ),
-                    Option(
-                        "--branch|-b",
-                        args=Args["branch", str, "*"],
-                        help_text="修改监听的分支, 使用 , 分隔, *: 监听所有分支",
-                    ),
-                ],
-            ),
-            Option("remove", help_text="删除监听仓库", args=Args["repo", str]),
-            Option("list", help_text="列出当前群组所有监听仓库"),
-        ],
-        help_text="Github监听, 仅管理可用",
+        "github",
+        Subcommand(
+            "add",
+            help_text="添加监听仓库",
+            args=Args["repo", str]["api", str, "project/repo"],
+            options=[Option("--branch|-b", args=Args["branch", str, "*"], help_text="指定监听的分支,使用 , 分隔, 默认监听全部分支")],
+        ),
+        Subcommand(
+            "modify",
+            help_text="修改监听仓库配置",
+            args=Args["repo", str],
+            options=[
+                Option("--name|-n", args=Args["name", str], help_text="修改仓库名"),
+                Option("--api|-a", args=Args["api", str, "project/repo"], help_text="修改监听API"),
+                Option("--branch|-b", args=Args["branch", str, "*"], help_text="修改监听的分支, 使用 , 分隔, *: 监听所有分支"),
+            ],
+        ),
+        Option("remove", help_text="删除监听仓库", args=Args["repo", str]),
+        Option("list", help_text="列出当前群组所有监听仓库"),
+        meta=CommandMeta("Github 监听, 仅管理可用"),
     ),
 )
 @Permission.require(level=Permission.GROUP_ADMIN)

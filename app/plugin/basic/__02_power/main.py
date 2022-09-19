@@ -1,7 +1,7 @@
 import subprocess
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain
 from graia.ariadne.model import Friend, Group, Member
@@ -21,17 +21,11 @@ manager: CommandDelegateManager = CommandDelegateManager()
     brief_help="电源",
     hidden=True,
     alc=Alconna(
-        command="p",
-        options=[
-            Subcommand(
-                "u",
-                help_text="升级机器人",
-                options=[Option("--timeout|-t", args=Args["timeout", int, 10])],
-            ),
-            Option("k", help_text="关闭机器人"),
-            Option("r", help_text="重启机器人"),
-        ],
-        help_text="电源控制, 仅主人可用",
+        "p",
+        Subcommand("u", help_text="升级机器人", options=[Option("--timeout|-t", args=Args["timeout", int, 10])]),
+        Option("k", help_text="关闭机器人"),
+        Option("r", help_text="重启机器人"),
+        meta=CommandMeta("电源控制, 仅主人可用"),
     ),
 )
 @Permission.require(level=Permission.MASTER)

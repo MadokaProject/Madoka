@@ -1,8 +1,7 @@
 import subprocess
 
-from arclet.alconna import Alconna, Args, Arpamar, Option
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option
 from arclet.alconna.graia import AlconnaDispatcher
-from graia.ariadne import Ariadne
 from graia.ariadne.console import Console
 from prompt_toolkit.styles import Style
 
@@ -12,11 +11,11 @@ from app.core.config import Config
 
 core: AppCore = AppCore()
 con: Console = core.get_console()
-alc_stop = Alconna(command="stop", help_text="退出程序") + Option("--yes|-y", help_text="确认退出")
+alc_stop = Alconna("stop", meta=CommandMeta("退出程序")) + Option("--yes|-y", help_text="确认退出")
 
 
 @con.register([AlconnaDispatcher(alc_stop)])
-async def stop(app: Ariadne, console: Console, cmd: Arpamar):
+async def stop(console: Console, cmd: Arpamar):
     if not cmd.matched:
         return send(alc_stop.help_text)
     if cmd.options.get("yes"):
@@ -30,7 +29,7 @@ async def stop(app: Ariadne, console: Console, cmd: Arpamar):
             core.stop()
 
 
-alc_upgrade = Alconna(command="upgrade", help_text="更新程序") + Option(
+alc_upgrade = Alconna("upgrade", meta=CommandMeta("更新程序")) + Option(
     "--time|-t", help_text="超时时间", args=Args["time", int, 10]
 )
 
@@ -54,7 +53,7 @@ async def upgrade(cmd: Arpamar):
         return unknown_error(e)
 
 
-alc_reboot = Alconna(command="reboot", help_text="重启程序") + Option("--yes|-y", help_text="确认重启")
+alc_reboot = Alconna("reboot", meta=CommandMeta("重启程序")) + Option("--yes|-y", help_text="确认重启")
 
 
 @con.register([AlconnaDispatcher(alc_reboot)])

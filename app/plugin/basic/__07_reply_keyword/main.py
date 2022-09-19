@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, AllParam, Args, Arpamar, Option
+from arclet.alconna import Alconna, AllParam, Args, Arpamar, CommandMeta, Option
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from graia.ariadne.model import Friend, Group, Member
@@ -18,17 +18,11 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="reply",
     brief_help="群自定义回复",
     alc=Alconna(
-        command="reply",
-        options=[
-            Option(
-                "add",
-                help_text="添加或修改自定义回复",
-                args=Args["keyword", str]["text", AllParam],
-            ),
-            Option("remove", help_text="删除自定义回复", args=Args["keyword", str]),
-            Option("list", help_text="列出本群自定义回复"),
-        ],
-        help_text="群自定义回复: 仅管理可用!",
+        "reply",
+        Option("add", help_text="添加或修改自定义回复", args=Args["keyword", str]["text", AllParam]),
+        Option("remove", help_text="删除自定义回复", args=Args["keyword", str]),
+        Option("list", help_text="列出本群自定义回复"),
+        meta=CommandMeta("群自定义回复: 仅管理可用!"),
     ),
 )
 @Permission.require(level=Permission.GROUP_ADMIN)

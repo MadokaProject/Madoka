@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import At, Plain, Source
@@ -24,55 +24,50 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="csm",
     brief_help="群管",
     alc=Alconna(
-        command="csm",
-        options=[
-            Subcommand(
-                "mute",
-                args=Args["at", At, ...],
-                help_text="禁言指定群成员",
-                options=[
-                    Option("--time|-t", args=Args["time", int, 10], help_text="禁言时间(分)"),
-                    Option("--all|-a", help_text="开启全员禁言"),
-                ],
-            ),
-            Subcommand(
-                "unmute",
-                args=Args["at", At, ...],
-                help_text="取消禁言指定群成员",
-                options=[Option("--all|-a", help_text="关闭全员禁言")],
-            ),
-            Subcommand(
-                "func",
-                args=Args["status", bool],
-                help_text="功能开关",
-                options=[
-                    Option("--card|-C", help_text="成员名片修改通知"),
-                    Option("--flash|-F", help_text="闪照识别"),
-                    Option("--recall|-R", help_text="撤回识别"),
-                    Option("--kick|-K", help_text="成员被踢通知"),
-                    Option("--quit|-Q", help_text="成员退群通知"),
-                ],
-            ),
-            Option("status", args=Args["status", bool], help_text="开关群管"),
-            Option("kick", args=Args["at", At], help_text="踢出指定群成员"),
-            Option("revoke", args=Args["id", int], help_text="撤回消息, id=消息ID, 自最后一条消息起算"),
-            Option(
-                "刷屏检测",
-                args=Args["time", int]["mute_time", int]["reply", str],
-                help_text="检测time内的3条消息是否刷屏; time: 秒, mute_time: 分钟, reply: 回复消息",
-            ),
-            Option(
-                "重复消息",
-                args=Args["time", int]["mute_time", int]["reply", str],
-                help_text="检测time内的3条消息是否重复; time: 秒, mute_time: 分钟, reply: 回复消息",
-            ),
-            Option(
-                "超长消息",
-                args=Args["len", int]["mute_time", int]["reply", str],
-                help_text="检测单消息是否超出设定的长度; len: 文本长度, mute_time: 分钟, reply: 回复消息",
-            ),
-        ],
-        help_text="群管助手",
+        "csm",
+        Subcommand(
+            "mute",
+            args=Args["at", At, ...],
+            help_text="禁言指定群成员",
+            options=[
+                Option("--time|-t", args=Args["time", int, 10], help_text="禁言时间(分)"),
+                Option("--all|-a", help_text="开启全员禁言"),
+            ],
+        ),
+        Subcommand(
+            "unmute", args=Args["at", At, ...], help_text="取消禁言指定群成员", options=[Option("--all|-a", help_text="关闭全员禁言")]
+        ),
+        Subcommand(
+            "func",
+            args=Args["status", bool],
+            help_text="功能开关",
+            options=[
+                Option("--card|-C", help_text="成员名片修改通知"),
+                Option("--flash|-F", help_text="闪照识别"),
+                Option("--recall|-R", help_text="撤回识别"),
+                Option("--kick|-K", help_text="成员被踢通知"),
+                Option("--quit|-Q", help_text="成员退群通知"),
+            ],
+        ),
+        Option("status", args=Args["status", bool], help_text="开关群管"),
+        Option("kick", args=Args["at", At], help_text="踢出指定群成员"),
+        Option("revoke", args=Args["id", int], help_text="撤回消息, id=消息ID, 自最后一条消息起算"),
+        Option(
+            "刷屏检测",
+            args=Args["time", int]["mute_time", int]["reply", str],
+            help_text="检测time内的3条消息是否刷屏; time: 秒, mute_time: 分钟, reply: 回复消息",
+        ),
+        Option(
+            "重复消息",
+            args=Args["time", int]["mute_time", int]["reply", str],
+            help_text="检测time内的3条消息是否重复; time: 秒, mute_time: 分钟, reply: 回复消息",
+        ),
+        Option(
+            "超长消息",
+            args=Args["len", int]["mute_time", int]["reply", str],
+            help_text="检测单消息是否超出设定的长度; len: 文本长度, mute_time: 分钟, reply: 回复消息",
+        ),
+        meta=CommandMeta("群管助手"),
     ),
 )
 @Permission.require(level=Permission.GROUP_ADMIN)

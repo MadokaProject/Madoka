@@ -5,6 +5,7 @@ from pathlib import Path
 from loguru import logger
 
 from app.util.decorator import Singleton
+from app.util.tools import app_path
 
 
 class Config(metaclass=Singleton):
@@ -54,6 +55,8 @@ class Config(metaclass=Singleton):
                 self.DB_PARAMS = {}
                 if not self.DB_NAME.endswith(".db"):
                     self.DB_NAME += ".db"
+                app_path("tmp/db").mkdir(parents=True, exist_ok=True)
+                self.DB_NAME = str(app_path("tmp/db", self.DB_NAME))
 
             self.COIN_NAME = self.cf.get("coin_settings", "name", fallback="金币")
 

@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, AllParam, Args, Arpamar, Option
+from arclet.alconna import Alconna, AllParam, Args, Arpamar, CommandMeta, Option
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Plain
 from graia.ariadne.model import Friend, Group, Member
@@ -18,13 +18,11 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="join",
     brief_help="入群欢迎",
     alc=Alconna(
-        command="join",
-        options=[
-            Option("set", help_text="设置入群欢迎消息", args=Args["msg", AllParam]),
-            Option("view", help_text="查看入群欢迎消息"),
-            Option("status", help_text="开关入群欢迎", args=Args["bool", bool]),
-        ],
-        help_text="入群欢迎(仅管理可用)",
+        "join",
+        Option("set", help_text="设置入群欢迎消息", args=Args["msg", AllParam]),
+        Option("view", help_text="查看入群欢迎消息"),
+        Option("status", help_text="开关入群欢迎", args=Args["bool", bool]),
+        meta=CommandMeta("入群欢迎(仅管理可用)"),
     ),
 )
 @Permission.require(level=Permission.GROUP_ADMIN)

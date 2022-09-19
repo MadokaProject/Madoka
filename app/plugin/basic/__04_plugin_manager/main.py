@@ -2,7 +2,7 @@ import asyncio
 from textwrap import fill
 from typing import Union
 
-from arclet.alconna import Alconna, Args, Arpamar, Option, Subcommand
+from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from graia.ariadne import Ariadne
 from graia.ariadne.event.message import FriendMessage, GroupMessage
 from graia.ariadne.message.chain import MessageChain
@@ -71,56 +71,38 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
     entry="plugin",
     brief_help="插件管理",
     alc=Alconna(
-        command="plugin",
-        options=[
-            Subcommand(
-                "on",
-                help_text="开启插件, <plugin_cmd>插件触发命令",
-                args=Args["plugin", str, ...],
-                options=[
-                    Option("--all|-a", help_text="开启全部插件"),
-                    Option(
-                        "--friend|-f",
-                        help_text="针对好友开关(仅超级管理员可用)",
-                        args=Args["qq", int],
-                    ),
-                ],
-            ),
-            Subcommand(
-                "off",
-                help_text="关闭插件, <plugin_cmd>插件触发命令",
-                args=Args["plugin", str, ...],
-                options=[
-                    Option("--all|-a", help_text="关闭全部插件"),
-                    Option(
-                        "--friend|-f",
-                        help_text="针对好友开关(仅超级管理员可用)",
-                        args=Args["qq", int],
-                    ),
-                ],
-            ),
-            Subcommand(
-                "install",
-                help_text="安装插件, <plugin>插件名",
-                args=Args["plugin", str],
-                options=[Option("--upgrade|-u", help_text="更新插件")],
-            ),
-            Subcommand("remove", help_text="删除插件, <plugin>插件名", args=Args["plugin", str]),
-            Subcommand(
-                "list",
-                help_text="列出本地插件",
-                options=[Option("--remote|-m", help_text="列出仓库插件")],
-            ),
-            Subcommand("load", help_text="加载插件, <plugin>插件名", args=Args["plugin", str]),
-            Subcommand("unload", help_text="卸载插件, <plugin>插件名", args=Args["plugin", str]),
-            Subcommand(
-                "reload",
-                help_text="重载插件[默认全部], <plugin>插件名",
-                args=Args["plugin", str, "all_plugin"],
-            ),
-            Subcommand("check", help_text="检查插件更新"),
-        ],
-        help_text="插件管理",
+        "plugin",
+        Subcommand(
+            "on",
+            help_text="开启插件, <plugin_cmd>插件触发命令",
+            args=Args["plugin", str, ...],
+            options=[
+                Option("--all|-a", help_text="开启全部插件"),
+                Option("--friend|-f", help_text="针对好友开关(仅超级管理员可用)", args=Args["qq", int]),
+            ],
+        ),
+        Subcommand(
+            "off",
+            help_text="关闭插件, <plugin_cmd>插件触发命令",
+            args=Args["plugin", str, ...],
+            options=[
+                Option("--all|-a", help_text="关闭全部插件"),
+                Option("--friend|-f", help_text="针对好友开关(仅超级管理员可用)", args=Args["qq", int]),
+            ],
+        ),
+        Subcommand(
+            "install",
+            help_text="安装插件, <plugin>插件名",
+            args=Args["plugin", str],
+            options=[Option("--upgrade|-u", help_text="更新插件")],
+        ),
+        Subcommand("remove", help_text="删除插件, <plugin>插件名", args=Args["plugin", str]),
+        Subcommand("list", help_text="列出本地插件", options=[Option("--remote|-m", help_text="列出仓库插件")]),
+        Subcommand("load", help_text="加载插件, <plugin>插件名", args=Args["plugin", str]),
+        Subcommand("unload", help_text="卸载插件, <plugin>插件名", args=Args["plugin", str]),
+        Subcommand("reload", help_text="重载插件[默认全部], <plugin>插件名", args=Args["plugin", str, "all_plugin"]),
+        Subcommand("check", help_text="检查插件更新"),
+        meta=CommandMeta("插件管理"),
     ),
 )
 @Permission.require(level=Permission.GROUP_ADMIN)

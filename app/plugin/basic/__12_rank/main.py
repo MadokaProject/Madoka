@@ -1,6 +1,6 @@
 from typing import Union
 
-from arclet.alconna import Alconna, Arpamar, Option
+from arclet.alconna import Alconna, Arpamar, CommandMeta, Option
 from graia.ariadne import Ariadne
 from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import Image, Plain
@@ -21,9 +21,9 @@ manager: CommandDelegateManager = CommandDelegateManager()
     entry="rank",
     brief_help="排行",
     alc=Alconna(
-        command="rank",
-        options=[Option("msg", help_text="显示群内成员发言排行榜")],
-        help_text="查询各类榜单",
+        "rank",
+        Option("msg", help_text="显示群内成员发言排行榜"),
+        meta=CommandMeta("查询各类榜单"),
     ),
 )
 async def process(app: Ariadne, sender: Union[Friend, Group], command: Arpamar, alc: Alconna):

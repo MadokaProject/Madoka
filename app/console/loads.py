@@ -1,9 +1,11 @@
 import importlib
 from pathlib import Path
 
+from arclet.alconna import Namespace, config
 from loguru import logger
 
 _ignore = ["__init__.py", "__pycache__", "loads.py", "util.py"]
+config.default_namespace = Namespace(name="console", fuzzy_match=True)
 
 for file in Path(__file__).parent.rglob(pattern="*.py"):
     try:
