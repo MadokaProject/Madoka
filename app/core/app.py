@@ -17,6 +17,7 @@ from prompt_toolkit.styles import Style
 
 from app.core.config import Config
 from app.core.exceptions import AppCoreNotInitializedError, AriadneAlreadyLaunchedError
+from app.extend.message_queue import mq
 from app.extend.power import power
 from app.util.decorator import Singleton
 from app.util.tools import restart
@@ -140,6 +141,7 @@ class AppCore(metaclass=Singleton):
             importlib.__import__("app.console.loads")
             importlib.__import__("app.core.event")
             importlib.__import__("app.extend.schedule")
+            asyncio.create_task(mq.start(self.__app))
             asyncio.create_task(power(self.__app, sys.argv))
             # if self.__config.WEBSERVER_ENABLE:
             #     logger.success("WebServer is starting")

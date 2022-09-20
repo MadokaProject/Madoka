@@ -13,6 +13,7 @@ from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.controller import Controller
+from app.extend.message_queue import mq
 from app.util.other import offline_notice, online_notice
 from app.util.version import version_notice
 
@@ -67,6 +68,7 @@ async def init():
 @bcc.receiver(ApplicationShutdowned)
 async def stop():
     await offline_notice(app, config)
+    await mq.stop()
 
 
 core.launch()

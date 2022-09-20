@@ -1,4 +1,5 @@
 import inspect
+import threading
 from typing import Callable
 
 
@@ -6,10 +7,12 @@ class Singleton(type):
     """单例模式"""
 
     _instances = {}
+    lock = threading.Lock()
 
     def __call__(cls, *args, **kwargs):
         if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
+            with cls.lock:
+                cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
         return cls._instances[cls]
 
     @classmethod
