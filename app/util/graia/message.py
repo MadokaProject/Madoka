@@ -24,9 +24,6 @@ class Message:
     """
 
     __root__: MessageChain
-    __target: Union[Friend, Member, Group, int]
-    __quote: Union[Source, int] = None
-    __at: Union[Member, int] = None
 
     @property
     def content(self) -> MessageChain:
@@ -59,6 +56,9 @@ class Message:
             MessageChain: 创建的消息链
         """
         self.__root__ = MessageChain(__root__, *elements, inline=inline)
+        self.__target: Union[Friend, Member, Group, int] = None
+        self.__quote: Union[Source, int] = None
+        self.__at: list[Union[Member, int]] = []
 
     def send(self) -> None:
         """发送消息"""
@@ -76,7 +76,8 @@ class Message:
             return await app.send_friend_message(self.__target, message=self.content, quote=self.__quote)
         elif isinstance(self.__target, Group):
             if self.__at:
-                self.__root__ = MessageChain(At(self.__at)).extend(self.content)
+                self.__root__ = MessageChain(At(at) for at in self.__at).extend(self.content)
+                print(self.__root__)
             return await app.send_group_message(self.__target, message=self.content, quote=self.__quote)
         elif isinstance(self.__target, Member):
             return await app.send_temp_message(self.__target, message=self.content, quote=self.__quote)
@@ -100,12 +101,12 @@ class Message:
         return self
 
     def at(self, at: Union[Member, int]) -> Self:
-        """指定@对象
+        """添加@对象
 
         只能在群组消息使用
         """
         assert isinstance(at, (Member, int))
-        self.__at = at
+        self.__at.append(at)
         return self
 
     def extend(self, *content: Union[Self, Element, list[Element, str]], copy: bool = False) -> Self:

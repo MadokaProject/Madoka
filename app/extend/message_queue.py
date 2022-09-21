@@ -1,6 +1,5 @@
 """消息队列，控制消息发送频率"""
 import asyncio
-import time
 
 from graia.ariadne.app import Ariadne
 from loguru import logger
@@ -59,7 +58,7 @@ class MQ(metaclass=Singleton):
     async def stop(self):
         logger.info("等待剩余消息发送完毕")
         for p in self.__message_queue:
-            time.sleep(1.5)
+            await asyncio.sleep(1.5)
             await self.send(p)
             p.delete()
         logger.success("消息队列已停止")
