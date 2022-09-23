@@ -163,3 +163,30 @@ class ConfigAlreadyInitializedError(Error):
 
     def __init__(self):
         Error.__init__(self, "Config is already initialized")
+
+
+class PermissionDeniedError(Error):
+    """对象无权限，结束处理"""
+
+    def __init__(self, obj):
+        Error.__init__(self, "Permission denied: %r" % obj)
+        self.obj = obj
+        self.args = (obj,)
+
+
+class DependError(Error):
+    pass
+
+
+class NotActivatedError(DependError):
+    def __init__(self, obj):
+        Error.__init__(self, "%r is inactivated" % obj)
+        self.obj = obj
+        self.args = (obj,)
+
+
+class BannedError(DependError):
+    def __init__(self, obj):
+        Error.__init__(self, "%r is banned" % obj)
+        self.obj = obj
+        self.args = (obj,)

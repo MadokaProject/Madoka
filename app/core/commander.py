@@ -1,16 +1,16 @@
+import contextlib
 import functools
 from types import ModuleType
-from typing import Dict, List, Optional, Union
+from typing import Callable, Dict, Optional, Union
 
-from arclet.alconna import Alconna, Namespace
+from arclet.alconna import Alconna
 from arclet.alconna import command_manager as _cmd_mgr
-from arclet.alconna import config
 from arclet.alconna.graia.analyser import GraiaCommandAnalyser
 
-from app.core.config import Config
+from app.util.alconna import set_default_namespace
 from app.util.decorator import ArgsAssigner, Singleton
 
-config.default_namespace = Namespace(name="plugin", headers=Config().COMMAND_HEADERS)
+set_default_namespace(name="plugin")
 Alconna.config(analyser_type=GraiaCommandAnalyser)
 
 
@@ -30,7 +30,6 @@ class CommandDelegateManager(metaclass=Singleton):
     """
 
     __delegates: Dict[str, Dict[str, PluginInfo]]
-    headers: List[str] = Config().COMMAND_HEADERS
 
     def __init__(self):
         self.__delegates = {}
@@ -58,7 +57,15 @@ class CommandDelegateManager(metaclass=Singleton):
     def get_all_delegates(self) -> Dict[str, PluginInfo]:
         return {k: v for i in self.__delegates.values() for k, v in i.items()}
 
-    def register(self, entry: str, brief_help: str, alc: Alconna, enable: bool = True, hidden: bool = False):
+    def register(
+        self,
+        entry: str,
+        brief_help: str,
+        alc: Alconna,
+        enable: bool = True,
+        hidden: bool = False,
+        module_name: str = None,
+    ):
         """注册命令
 
         :param entry: 命令入口
@@ -66,15 +73,16 @@ class CommandDelegateManager(metaclass=Singleton):
         :param alc: Alconna 实例
         :param enable: 是否启用
         :param hidden: 是否隐藏
+        :param module_name: 使用Commander装饰的模块
         """
 
-        def decorator(func):
+        def decorator(func: Callable):
             @ArgsAssigner
             @functools.wraps(func)
             def wrapper(*args, **kwargs):
                 return func(*args, **kwargs)
 
-            module = func.__module__
+            module = module_name or func.__module__
             path_parts = module.split(".")
 
             if not self.__delegates.get(path_parts[1]):
@@ -83,7 +91,7 @@ class CommandDelegateManager(metaclass=Singleton):
                 raise RuntimeError("禁止单文件注册多个命令")
 
             plg_info = PluginInfo(entry, brief_help, enable, hidden, alc, wrapper)
-            self.__delegates[path_parts[1]].update({module: plg_info})
+            self.__delegates[path_parts[1]][module] = plg_info
             return wrapper
 
         return decorator
@@ -97,7 +105,5 @@ class CommandDelegateManager(metaclass=Singleton):
             target = target.__name__
             if target in self.__delegates[cmd_type]:
                 _cmd_mgr.delete(self.__delegates[cmd_type][target].alc)
-        try:
+        with contextlib.suppress(KeyError):
             del self.__delegates[cmd_type][target]
-        except KeyError:
-            pass

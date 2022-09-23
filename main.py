@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import contextlib
 from pathlib import Path
 
 from graia.ariadne.app import Ariadne
@@ -13,6 +14,7 @@ from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.controller import Controller
+from app.core.exceptions import DependError
 from app.extend.message_queue import mq
 from app.util.other import offline_notice, online_notice
 from app.util.version import version_notice
@@ -48,12 +50,14 @@ manager = CommandDelegateManager()
 
 @bcc.receiver(FriendMessage)
 async def friend_message_handler(_app: Ariadne, message: MessageChain, friend: Friend):
-    await Controller(_app, message, friend, inc, manager).process_event()
+    with contextlib.suppress(DependError):
+        await Controller(_app, message, friend, inc, manager).process_event()
 
 
 @bcc.receiver(GroupMessage)
 async def group_message_handler(_app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
-    await Controller(_app, message, group, member, source, inc, manager).process_event()
+    with contextlib.suppress(DependError):
+        await Controller(_app, message, group, member, source, inc, manager).process_event()
 
 
 @logger.catch

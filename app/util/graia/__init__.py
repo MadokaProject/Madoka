@@ -9,6 +9,7 @@ from graia.ariadne.event.message import FriendMessage as FriendMessage
 from graia.ariadne.event.message import GroupMessage as GroupMessage
 from graia.ariadne.event.message import StrangerMessage as StrangerMessage
 from graia.ariadne.event.message import TempMessage as TempMessage
+from graia.ariadne.message.chain import MessageChain
 from graia.ariadne.message.element import App as App
 from graia.ariadne.message.element import At as At
 from graia.ariadne.message.element import AtAll as AtAll
@@ -62,6 +63,7 @@ __all__ = [
     "GroupMessage",
     "StrangerMessage",
     "TempMessage",
+    "MessageChain",
     "App",
     "At",
     "AtAll",

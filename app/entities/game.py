@@ -25,7 +25,6 @@ class BotGame:
                     break
                 except IntegrityError:
                     logger.warning("UUID 重复，正在尝试重新注册")
-                    pass
 
     @property
     async def is_consecutive(self) -> bool:
@@ -102,8 +101,7 @@ class BotGame:
         else:
             consecutive_days = 1
         await self.grant_consecutive_days(consecutive_days)  # 修改连续签到天数
-        if consecutive_days >= 7:
-            consecutive_days = 7
+        consecutive_days = min(consecutive_days, 7)
         await self.grant_intimacy(self.get_intimacy_by_consecutive_days(consecutive_days))  # 好感度调整
 
         Game.update(

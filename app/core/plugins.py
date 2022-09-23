@@ -104,7 +104,7 @@ class PluginManager(metaclass=Singleton):
             logger.error(f"插件加载失败: {e}")
             raise NonStandardPluginError(plugin_info)
         except Exception as e:
-            logger.error(e)
+            logger.exception(e)
             return False
 
     async def loads(self, plugins: Dict[str, PluginType]) -> Dict[str, bool]:
@@ -155,9 +155,7 @@ class PluginManager(metaclass=Singleton):
         """
         if plugin_info == "all_plugin":
             for module in self.__plugins.values():
-                self.__manager.delete(module)
-                self.remove_tasker(module)
-                importlib.reload(module)
+                self._extracted_from_reload(module)
                 logger.success(f"重载插件: {module.__name__} 成功")
             return True
         plugins = (
@@ -167,14 +165,17 @@ class PluginManager(metaclass=Singleton):
         )
         for plugin in plugins:
             if module := self.__plugins.get(plugin):
-                self.__manager.delete(module)
-                self.remove_tasker(module)
-                importlib.reload(module)
+                self._extracted_from_reload(module)
                 logger.success(f"重载插件: {plugin} 成功")
             else:
                 logger.warning(f"插件: {plugin} 未加载")
                 return False
         return True
+
+    def _extracted_from_reload(self, module):
+        self.__manager.delete(module)
+        self.remove_tasker(module)
+        importlib.reload(module)
 
     def unload(self, root_dir: str) -> bool:
         """卸载插件

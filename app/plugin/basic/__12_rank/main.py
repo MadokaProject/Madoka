@@ -26,12 +26,11 @@ manager: CommandDelegateManager = CommandDelegateManager()
         meta=CommandMeta("查询各类榜单"),
     ),
 )
-async def process(app: Ariadne, sender: Union[Friend, Group], command: Arpamar, alc: Alconna):
-    options = command.options
-    if not options:
+async def process(app: Ariadne, sender: Union[Friend, Group], cmd: Arpamar, alc: Alconna):
+    if not cmd.options:
         return await print_help(alc.get_help())
     try:
-        if "msg" in options:
+        if cmd.find("msg"):
             """发言榜"""
             if not isinstance(sender, Group):
                 return MessageChain("请在群聊内发送该命令！")

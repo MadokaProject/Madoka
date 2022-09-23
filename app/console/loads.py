@@ -1,11 +1,12 @@
 import importlib
 from pathlib import Path
 
-from arclet.alconna import Namespace, config
 from loguru import logger
 
+from app.util.alconna import set_default_namespace
+
 _ignore = ["__init__.py", "__pycache__", "loads.py", "util.py"]
-config.default_namespace = Namespace(name="console", fuzzy_match=True)
+set_default_namespace(name="console")
 
 for file in Path(__file__).parent.rglob(pattern="*.py"):
     try:
@@ -15,4 +16,5 @@ for file in Path(__file__).parent.rglob(pattern="*.py"):
     except Exception as e:
         logger.exception(e)
 
+set_default_namespace(name="plugin")
 logger.success("控制台监听器启动成功")
