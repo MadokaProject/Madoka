@@ -79,23 +79,23 @@ async def general_request(url, method='GET', _type='TEXT', params=None, headers=
     # 链接解析
     url_info = urlparse(url)
     # 请求信息
-    headers = {
+    headers = headers or {
         'Accept-Encoding': 'deflate',
         "Referer": f"{url_info.scheme}://{url_info.netloc}",
-        'User-Agent': ua.roll_ua()
-    } if not headers else headers
+        'User-Agent': ua.roll_ua(),
+    }
+
     async with aiohttp.request(method=method, url=url, params=params, headers=headers, data=data) as r:
         if _type in ['TEXT', 'text']:
-            response = await r.text(encoding='utf-8')
+            return await r.text(encoding='utf-8')
         elif _type in ['JSON', 'json']:
-            response = await r.json(encoding='utf-8')
+            return await r.json(encoding='utf-8')
         elif _type in ['HEADER', 'header']:
-            response = r.headers
+            return r.headers
         elif _type in ['BYTE', 'byte']:
-            response = await r.read()
+            return await r.read()
         else:
-            response = 'please set _type in [text, json, header, byte]'
-        return response
+            return 'please set _type in [text, json, header, byte]'
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)

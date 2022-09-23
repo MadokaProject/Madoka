@@ -29,7 +29,7 @@ async def stop(app: Ariadne, console: Console, result: AlconnaProperty):
             l_prompt=[('class:warn', ' Are you sure to stop? '), ('', ' (y/n) ')],
             style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
         )
-        if res.lower() in ('y', 'yes'):
+        if res.lower() in {'y', 'yes'}:
             app.stop()
             console.stop()
 
@@ -70,5 +70,5 @@ async def reboot(console: Console, result: AlconnaProperty):
             l_prompt=[('class:warn', ' Are you sure to reboot? '), ('', ' (y/n) ')],
             style=Style([('warn', 'bg:#cccccc fg:#d00000')]),
         )
-        if res.lower() in ('y', 'yes'):
+        if res.lower() in {'y', 'yes'}:
             restart('-r')

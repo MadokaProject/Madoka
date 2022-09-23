@@ -318,9 +318,7 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], i
 
     async def group_admin_process():
         async def change_plugin_status(_target):
-            if not _target:
-                return '缺少QQ号'
-            return await Switch.plugin(target, perm, _target)
+            return await Switch.plugin(target, perm, _target) if _target else '缺少QQ号'
 
         perm = ''
         _target = None

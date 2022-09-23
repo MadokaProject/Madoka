@@ -44,16 +44,15 @@ class Permission:
             user_permission = cls.DEFAULT
 
         if user == int(cls.config.MASTER_QQ):
-            res = cls.MASTER
+            return cls.MASTER
         elif user in ADMIN_USER:
-            res = cls.SUPER_ADMIN
+            return cls.SUPER_ADMIN
         elif user in BANNED_USER:
-            res = cls.BANNED
+            return cls.BANNED
         elif user_permission in [MemberPerm.Administrator, MemberPerm.Owner] or user in GROUP_ADMIN_USER:
-            res = cls.GROUP_ADMIN
+            return cls.GROUP_ADMIN
         else:
-            res = cls.DEFAULT
-        return res
+            return cls.DEFAULT
 
     @classmethod
     def require(cls, level: int = GROUP_ADMIN):
@@ -66,7 +65,7 @@ class Permission:
             @wraps(func)
             async def wrapper(*args, **kwargs):
                 for arg in args:
-                    if isinstance(arg, Friend) or isinstance(arg, Member):
+                    if isinstance(arg, (Friend, Member)):
                         target = arg
                         break
                 else:
@@ -88,9 +87,7 @@ class Permission:
         :param level: 限制等级
         """
 
-        if cls.get(member) < level:
-            return False
-        return True
+        return cls.get(member) >= level
 
     @classmethod
     def compare(cls, src: Union[Member, Friend, int], dst: Union[Member, Friend, int]) -> bool:
@@ -101,9 +98,7 @@ class Permission:
         :return: src > dst = True (俩者权限相同时返回False)
         """
 
-        if cls.get(src) > cls.get(dst):
-            return True
-        return False
+        return cls.get(src) > cls.get(dst)
 
 
 class Switch:
@@ -114,10 +109,6 @@ class Switch:
         if isinstance(src, Member):
             if not Permission.manual(src, Permission.GROUP_ADMIN):
                 return '你的权限不足，无权操作此命令'
-        else:
-            if not Permission.manual(src, Permission.SUPER_ADMIN) and not Permission.compare(src, dst):
-                return '你的权限不足，无权操作此命令'
-        if await set_plugin_switch(dst, perm):
-            return '操作成功'
-        else:
-            return '操作失败'
+        elif not Permission.manual(src, Permission.SUPER_ADMIN) and not Permission.compare(src, dst):
+            return '你的权限不足，无权操作此命令'
+        return '操作成功' if await set_plugin_switch(dst, perm) else '操作失败'

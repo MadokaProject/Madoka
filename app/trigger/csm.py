@@ -16,12 +16,15 @@ class CSM(Trigger):
         if self.target.id in BANNED_USER:
             self.as_last = True
         if not isinstance(self.sender, Group) or Permission.manual(self.target, Permission.GROUP_ADMIN) or \
-                self.sender.account_perm == MemberPerm.Member:
+                    self.sender.account_perm == MemberPerm.Member:
             return
-        if str(self.sender.id) in CONFIG and 'status' in CONFIG[str(self.sender.id)] and \
-                CONFIG[str(self.sender.id)]['status']:  # 默认关闭，需自行开启(.csm status)
-            if await self.spam():  # 刷屏检测(优先)
-                self.as_last = True
+        if (
+            str(self.sender.id) in CONFIG
+            and 'status' in CONFIG[str(self.sender.id)]
+            and CONFIG[str(self.sender.id)]['status']
+            and await self.spam()
+        ):
+            self.as_last = True
 
     # 刷屏检测
     async def spam(self):

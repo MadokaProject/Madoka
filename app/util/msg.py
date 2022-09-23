@@ -25,6 +25,7 @@ def repeated(uid, qid, num):
             return False
         prev = msg
     bot = DBMsg.select().where(DBMsg.uid == uid, DBMsg.qid == qid).order_by(DBMsg.id.desc()).limit(1)
-    if bot and MessageChain.from_persistent_string(bot.get().content) == content:
-        return False
-    return True
+    return (
+        not bot
+        or MessageChain.from_persistent_string(bot.get().content) != content
+    )

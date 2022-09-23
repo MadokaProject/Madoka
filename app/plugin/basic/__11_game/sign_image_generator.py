@@ -22,7 +22,11 @@ _Ink = Union[str, int, Tuple[int, int, int], Tuple[int, int, int, int]]
 
 
 def get_qlogo(id: int) -> bytes:
-    return asyncio.run(general_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(id)}&s=640", _type='byte'))
+    return asyncio.run(
+        general_request(
+            url=f"http://q1.qlogo.cn/g?b=qq&nk={id}&s=640", _type='byte'
+        )
+    )
 
 
 def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink = "white") -> Image.Image:
@@ -168,19 +172,15 @@ def get_sign_image(
 
     gift_1 = f'+{coin}'
     temp = consecutive_days
-    if temp > 7:
-        temp = 7
+    temp = min(temp, 7)
     gift_2 = f'+{BotGame.get_intimacy_by_consecutive_days(temp)}'
     y = avatar_xy + avatar_size + 100
     draw.text((avatar_xy + 30, y), f'共签到 {total_days} 天', font=font_3, fill='#ffffff')
 
-    if total_days == 1 or consecutive_days == 1:
-        y += font_3.getsize('签到')[1] + 30
-    else:
+    if total_days != 1 and consecutive_days != 1:
         y += font_3.getsize('签到')[1] + 20
         draw.text((avatar_xy + 30, y), f'连续签到 {consecutive_days} 天', font=font_3, fill='#ffffff')
-        y += font_3.getsize('签到')[1] + 30
-
+    y += font_3.getsize('签到')[1] + 30
     datetime_text = f'现在是 {get_time()}，祝你天天开心捏~'
 
     primogem = Image.open(str(base_path.joinpath('primogems.png'))).convert('RGBA')

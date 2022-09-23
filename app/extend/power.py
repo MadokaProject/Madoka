@@ -36,7 +36,7 @@ async def power(app, argv):
         elif opt in ('-k', '--kill'):
             shutdown = True
         elif opt in ('-u', '--upgrade'):
-            upgrade = True if arg == 'true' else False
+            upgrade = arg == 'true'
         elif opt in ('-g', '--group'):
             group = await app.get_group(int(arg))
         elif opt in ('-t', '--target'):

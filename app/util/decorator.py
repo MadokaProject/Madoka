@@ -6,10 +6,10 @@ class Singleton(type):
     """单例模式"""
     _instances = {}
 
-    def __call__(cls, *args, **kwargs):
-        if cls not in cls._instances:
-            cls._instances[cls] = super(Singleton, cls).__call__(*args, **kwargs)
-        return cls._instances[cls]
+    def __call__(self, *args, **kwargs):
+        if self not in self._instances:
+            self._instances[self] = super(Singleton, self).__call__(*args, **kwargs)
+        return self._instances[self]
 
     @classmethod
     def remove(mcs, cls):
@@ -26,7 +26,7 @@ class ArgsAssigner:
     def __call__(self, *args, **kwargs):
         self.args = []
         for i in self.signature.parameters.values():
-            if str(i.kind) in ('POSITIONAL_OR_KEYWORD', 'KEYWORD_ONLY'):
+            if str(i.kind) in {'POSITIONAL_OR_KEYWORD', 'KEYWORD_ONLY'}:
                 for arg in args:
                     _type = i.annotation
                     if hasattr(i.annotation, '__args__'):

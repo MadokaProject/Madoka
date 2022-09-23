@@ -58,37 +58,32 @@ async def process(target: Union[Friend, Member], sender: Union[Friend, Group], c
             """签到"""
             coin = random.randint(1, 101)
             qq = target.id
-            if isinstance(target, Member):
-                name = target.name
-            else:
-                name = target.nickname
+            name = target.name if isinstance(target, Member) else target.nickname
             user = BotGame(qq, coin)
             if await user.is_signin:
-                if isinstance(sender, Group):
-                    return MessageChain([At(target), Plain(' 你今天已经签到过了！')])
-                else:
-                    return MessageChain([Plain(' 你今天已经签到过了！')])
-            else:
-                await user.sign_in()
-                sign_image = await to_thread(
-                    get_sign_image,
-                    await user.uuid,
-                    qq,
-                    name,
-                    coin,
-                    await user.intimacy,
-                    await user.intimacy_level,
-                    await user.consecutive_days,
-                    await user.total_days
+                return (
+                    MessageChain([At(target), Plain(' 你今天已经签到过了！')])
+                    if isinstance(sender, Group)
+                    else MessageChain([Plain(' 你今天已经签到过了！')])
                 )
+
+            await user.sign_in()
+            sign_image = await to_thread(
+                get_sign_image,
+                await user.uuid,
+                qq,
+                name,
+                coin,
+                await user.intimacy,
+                await user.intimacy_level,
+                await user.consecutive_days,
+                await user.total_days
+            )
             return MessageChain([Image(data_bytes=sign_image)])
         elif options.get('get'):
             """获取今日签到图"""
             qq = target.id
-            if isinstance(target, Member):
-                name = target.name
-            else:
-                name = target.nickname
+            name = target.name if isinstance(target, Member) else target.nickname
             user = BotGame(qq)
             if not await user.is_signin:
                 if isinstance(sender, Group):

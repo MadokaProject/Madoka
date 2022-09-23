@@ -35,19 +35,28 @@ async def process(sender: Union[Friend, Group], command: Arpamar, alc: Alconna, 
         if not isinstance(sender, Group):
             return MessageChain([Plain('请在群组使用该命令!')])
         if set_ := options.get('set'):
-            await save_config('member_join', sender, {
-                'active': 1,
-                'text': '\n'.join(v for v in set_['msg'])
-            })
+            await save_config(
+                'member_join',
+                sender,
+                {'active': 1, 'text': '\n'.join(set_['msg'])},
+            )
+
             return MessageChain([Plain('设置成功！')])
         elif 'view' in options:
             res = await get_config('member_join', sender)
-            if not res:
-                return MessageChain([Plain("该群组未配置欢迎消息！")])
-            return MessageChain([
-                Plain(f"欢迎消息：{res['text'] if res.__contains__('text') else '默认欢迎消息'}"),
-                Plain(f"\n开启状态：{res['active']}")
-            ])
+            return (
+                MessageChain(
+                    [
+                        Plain(
+                            f"欢迎消息：{res['text'] if res.__contains__('text') else '默认欢迎消息'}"
+                        ),
+                        Plain(f"\n开启状态：{res['active']}"),
+                    ]
+                )
+                if res
+                else MessageChain([Plain("该群组未配置欢迎消息！")])
+            )
+
         elif status := options.get('status'):
             await save_config('member_join', sender, {'active': status['bool']}, model='add')
             return MessageChain([Plain("开启成功!" if status['bool'] else '关闭成功!')])

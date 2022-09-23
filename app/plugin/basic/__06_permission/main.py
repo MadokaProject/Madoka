@@ -53,50 +53,53 @@ async def process(app: Ariadne, target: Union[Friend, Member], command: Arpamar,
         return await print_help(alc.get_help())
     try:
         if grant:
-            if Permission.manual(target, 3):
-                _target = grant['qq'].target if isinstance(grant['qq'], At) else grant['qq']
-                level = grant['level']
-                if target.id == target and level != 4 and Permission.manual(target, 4):
-                    return MessageChain([Plain(f'怎么有master想给自己改权限呢？{config.BOT_NAME}很担心你呢，快去脑科看看吧！')])
-                if await BotUser(_target).level == 0:
-                    return MessageChain([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
-                if 1 <= level <= 2:
-                    if result := await BotUser(_target).level:
-                        if result == 4:
-                            if Permission.manual(target, 4):
-                                return MessageChain([Plain('就算是master也不能修改master哦！（怎么能有两个master呢')])
-                            else:
-                                return MessageChain([Plain('master level 不可更改！若想进行修改请直接修改配置文件！')])
-                        elif result == 3:
-                            if Permission.manual(target, 4):
-                                ADMIN_USER.remove(target)
-                                if level == 2:
-                                    GROUP_ADMIN_USER.append(target)
-                                return await grant_permission_process(_target, level)
-                            else:
-                                return MessageChain([Plain("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！")])
-                        elif result == 2:
-                            if level == 1:
-                                GROUP_ADMIN_USER.remove(target)
-                            return await grant_permission_process(_target, level)
-                        else:
-                            if level == 2:
-                                GROUP_ADMIN_USER.append(target)
-                            return await grant_permission_process(_target, level)
-                elif level == 3:
-                    if Permission.manual(target, 4):
-                        if target in GROUP_ADMIN_USER:
-                            GROUP_ADMIN_USER.remove(_target)
-                        ADMIN_USER.append(target)
+            if not Permission.manual(target, 3):
+                return MessageChain([Plain('权限不足，爬!')])
+            _target = grant['qq'].target if isinstance(grant['qq'], At) else grant['qq']
+            level = grant['level']
+            if target.id == target and level != 4 and Permission.manual(target, 4):
+                return MessageChain([Plain(f'怎么有master想给自己改权限呢？{config.BOT_NAME}很担心你呢，快去脑科看看吧！')])
+            if await BotUser(_target).level == 0:
+                return MessageChain([Plain('在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！')])
+            if 1 <= level <= 2:
+                if result := await BotUser(_target).level:
+                    if result == 4:
+                        return (
+                            MessageChain(
+                                [Plain('就算是master也不能修改master哦！（怎么能有两个master呢')]
+                            )
+                            if Permission.manual(target, 4)
+                            else MessageChain(
+                                [Plain('master level 不可更改！若想进行修改请直接修改配置文件！')]
+                            )
+                        )
+
+                    elif result == 3:
+                        if not Permission.manual(target, 4):
+                            return MessageChain([Plain("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！")])
+                        ADMIN_USER.remove(target)
+                        if level == 2:
+                            GROUP_ADMIN_USER.append(target)
+                        return await grant_permission_process(_target, level)
+                    elif result == 2:
+                        if level == 1:
+                            GROUP_ADMIN_USER.remove(target)
                         return await grant_permission_process(_target, level)
                     else:
-                        return MessageChain([Plain('权限不足，你必须达到等级4(master level)才可对超级管理员进行授权！')])
-                else:
-                    return MessageChain([
-                        Plain('level值非法！level值范围: 1-3\r\n1: user\r\n2: admin\r\n3: super admin')
-                    ])
+                        if level == 2:
+                            GROUP_ADMIN_USER.append(target)
+                        return await grant_permission_process(_target, level)
+            elif level == 3:
+                if not Permission.manual(target, 4):
+                    return MessageChain([Plain('权限不足，你必须达到等级4(master level)才可对超级管理员进行授权！')])
+                if target in GROUP_ADMIN_USER:
+                    GROUP_ADMIN_USER.remove(_target)
+                ADMIN_USER.append(target)
+                return await grant_permission_process(_target, level)
             else:
-                return MessageChain([Plain('权限不足，爬!')])
+                return MessageChain([
+                    Plain('level值非法！level值范围: 1-3\r\n1: user\r\n2: admin\r\n3: super admin')
+                ])
         elif user:
             return await master_grant_user(app, target, user)
         elif blacklist:
@@ -133,10 +136,7 @@ async def master_grant_user(app: Ariadne, target: Union[Friend, Member], user_: 
             friends = {i.id: i.nickname for i in await app.get_friend_list()}
             for qq in res:
                 qq = int(qq.uid)
-                if qq in friends.keys():
-                    msg += f'\n{friends[qq]}: {qq}'
-                else:
-                    msg += f'\n未知用户昵称: {qq}'
+                msg += f'\n{friends[qq]}: {qq}' if qq in friends else f'\n未知用户昵称: {qq}'
         else:
             msg = '无激活用户'
         return MessageChain([Plain(msg)])
@@ -181,7 +181,7 @@ async def master_grant_group(app: Ariadne, group: dict, _: Union[Friend, Member]
             groups = {i.id: {'name': i.name, 'perm': i.account_perm.value} for i in await app.get_group_list()}
             for group_id in res:
                 group_id = int(group_id.uid)
-                if group_id in groups.keys():
+                if group_id in groups:
                     msg += f"\n{groups[group_id]['name']}: {group_id} - {GROUP_PERM[groups[group_id]['perm']]}"
                 else:
                     msg += f"\n未知群: {group_id} - 未加入该群"

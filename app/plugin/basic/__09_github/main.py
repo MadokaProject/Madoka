@@ -168,10 +168,17 @@ async def message_push(group, repo, branch):
         datetime.strptime(commit_info['commit']['author']['date'], "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8),
         '%Y-%m-%d %H:%M:%S'
     )
-    await app.send_group_message(group, MessageChain([
-        Plain('Recent Commits to ' + repo + ':' + branch['name']),
-        Plain("\r\nCommit: " + commit_info['commit']['message']),
-        Plain("\r\nAuthor: " + commit_info['commit']['author']['name']),
-        Plain("\r\nUpdated: " + commit_time),
-        Plain("\r\nLink: " + commit_info['html_url'])
-    ]))
+    await app.send_group_message(
+        group,
+        MessageChain(
+            [
+                Plain(f'Recent Commits to {repo}:' + branch['name']),
+                Plain("\r\nCommit: " + commit_info['commit']['message']),
+                Plain(
+                    "\r\nAuthor: " + commit_info['commit']['author']['name']
+                ),
+                Plain("\r\nUpdated: " + commit_time),
+                Plain("\r\nLink: " + commit_info['html_url']),
+            ]
+        ),
+    )

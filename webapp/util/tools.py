@@ -3,5 +3,5 @@ def GET_RET_JSON(code_id, msg=None, data=None):
     if msg:
         ret['msg'] = msg
     if data or data == {}:
-        ret.update({'data': data})
+        ret['data'] = data
     return ret

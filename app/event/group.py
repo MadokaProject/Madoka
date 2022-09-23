@@ -32,7 +32,7 @@ async def avatar_black_and_white(qq: int) -> bytes:
     """
     获取群成员头像黑白化
     """
-    url = f"https://q1.qlogo.cn/g?b=qq&nk={str(qq)}&s=4"
+    url = f"https://q1.qlogo.cn/g?b=qq&nk={qq}&s=4"
     async with httpx.AsyncClient() as client:
         resp = await client.get(url)
     img = IMG.open(BytesIO(resp.content))
@@ -62,13 +62,12 @@ async def card_change(app: Ariadne, event: MemberCardChangeEvent):
             await safeSendGroupMessage(
                 event.member.group.id, MessageChain([Plain("请不要修改我的群名片")])
             )
-    else:
-        if await get_config('member_card_change', event.member.group.id) and \
+    elif await get_config('member_card_change', event.member.group.id) and \
                 event.current not in [None, '']:
-            await safeSendGroupMessage(event.member.group, MessageChain([
-                At(event.member.id),
-                Plain(f" 的群名片由 {event.origin} 被修改为 {event.current}")
-            ]))
+        await safeSendGroupMessage(event.member.group, MessageChain([
+            At(event.member.id),
+            Plain(f" 的群名片由 {event.origin} 被修改为 {event.current}")
+        ]))
 
 
 @bcc.receiver(MemberJoinEvent)

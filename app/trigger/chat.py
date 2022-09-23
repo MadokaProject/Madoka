@@ -45,8 +45,8 @@ class Chat(Trigger):
         message = ''.join(message)
         url = 'http://api.qingyunke.com/api.php'
         if self.target.id in GROUP_RUNING_LIST \
-                or not self.message.has(At) \
-                or self.message.get_first(At).target != config.LOGIN_QQ:
+                    or not self.message.has(At) \
+                    or self.message.get_first(At).target != config.LOGIN_QQ:
             return
         params = {
             'key': 'free',
@@ -60,8 +60,6 @@ class Chat(Trigger):
                 Plain(' ' + str(response['content']).replace('{br}', '\r\n').replace('菲菲', config.BOT_NAME))
             ]))
         else:
-            resp.extend(MessageChain([
-                Plain(' ' + random.choice(no_answer))
-            ]))
+            resp.extend(MessageChain([Plain(f' {random.choice(no_answer)}')]))
         await self.do_send(resp)
         self.as_last = True

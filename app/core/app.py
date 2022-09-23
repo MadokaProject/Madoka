@@ -105,11 +105,10 @@ class AppCore(metaclass=Singleton):
         return self.__config
 
     def launch(self):
-        if not self.__launched:
-            self.__app.launch_blocking()
-            self.__launched = True
-        else:
+        if self.__launched:
             raise AriadneAlreadyLaunchedError()
+        self.__app.launch_blocking()
+        self.__launched = True
 
     def set_group_chain(self, chains: list):
         for chain in chains:

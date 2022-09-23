@@ -78,10 +78,7 @@ class Config(metaclass=Singleton):
             exit()
         except ImportError as e:
             logger.error("依赖包缺少: %r" % e.name)
-            if e.name == 'pymysql':
-                cmd = 'pip install pymysql'
-            else:
-                cmd = 'pip install pysqlite3'
+            cmd = 'pip install pymysql' if e.name == 'pymysql' else 'pip install pysqlite3'
             logger.error("请尝试运行 '%s' 安装该依赖包后重新启动!" % cmd)
             exit()
 

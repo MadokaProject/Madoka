@@ -45,13 +45,14 @@ class Controller:
         i = 1
 
         # 判断是否在权限允许列表
-        if isinstance(self.sender, Friend):
-            if self.sender.id not in ACTIVE_USER:
-                return
-        elif isinstance(self.sender, Group):
-            if self.sender.id not in ACTIVE_GROUP:
-                return
-
+        if (
+            isinstance(self.sender, Friend)
+            and self.sender.id not in ACTIVE_USER
+            or not isinstance(self.sender, Friend)
+            and isinstance(self.sender, Group)
+            and self.sender.id not in ACTIVE_GROUP
+        ):
+            return
         # 预触发器
         for trig in trigger.Trigger.__subclasses__():
             obj: trigger.Trigger
@@ -72,22 +73,17 @@ class Controller:
             return
 
         # 指令规范化
-        if not msg[0] == '.':
-            msg = '.' + msg[1:]
+        if msg[0] != '.':
+            msg = f'.{msg[1:]}'
 
         # 判断是否为主菜单帮助
         if isstartswith(msg, ['.help', '.帮助']):
             send_help = True
-            if isinstance(self.sender, Group):
-                resp = (
-                        f"{config.BOT_NAME} 群菜单 / {self.sender.id}\n{self.sender.name}\n"
-                        + "========================================================"
-                )
-            else:
-                resp = (
-                        f"{config.BOT_NAME} 好友菜单 / {self.sender.id}\n{self.sender.nickname}\n"
-                        + "========================================================"
-                )
+            resp = (
+                f"{config.BOT_NAME} 群菜单 / {self.sender.id}\n{self.sender.name}\n========================================================"
+                if isinstance(self.sender, Group)
+                else f"{config.BOT_NAME} 好友菜单 / {self.sender.id}\n{self.sender.nickname}\n========================================================"
+            )
 
         # 加载插件
         for plg in self.manager.get_delegates().copy().values():
@@ -98,14 +94,8 @@ class Controller:
             if Permission.manual(self.target, Permission.SUPER_ADMIN):
                 hidden = False  # 隐藏菜单仅超级管理员以上可见
             if send_help and not hidden:  # 主菜单帮助获取
-                if not enable:
-                    statu = "【  关闭  】"
-                else:
-                    statu = "            "
-                if i < 10:
-                    si = " " + str(i)
-                else:
-                    si = str(i)
+                statu = "            " if enable else "【  关闭  】"
+                si = f" {str(i)}" if i < 10 else str(i)
                 resp += f"\n{si}  {statu}  {plg.brief_help}: {plg.entry}"
                 i += 1
             elif isstartswith(msg.split()[0][1:], plg.entry, full_match=1) and not hidden:

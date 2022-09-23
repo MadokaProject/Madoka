@@ -34,7 +34,7 @@ async def process(app: Ariadne, result: AlconnaProperty):
     if not arp.matched:
         return send(result.help_text)
     other_args = arp.other_args
-    all_ = True if arp.options.get('all') else False
+    all_ = bool(arp.options.get('all'))
     if not arp.options.get('mute') and not arp.options.get('unmute'):
         return args_error()
     qq = other_args['qq']

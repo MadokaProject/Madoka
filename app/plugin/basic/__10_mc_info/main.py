@@ -110,25 +110,25 @@ async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Fri
                     if target in v['report']:
                         msg += f'{k[0]}: {k[1]}\n'
                 return MessageChain(msg)
-            if res := DBMcServer.get_or_none(host=cmd.query('host'), port=cmd.query('port')):
-                res.report = res.report or ''
-                if 'off' in cmd['listen']['options']:
-                    report = ','.join(
-                        filter(lambda x: x != target, res.report.split(','))
-                        )
-                    DBMcServer.update(report=report).where(
-                        (DBMcServer.host == cmd.query('host')) & (DBMcServer.port == cmd.query('port'))
-                    ).execute()
-                else:
-                    report = ','.join({target, *res.report.split(',')})
-                    DBMcServer.update(report=report).where(
-                        (DBMcServer.host == cmd.query('host')) & (DBMcServer.port == cmd.query('port'))
-                    ).execute()
-                logger.info(type(report))
-                LISTEN_MC_SERVER[(cmd.query('host'), cmd.query('port'))]['report'] = [i for i in report.split(',') if i]
-                return MessageChain('设置成功!')
-            else:
+            if not (
+                res := DBMcServer.get_or_none(
+                    host=cmd.query('host'), port=cmd.query('port')
+                )
+            ):
                 return MessageChain('未找到该服务器，请联系管理员添加!')
+            res.report = res.report or ''
+            report = (
+                ','.join(filter(lambda x: x != target, res.report.split(',')))
+                if 'off' in cmd['listen']['options']
+                else ','.join({target, *res.report.split(',')})
+            )
+
+            DBMcServer.update(report=report).where(
+                (DBMcServer.host == cmd.query('host')) & (DBMcServer.port == cmd.query('port'))
+            ).execute()
+            logger.info(type(report))
+            LISTEN_MC_SERVER[(cmd.query('host'), cmd.query('port'))]['report'] = [i for i in report.split(',') if i]
+            return MessageChain('设置成功!')
         else:
             if res := DBMcServer.get_or_none(default=1):
                 default = (cmd.query('host') or res.host, cmd.query('port') or res.port, cmd.query('timeout'))
@@ -269,8 +269,7 @@ class StatusPing:
             _online = jsonpath.jsonpath(response, '$..max')[0]
             msg = "版本: %s\r\n描述: %s\r\n延迟: %d ms\r\n在线: %d/%d" % (
                 _version, _description, _ping, _max, _online)
-            name = jsonpath.jsonpath(response, '$..sample[..name]')
-            if name:
+            if name := jsonpath.jsonpath(response, '$..sample[..name]'):
                 msg += "\r\n玩家: "
                 for index in range(len(name)):
                     if index != 0:
