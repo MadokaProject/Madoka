@@ -18,4 +18,7 @@ COPY --from=builder /build/__pypackages__/3.9/lib /app/pkgs
 COPY app/ app/
 COPY main.py .
 
+RUN pip config set install.prefix /app/user_pkgs \
+    echo "/app/user_pkgs/lib/python3.9/site-packages" > /usr/local/lib/python3.9/site-packages/user_pkgs.pth
+
 CMD ["python", "main.py"]

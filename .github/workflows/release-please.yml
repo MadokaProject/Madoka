@@ -1,7 +1,7 @@
 name: release-please
 on:
   push:
-    branches: [ release ]
+    branches: [release]
   workflow_dispatch:
 
 jobs:
@@ -22,7 +22,7 @@ jobs:
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git config --global user.name "github-actions[bot]"
           git clone https://github.com/MadokaProject/Madoka.git merge
-          cd merge
+          cd ./merge
           git fetch origin
           git checkout master
           git merge release
@@ -31,13 +31,9 @@ jobs:
         if: ${{ steps.release.outputs.release_created }}
         run: |
           echo "Publish v${{ steps.release.outputs.version }} version Docker image"
-          git clone -b v${{ steps.release.outputs.version }} https://github.com/MadokaProject/Madoka.git ./k8s/images/Madoka
+          cd ./merge
           docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
-          docker build -t colsrch/madoka:v${{ steps.release.outputs.version }} ./k8s/images
+          docker build -t colsrch/madoka:v${{ steps.release.outputs.version }} .
+          docker tag colsrch/madoka:v${{ steps.release.outputs.version }} colsrch/madoka:stable
           docker push colsrch/madoka:v${{ steps.release.outputs.version }}
-          echo "Publish stable version Docker image"
-          cd ./k8s/images/Madoka
-          git checkout master
-          cd -
-          docker build -t colsrch/madoka:stable ./k8s/images
           docker push colsrch/madoka:stable
