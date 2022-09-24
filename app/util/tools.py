@@ -11,8 +11,8 @@ def parse_args(args, keep_head=False) -> list:
     :param keep_head: bool 保留头部
     """
     args: List[str] = args.strip().split()
-    for i in range(len(args)):
-        args[i].strip()
+    for arg in args:
+        arg.strip()
     if not keep_head:
         args.pop(0)
     return args
@@ -26,13 +26,7 @@ def isstartswith(prefix: str, args: Union[str, list], full_match=False) -> bool:
     """
     if type(args) == str:
         args = [args]
-    for arg in args:
-        if full_match:
-            if prefix == arg:
-                return True
-        elif prefix.startswith(arg):
-            return True
-    return False
+    return any(full_match and prefix == arg or not full_match and prefix.startswith(arg) for arg in args)
 
 
 def restart(*args):

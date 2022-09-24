@@ -134,8 +134,6 @@ async def leave_kick(app: Ariadne, event: BotLeaveEventKick):
         ACTIVE_GROUP.pop(event.group.id)
     except Exception as e:
         logger.warning(e)
-        pass
-
     for qq in ADMIN_USER:
         await app.send_friend_message(
             qq,
@@ -151,8 +149,6 @@ async def leave_active(app: Ariadne, event: BotLeaveEventActive):
         ACTIVE_GROUP.pop(event.group.id)
     except Exception as e:
         logger.warning(e)
-        pass
-
     for qq in ADMIN_USER:
         await app.send_friend_message(
             qq,
@@ -206,105 +202,99 @@ async def mute(app: Ariadne, event: BotMuteEvent):
 @bcc.receiver(NudgeEvent)
 async def nudge(app: Ariadne, event: NudgeEvent):
     """被戳一戳"""
-    if event.target == config.LOGIN_QQ:
-        if event.context_type == "group":
-            if member := await app.get_member(event.group_id, event.supplicant):
-                logger.info(f"机器人被群 <{member.group.name}> 中用户 <{member.name}> 戳了戳。")
-                if member.group.id in NUDGE_INFO.keys():
-                    if member.id in NUDGE_INFO[member.group.id].keys():
-                        period = NUDGE_INFO[member.group.id][member.id]["time"] + relativedelta(minutes=1)
-                        if datetime.now() >= period:
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": 0,
-                                "time": datetime.now(),
-                            }
-                        count = NUDGE_INFO[member.group.id][member.id]["count"] + 1
-                        if count == 1:
-                            try:
-                                await app.send_nudge(member)
-                            except Exception as e:
-                                logger.warning(e)
-                                pass
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": count,
-                                "time": datetime.now(),
-                            }
-                        elif count == 2:
-                            try:
-                                await app.send_nudge(member)
-                                await app.send_group_message(
-                                    member.group.id,
-                                    MessageChain([Plain(text="不许戳了！")]),
-                                )
-                            except Exception as e:
-                                logger.warning(e)
-                                pass
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": count,
-                                "time": datetime.now(),
-                            }
-                        elif count == 3:
-                            try:
-                                await app.send_nudge(member)
-                                await app.send_group_message(
-                                    member.group.id,
-                                    MessageChain([Plain(text="说了不许再戳了！")]),
-                                )
-                            except Exception as e:
-                                logger.warning(e)
-                                pass
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": count,
-                                "time": datetime.now(),
-                            }
-                        elif count == 4:
-                            try:
-                                await app.send_nudge(member)
-                            except Exception as e:
-                                logger.warning(e)
-                                pass
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": count,
-                                "time": datetime.now(),
-                            }
-                        elif count == 5:
-                            try:
-                                await app.send_nudge(member)
-                                await app.send_group_message(
-                                    member.group.id,
-                                    MessageChain([Plain(text="呜呜呜你欺负我，不理你了！")]),
-                                )
-                            except Exception as e:
-                                logger.warning(e)
-                                pass
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": count,
-                                "time": datetime.now(),
-                            }
-                        elif 6 <= count <= 9:
-                            NUDGE_INFO[member.group.id][member.id] = {
-                                "count": count,
-                                "time": datetime.now(),
-                            }
-                        elif count == 10:
-                            try:
-                                await app.send_nudge(member)
-                                await app.send_group_message(
-                                    member.group.id,
-                                    MessageChain([Plain(text="你真的很有耐心欸。")]),
-                                )
-                            except Exception as e:
-                                logger.warning(e)
-                                pass
-                    else:
+    if event.target != config.LOGIN_QQ:
+        return
+    if event.context_type == "group":
+        if member := await app.get_member(event.group_id, event.supplicant):
+            logger.info(f"机器人被群 <{member.group.name}> 中用户 <{member.name}> 戳了戳。")
+            if member.group.id in NUDGE_INFO.keys():
+                if member.id in NUDGE_INFO[member.group.id].keys():
+                    period = NUDGE_INFO[member.group.id][member.id]["time"] + relativedelta(minutes=1)
+                    if datetime.now() >= period:
                         NUDGE_INFO[member.group.id][member.id] = {
-                            "count": 1,
+                            "count": 0,
                             "time": datetime.now(),
                         }
-                        await app.send_nudge(member)
+                    count = NUDGE_INFO[member.group.id][member.id]["count"] + 1
+                    if count == 1:
+                        try:
+                            await app.send_nudge(member)
+                        except Exception as e:
+                            logger.warning(e)
+                        NUDGE_INFO[member.group.id][member.id] = {
+                            "count": count,
+                            "time": datetime.now(),
+                        }
+                    elif count == 2:
+                        try:
+                            await app.send_nudge(member)
+                            await app.send_group_message(
+                                member.group.id,
+                                MessageChain([Plain(text="不许戳了！")]),
+                            )
+                        except Exception as e:
+                            logger.warning(e)
+                        NUDGE_INFO[member.group.id][member.id] = {
+                            "count": count,
+                            "time": datetime.now(),
+                        }
+                    elif count == 3:
+                        try:
+                            await app.send_nudge(member)
+                            await app.send_group_message(
+                                member.group.id,
+                                MessageChain([Plain(text="说了不许再戳了！")]),
+                            )
+                        except Exception as e:
+                            logger.warning(e)
+                        NUDGE_INFO[member.group.id][member.id] = {
+                            "count": count,
+                            "time": datetime.now(),
+                        }
+                    elif count == 4:
+                        try:
+                            await app.send_nudge(member)
+                        except Exception as e:
+                            logger.warning(e)
+                        NUDGE_INFO[member.group.id][member.id] = {
+                            "count": count,
+                            "time": datetime.now(),
+                        }
+                    elif count == 5:
+                        try:
+                            await app.send_nudge(member)
+                            await app.send_group_message(
+                                member.group.id,
+                                MessageChain([Plain(text="呜呜呜你欺负我，不理你了！")]),
+                            )
+                        except Exception as e:
+                            logger.warning(e)
+                        NUDGE_INFO[member.group.id][member.id] = {
+                            "count": count,
+                            "time": datetime.now(),
+                        }
+                    elif 6 <= count <= 9:
+                        NUDGE_INFO[member.group.id][member.id] = {
+                            "count": count,
+                            "time": datetime.now(),
+                        }
+                    elif count == 10:
+                        try:
+                            await app.send_nudge(member)
+                            await app.send_group_message(
+                                member.group.id,
+                                MessageChain([Plain(text="你真的很有耐心欸。")]),
+                            )
+                        except Exception as e:
+                            logger.warning(e)
                 else:
-                    NUDGE_INFO[member.group.id] = {member.id: {"count": 1, "time": datetime.now()}}
+                    NUDGE_INFO[member.group.id][member.id] = {
+                        "count": 1,
+                        "time": datetime.now(),
+                    }
                     await app.send_nudge(member)
-        else:
-            if friend := await app.get_friend(event.supplicant):
-                logger.info(f"机器人被好友 <{friend.nickname}> 戳了戳。")
+            else:
+                NUDGE_INFO[member.group.id] = {member.id: {"count": 1, "time": datetime.now()}}
+                await app.send_nudge(member)
+    elif friend := await app.get_friend(event.supplicant):
+        logger.info(f"机器人被好友 <{friend.nickname}> 戳了戳。")

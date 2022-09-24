@@ -1,4 +1,5 @@
 import asyncio
+import contextlib
 import importlib
 import json
 import shutil
@@ -89,20 +90,17 @@ class PluginManager(metaclass=Singleton):
                 if not await self.is_load(plugin):
                     self.__plugins[plugin] = importlib.import_module(plugin)
                 else:
-                    logger.warning("该插件已加载!" + plugin)
+                    logger.warning(f"该插件已加载!{plugin}")
                     return True
-            logger.success("成功加载插件: " + plugin_info)
+            logger.success(f"成功加载插件: {plugin_info}")
             return True
-        except ModuleNotFoundError as e:
-            logger.error(f"插件加载失败: {plugin_info} - {e}")
-            return False
         except ImportError as e:
             logger.error(f"插件加载失败: {plugin_info} - {e}")
             return False
         except RuntimeError as e:
             # TODO: return 出去后尝试卸载插件
             logger.error(f"插件加载失败: {e}")
-            raise NonStandardPluginError(plugin_info)
+            raise NonStandardPluginError(plugin_info) from e
         except Exception as e:
             logger.exception(e)
             return False
@@ -199,7 +197,7 @@ class PluginManager(metaclass=Singleton):
                 self.remove_tasker(__plugin)
                 self.__manager.delete(__plugin)
                 self.__plugins.pop(plugin_name)
-                logger.success("卸载扩展插件成功: " + plugin_name)
+                logger.success(f"卸载扩展插件成功: {plugin_name}")
             else:
                 logger.warning("该扩展插件未加载")
                 return False
@@ -216,18 +214,14 @@ class PluginManager(metaclass=Singleton):
         """查找插件是否加载"""
         if isinstance(plugin, ModuleType):
             plugin = plugin.__name__
-        if self.__plugins.get(plugin):
-            return True
-        return False
+        return bool(self.__plugins.get(plugin))
 
     async def exist(self, plugin_info: Dict[str, str]) -> bool:
         """查找插件是否存在
 
         :param plugin_info: 插件信息字典
         """
-        if await self.get_info(plugin_info):
-            return True
-        return False
+        return bool(await self.get_info(plugin_info))
 
     async def get_info(self, plugins: Union[str, Dict[str, str]]) -> List[Dict[str, str]]:
         """获取插件信息
@@ -254,13 +248,11 @@ class PluginManager(metaclass=Singleton):
         :param plugin_info: 插件信息
         """
         plugin_infos: List[Dict] = []
-        try:
+        with contextlib.suppress(FileNotFoundError):
             with open(self.__info_path, "r", encoding="UTF-8") as f:
                 plugin_infos = json.load(f)
             if local_plugin_info := await self.get_info(plugin_info):
                 plugin_infos.remove(local_plugin_info[0])
-        except FileNotFoundError:
-            pass
         plugin_infos.append(plugin_info)
         with open(self.__info_path, "w", encoding="UTF-8") as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
@@ -271,13 +263,11 @@ class PluginManager(metaclass=Singleton):
         :param plugin_info: 插件信息
         """
         plugin_infos: List[Dict] = []
-        try:
+        with contextlib.suppress(FileNotFoundError):
             with open(self.__info_path, "r", encoding="UTF-8") as f:
                 plugin_infos = json.load(f)
             if local_plugin_info := await self.get_info(plugin_info):
                 plugin_infos.remove(local_plugin_info[0])
-        except FileNotFoundError:
-            pass
         with open(self.__info_path, "w", encoding="UTF-8") as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
@@ -302,7 +292,7 @@ class PluginManager(metaclass=Singleton):
             )
             filepath = self.__folder_path.joinpath(f"{root_dir}/{url}")
             await asyncio.sleep(1)
-            if not await to_thread(download, self.__base_url + f"{root_dir}/{url}", filepath):
+            if not await to_thread(download, f"{self.__base_url}{root_dir}/{url}", filepath):
                 return False
         return True
 
@@ -370,17 +360,20 @@ class PluginManager(metaclass=Singleton):
         msg.field_names = ["插件名", "作者", "当前版本", "最新版本"]
         for local_plugin in local_plugins:
             for remote_plugin in remote_plugins:
-                if local_plugin["name"] == remote_plugin["name"] and local_plugin["author"] == remote_plugin["author"]:
-                    if compare_version(remote_plugin["version"], local_plugin["version"]):
-                        is_update = True
-                        msg.add_row(
-                            [
-                                local_plugin["name"],
-                                local_plugin["author"],
-                                local_plugin["version"],
-                                remote_plugin["version"],
-                            ]
-                        )
-                        break
+                if (
+                    local_plugin["name"] == remote_plugin["name"]
+                    and local_plugin["author"] == remote_plugin["author"]
+                    and compare_version(remote_plugin["version"], local_plugin["version"])
+                ):
+                    is_update = True
+                    msg.add_row(
+                        [
+                            local_plugin["name"],
+                            local_plugin["author"],
+                            local_plugin["version"],
+                            remote_plugin["version"],
+                        ]
+                    )
+                    break
         if is_update:
             return await create_image(msg.get_string(), cut=150)

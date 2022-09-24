@@ -96,17 +96,16 @@ class AppCore(metaclass=Singleton):
         return self.__config
 
     def launch(self):
-        if not self.__launched:
-            self.__launched = True
-            with contextlib.suppress(KeyboardInterrupt, asyncio.exceptions.CancelledError):
-                self.__app.launch_blocking()
-            if self.__restart:
-                logger.info("Madoka is about to restart")
-                restart(*self.__restart_args)
-            else:
-                logger.info("Madoka is shutting down...")
-        else:
+        if self.__launched:
             raise AriadneAlreadyLaunchedError()
+        self.__launched = True
+        with contextlib.suppress(KeyboardInterrupt, asyncio.exceptions.CancelledError):
+            self.__app.launch_blocking()
+        if self.__restart:
+            logger.info("Madoka is about to restart")
+            restart(*self.__restart_args)
+        else:
+            logger.info("Madoka is shutting down...")
 
     def stop(self):
         if self.__launched:

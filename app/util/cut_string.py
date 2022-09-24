@@ -17,10 +17,7 @@ def get_cut_str(text, cut):
     while re.search(r"\n\n\n\n\n", next_str):
         next_str = re.sub(r"\n\n\n\n\n", "\n", next_str)
     for s in next_str:
-        if s in string.printable:
-            si += 1
-        else:
-            si += 2
+        si += 1 if s in string.printable else 2
         i += 1
         if next_str == "":
             break

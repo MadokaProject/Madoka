@@ -11,9 +11,7 @@ class ListNode:
         return f"<ListNode::data={self.data}>"
 
     def is_empty(self) -> bool:
-        if self.next == self:
-            return True
-        return False
+        return self.next == self
 
     def append(self, data):
         s = ListNode(data)

@@ -15,5 +15,5 @@ class Reply(Trigger):
         res = await get_config("group_reply", self.sender.id)
         message = self.message.display
         if res and res.__contains__(message):
-            await self.do_send(MessageChain([At(self.target), Plain(" " + res[message])]))
+            await self.do_send(MessageChain([At(self.target), Plain(f" {res[message]}")]))
             self.as_last = True

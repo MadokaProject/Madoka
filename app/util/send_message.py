@@ -51,9 +51,7 @@ async def safeSendFriendMessage(
     try:
         return await app.send_friend_message(target, message, quote=quote)
     except UnknownTarget:
-        msg = []
-        for element in message.__root__:
-            msg.append(element)
+        msg = list(message.__root__)
         try:
             return await app.send_friend_message(target, MessageChain(msg), quote=quote)
         except UnknownTarget:

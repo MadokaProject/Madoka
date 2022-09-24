@@ -64,6 +64,6 @@ class Chat(Trigger):
                 )
             )
         else:
-            resp.extend(MessageChain([Plain(" " + random.choice(no_answer))]))
+            resp.extend(MessageChain([Plain(f" {random.choice(no_answer)}")]))
         await self.do_send(resp)
         self.as_last = True

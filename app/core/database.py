@@ -24,7 +24,7 @@ def db_init(root_dir: Path = app_path().joinpath("plugin")):
                 UpdateTime.create(name=name, time=datetime.strftime(datetime.now(), "%Y%m%d-%H%M"))
         logger.success("初始化数据表成功")
     except Exception as e:
-        logger.error("初始化数据表失败: " + str(e))
+        logger.error(f"初始化数据表失败: {str(e)}")
         exit()
 
 

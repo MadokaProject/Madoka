@@ -64,17 +64,16 @@ async def card_change(app: Ariadne, event: MemberCardChangeEvent):
                 info=MemberInfo(name=config.BOT_NAME),
             )
             await safeSendGroupMessage(event.member.group.id, MessageChain([Plain("请不要修改我的群名片")]))
-    else:
-        if await get_config("member_card_change", event.member.group.id) and event.current not in [None, ""]:
-            await safeSendGroupMessage(
-                event.member.group,
-                MessageChain(
-                    [
-                        At(event.member.id),
-                        Plain(f" 的群名片由 {event.origin} 被修改为 {event.current}"),
-                    ]
-                ),
-            )
+    elif await get_config("member_card_change", event.member.group.id) and event.current not in [None, ""]:
+        await safeSendGroupMessage(
+            event.member.group,
+            MessageChain(
+                [
+                    At(event.member.id),
+                    Plain(f" 的群名片由 {event.origin} 被修改为 {event.current}"),
+                ]
+            ),
+        )
 
 
 @bcc.receiver(MemberJoinEvent)

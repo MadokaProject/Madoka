@@ -24,7 +24,7 @@ class Repeat(Trigger):
                     self.app.account,
                     self.message.as_persistent_string(),
                 )
-                logger.info("Random Repeat: " + self.message.display)
+                logger.info(f"Random Repeat: {self.message.display}")
             if repeated(self.sender.id, self.app.account, 2):
                 await self.app.send_group_message(self.sender, self.message.as_sendable())
                 save(
@@ -32,6 +32,6 @@ class Repeat(Trigger):
                     self.app.account,
                     self.message.as_persistent_string(),
                 )
-                logger.info("Follow Repeat: " + self.message.display)
+                logger.info(f"Follow Repeat: {self.message.display}")
         except Exception as e:
             logger.warning(e)
