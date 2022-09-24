@@ -1,17 +1,16 @@
 """消息队列，控制消息发送频率"""
 import asyncio
+from queue import Queue
+from time import sleep
 
-from graia.ariadne.app import Ariadne
 from loguru import logger
 
 from app.util.decorator import Singleton
-from app.util.link_list import ListCreate
 
 
 class MQ(metaclass=Singleton):
-    __app: Ariadne
     __launched: bool = False
-    __message_queue: ListCreate = ListCreate()
+    __message_queue: Queue = Queue(maxsize=0)
     __limit: int
 
     def __init__(self, limit: int = 1.5):
@@ -25,31 +24,30 @@ class MQ(metaclass=Singleton):
     def limit(self):
         return self.__limit
 
-    def append(self, msg):
-        self.__message_queue.push_back(msg)
+    def put(self, msg):
+        """写入消息"""
+        self.__message_queue.put(msg)
 
-    async def send(self, p):
+    async def send(self, message):
         try:
-            await p.data(self.__app)
+            await message()
         except Exception as e:
             logger.exception(e)
             logger.error("消息发送失败")
 
-    async def __process(self):
+    def __process(self, loop):
         while True:
-            await asyncio.sleep(self.limit)
-            if not self.__message_queue.is_empty():
-                p = self.__message_queue.head.next
-                await self.send(p)
-                p.delete()
+            message = self.__message_queue.get()
+            asyncio.run_coroutine_threadsafe(self.send(message), loop)
+            sleep(self.limit)
+            self.__message_queue.task_done()
 
-    async def start(self, app):
+    def start(self, loop):
         if not self.__launched:
-            self.__app: Ariadne = app
             self.__launched = True
             logger.success("消息队列启动成功！")
             try:
-                await self.__process()
+                self.__process(loop)
             except Exception as e:
                 logger.exception(e)
         else:
@@ -57,10 +55,9 @@ class MQ(metaclass=Singleton):
 
     async def stop(self):
         logger.info("等待剩余消息发送完毕")
-        for p in self.__message_queue:
-            await asyncio.sleep(1.5)
+        for p in self.__message_queue.queue:
             await self.send(p)
-            p.delete()
+            await asyncio.sleep(1.3)
         logger.success("消息队列已停止")
 
 

@@ -2,6 +2,7 @@ import asyncio
 import contextlib
 import importlib
 import sys
+import threading
 
 from creart import it
 from graia.ariadne.app import Ariadne
@@ -17,7 +18,6 @@ from prompt_toolkit.styles import Style
 
 from app.core.config import Config
 from app.core.exceptions import AppCoreNotInitializedError, AriadneAlreadyLaunchedError
-from app.extend.message_queue import mq
 from app.extend.power import power
 from app.util.decorator import Singleton
 from app.util.tools import restart
@@ -134,13 +134,15 @@ class AppCore(metaclass=Singleton):
     async def bot_launch_init(self):
         try:
             from app.core.plugins import PluginManager
+            from app.extend.message_queue import mq
 
-            plg_mgr = PluginManager()
-            await plg_mgr.loads_all()
+            loop = asyncio.get_running_loop()
+            threading.Thread(daemon=True, target=mq.start, args=(loop,)).start()
+            await PluginManager().loads_all()
             importlib.__import__("app.console.loads")
             importlib.__import__("app.core.event")
             importlib.__import__("app.extend.schedule")
-            asyncio.create_task(mq.start(self.__app))
+
             asyncio.create_task(power(self.__app, sys.argv))
             # if self.__config.WEBSERVER_ENABLE:
             #     logger.success("WebServer is starting")

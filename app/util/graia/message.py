@@ -7,7 +7,10 @@ from graia.ariadne.message.element import At, Element, Source
 from graia.ariadne.model import Friend, Group, Member
 from typing_extensions import Self
 
+from app.core.app import AppCore
 from app.extend.message_queue import mq
+
+app: Ariadne = AppCore().get_app()
 
 
 class Message:
@@ -62,9 +65,9 @@ class Message:
 
     def send(self) -> None:
         """发送消息"""
-        mq.append(self.__send)
+        mq.put(self.__send)
 
-    async def __send(self, app: Ariadne) -> Union[ActiveFriendMessage, ActiveGroupMessage]:
+    async def __send(self) -> Union[ActiveFriendMessage, ActiveGroupMessage]:
         """发送消息"""
         if not self.__target:
             raise ValueError("未指定消息发送对象")
