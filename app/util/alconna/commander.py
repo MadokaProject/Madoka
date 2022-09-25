@@ -8,11 +8,17 @@ from ..decorator import ArgsAssigner
 from ..graia import (
     Ariadne,
     Friend,
+    FriendMessage,
     Group,
+    GroupMessage,
     InterruptControl,
     Member,
     MessageChain,
+    MessageEvent,
     Source,
+    Stranger,
+    StrangerMessage,
+    TempMessage,
 )
 
 
@@ -21,6 +27,7 @@ class Commander:
 
     Typical usage example:
     >>> from app.util.alconna import Commander, Subcommand, Arpamar
+    >>> from app.util.graia import GroupMessage
     >>> command = Commander(
             "test",
             "测试",
@@ -32,12 +39,12 @@ class Commander:
     >>> async def test1(result: Arpamar, *args, **kwargs):
     >>>    pass
     >>>
-    >>> @command.parse("test2")
+    >>> @command.parse("test2", events=[GroupMessage])
     >>> async def test2(result: Arpamar, *args, **kwargs):
     >>>    pass
     """
 
-    options: dict[str, Callable] = {}
+    options: dict[str, dict[str, Union[tuple, Callable]]] = {}
 
     def __init__(
         self,
@@ -70,18 +77,35 @@ class Commander:
             inc: InterruptControl,
             result: Arpamar,
         ):
-            for name, func in self.options.items():
-                if result.find(name):
-                    await func(app, message, target, sender, source, inc, result)
+            for name, value in self.options.items():
+                if result.find(name) and isinstance(sender, value["events"]):
+                    await value["func"](app, message, target, sender, source, inc, result)
 
-    def parse(self, name: str):
+    def parse(self, name: str, events: list[MessageEvent] = []):
+        """子命令匹配器
+
+        :param name: 需要匹配的子命令
+        :param events: 事件过滤器，默认不过滤
+        """
+        TypeMessage = {
+            FriendMessage: Friend,
+            GroupMessage: Group,
+            TempMessage: Member,
+            StrangerMessage: Stranger,
+        }
+
         def wrapper(func):
             @ArgsAssigner
             @wraps(func)
             def inner(*args, **kwargs):
                 return func(*args, **kwargs)
 
-            self.options[name] = inner
+            self.options[name] = {
+                "events": tuple(
+                    [TypeMessage[event] for event in events if event in TypeMessage] or TypeMessage.values()
+                ),
+                "func": inner,
+            }
             return inner
 
         return wrapper

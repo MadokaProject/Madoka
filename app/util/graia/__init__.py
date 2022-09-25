@@ -7,6 +7,7 @@ from graia.ariadne.event.message import ActiveStrangerMessage as ActiveStrangerM
 from graia.ariadne.event.message import ActiveTempMessage as ActiveTempMessage
 from graia.ariadne.event.message import FriendMessage as FriendMessage
 from graia.ariadne.event.message import GroupMessage as GroupMessage
+from graia.ariadne.event.message import MessageEvent as MessageEvent
 from graia.ariadne.event.message import StrangerMessage as StrangerMessage
 from graia.ariadne.event.message import TempMessage as TempMessage
 from graia.ariadne.message.chain import MessageChain
@@ -61,6 +62,7 @@ __all__ = [
     "ActiveTempMessage",
     "FriendMessage",
     "GroupMessage",
+    "MessageEvent",
     "StrangerMessage",
     "TempMessage",
     "MessageChain",
