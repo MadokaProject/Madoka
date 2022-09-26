@@ -4,10 +4,9 @@ Xenon 管理 https://github.com/McZoo/Xenon/blob/master/lib/control.py
 from functools import wraps
 from typing import Union
 
-from graia.ariadne.model import Friend, Group, Member, MemberPerm
-
 from app.core.config import Config
 from app.core.settings import ADMIN_USER, BANNED_USER, GROUP_ADMIN_USER
+from app.util.graia import Friend, Group, Member, MemberPerm
 from app.util.online_config import set_plugin_switch
 from app.util.phrases import not_admin
 
@@ -64,16 +63,21 @@ class Permission:
         def perm_check(func):
             @wraps(func)
             async def wrapper(*args, **kwargs):
+                sender = None
+                target = None
                 for arg in args:
+                    if isinstance(arg, (Friend, Group)):
+                        sender = arg
                     if isinstance(arg, (Friend, Member)):
                         target = arg
+                    if sender and target:
                         break
                 else:
                     raise TypeError("被装饰函数必须包含一个 Friend 或 Member 参数")
                 if cls.manual(target, level):
                     return await func(*args, **kwargs)
                 else:
-                    return not_admin()
+                    not_admin(sender)
 
             return wrapper
 

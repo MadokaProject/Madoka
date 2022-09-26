@@ -3,9 +3,11 @@ from functools import wraps
 from typing import Callable, Union
 
 from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
+from loguru import logger
 
-from ..decorator import ArgsAssigner
-from ..graia import (
+from app.util.control import Permission
+from app.util.decorator import ArgsAssigner
+from app.util.graia import (
     Ariadne,
     Friend,
     FriendMessage,
@@ -20,6 +22,7 @@ from ..graia import (
     StrangerMessage,
     TempMessage,
 )
+from app.util.phrases import print_help, unknown_error
 
 
 class Commander:
@@ -44,7 +47,12 @@ class Commander:
     >>>    pass
     """
 
-    options: dict[str, dict[str, Union[tuple, Callable]]] = {}
+    TypeMessage = {
+        FriendMessage: Friend,
+        GroupMessage: Group,
+        TempMessage: Member,
+        StrangerMessage: Stranger,
+    }
 
     def __init__(
         self,
@@ -56,6 +64,15 @@ class Commander:
         hidden: bool = False,
         **kwargs,
     ):
+        """创建一个命令
+
+        :param entry: 主命令
+        :param brief_help: 简短帮助信息
+        :param args: 命令选项
+        :param help_text: 帮助信息，默认为 brief_help
+        :param enable: 插件开关，默认开启
+        :param hidden: 隐藏插件，默认不隐藏
+        """
         self.entry = entry
         self.brief_help = brief_help
         self.help_text = help_text or brief_help
@@ -63,6 +80,8 @@ class Commander:
         self.hidden = hidden
         self.alconna = Alconna(entry, *args, meta=CommandMeta(self.help_text), **kwargs)
         self.module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").split("/")[-5:])
+        self.options: dict[str, Callable] = {}
+        self.no_match_action: Callable = None
         from app.core.commander import CommandDelegateManager
 
         manager: CommandDelegateManager = CommandDelegateManager()
@@ -77,35 +96,81 @@ class Commander:
             inc: InterruptControl,
             result: Arpamar,
         ):
-            for name, value in self.options.items():
-                if result.find(name) and isinstance(sender, value["events"]):
-                    await value["func"](app, message, target, sender, source, inc, result)
+            try:
+                for name, func in self.options.items():
+                    if result.find(name):
+                        return await func(sender, app, message, target, sender, source, inc, result)
+                if self.no_match_action:
+                    return await self.no_match_action(sender, app, message, target, sender, source, inc, result)
+                await print_help(sender, self.alconna.get_help())
+            except Exception as e:
+                logger.exception(e)
+                return unknown_error(sender)
 
-    def parse(self, name: str, events: list[MessageEvent] = []):
-        """子命令匹配器
+    def __filter(self, events: tuple):
+        """事件过滤器"""
 
-        :param name: 需要匹配的子命令
+        def wrapper(func: Callable):
+            @wraps(func)
+            def inner(sender, *args, **kwargs):
+                if isinstance(sender, events):
+                    return func(*args, **kwargs)
+
+            return inner
+
+        return wrapper
+
+    def no_match(self, /, events: list[MessageEvent] = [], permission: int = Permission.DEFAULT):
+        """无匹配子命令时的回调函数
+
         :param events: 事件过滤器，默认不过滤
+        :param permission: 鉴权，默认允许非黑名单外所有用户
         """
-        TypeMessage = {
-            FriendMessage: Friend,
-            GroupMessage: Group,
-            TempMessage: Member,
-            StrangerMessage: Stranger,
-        }
 
         def wrapper(func):
+            @self.__filter(
+                tuple(
+                    [self.TypeMessage[event] for event in events if event in self.TypeMessage]
+                    or self.TypeMessage.values()
+                )
+            )
+            @Permission.require(permission)
             @ArgsAssigner
             @wraps(func)
             def inner(*args, **kwargs):
                 return func(*args, **kwargs)
 
-            self.options[name] = {
-                "events": tuple(
-                    [TypeMessage[event] for event in events if event in TypeMessage] or TypeMessage.values()
-                ),
-                "func": inner,
-            }
+            self.no_match_action = inner
+            return inner
+
+        return wrapper
+
+    def parse(
+        self, name: Union[str, list[str]], /, events: list[MessageEvent] = [], permission: int = Permission.DEFAULT
+    ):
+        """子命令匹配器
+
+        :param name: 需要匹配的子命令
+        :param events: 事件过滤器，默认不过滤
+        :param permission: 鉴权，默认允许非黑名单外所有用户
+        """
+        names = name if isinstance(name, list) else [name]
+
+        def wrapper(func):
+            @self.__filter(
+                tuple(
+                    [self.TypeMessage[event] for event in events if event in self.TypeMessage]
+                    or self.TypeMessage.values()
+                )
+            )
+            @Permission.require(permission)
+            @ArgsAssigner
+            @wraps(func)
+            def inner(*args, **kwargs):
+                return func(*args, **kwargs)
+
+            for name in names:
+                self.options[name] = inner
             return inner
 
         return wrapper

@@ -65,12 +65,12 @@ class Message:
 
     def send(self) -> None:
         """发送消息"""
+        if not self.__target:
+            raise ValueError("未指定消息发送对象")
         mq.put(self.__send)
 
     async def __send(self) -> Union[ActiveFriendMessage, ActiveGroupMessage]:
         """发送消息"""
-        if not self.__target:
-            raise ValueError("未指定消息发送对象")
         if isinstance(self.__target, int):
             self.__target = await app.get_friend(self.__target) or await app.get_group(self.__target)
             if not self.__target:
