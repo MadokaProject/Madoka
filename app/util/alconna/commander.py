@@ -28,26 +28,25 @@ from app.util.phrases import print_help, unknown_error
 class Commander:
     """对 Alconna 进行部分封装，简化命令的注册过程。
 
-    Typical usage example:
+    Examples:
+
     >>> from app.util.alconna import Commander, Subcommand, Arpamar
     >>> from app.util.graia import GroupMessage
     >>> command = Commander(
-            "test",
-            "测试",
-            Subcommand("test1", help_text="test1"),
-            Subcommand("test2", help_text="test2")
-        )
-    >>>
+    ...     "test",
+    ...     "测试",
+    ...     Subcommand("test1", help_text="test1"),
+    ...     Subcommand("test2", help_text="test2")
+    ... )
     >>> @command.parse("test1")
     >>> async def test1(result: Arpamar, *args, **kwargs):
-    >>>    pass
-    >>>
+    ...    pass
     >>> @command.parse("test2", events=[GroupMessage])
     >>> async def test2(result: Arpamar, *args, **kwargs):
-    >>>    pass
+    ...    pass
     """
 
-    TypeMessage = {
+    __TypeMessage = {
         FriendMessage: Friend,
         GroupMessage: Group,
         TempMessage: Member,
@@ -73,20 +72,22 @@ class Commander:
         :param enable: 插件开关，默认开启
         :param hidden: 隐藏插件，默认不隐藏
         """
-        self.entry = entry
-        self.brief_help = brief_help
-        self.help_text = help_text or brief_help
-        self.enable = enable
-        self.hidden = hidden
-        self.alconna = Alconna(entry, *args, meta=CommandMeta(self.help_text), **kwargs)
-        self.module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").split("/")[-5:])
-        self.options: dict[str, Callable] = {}
-        self.no_match_action: Callable = None
+        self.__entry = entry
+        self.__brief_help = brief_help
+        self.__help_text = help_text or brief_help
+        self.__enable = enable
+        self.__hidden = hidden
+        self.alconna = Alconna(entry, *args, meta=CommandMeta(self.__help_text), **kwargs)
+        self.__module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").split("/")[-5:])
+        self.__options: dict[str, Callable] = {}
+        self.__no_match_action: Callable = None
         from app.core.commander import CommandDelegateManager
 
         manager: CommandDelegateManager = CommandDelegateManager()
 
-        @manager.register(self.entry, self.brief_help, self.alconna, self.enable, self.hidden, self.module_name)
+        @manager.register(
+            self.__entry, self.__brief_help, self.alconna, self.__enable, self.__hidden, self.__module_name
+        )
         async def process(
             app: Ariadne,
             message: MessageChain,
@@ -97,11 +98,11 @@ class Commander:
             result: Arpamar,
         ):
             try:
-                for name, func in self.options.items():
+                for name, func in self.__options.items():
                     if result.find(name):
                         return await func(sender, app, message, target, sender, source, inc, result)
-                if self.no_match_action:
-                    return await self.no_match_action(sender, app, message, target, sender, source, inc, result)
+                if self.__no_match_action:
+                    return await self.__no_match_action(sender, app, message, target, sender, source, inc, result)
                 await print_help(sender, self.alconna.get_help())
             except Exception as e:
                 logger.exception(e)
@@ -130,8 +131,8 @@ class Commander:
         def wrapper(func):
             @self.__filter(
                 tuple(
-                    [self.TypeMessage[event] for event in events if event in self.TypeMessage]
-                    or self.TypeMessage.values()
+                    [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
+                    or self.__TypeMessage.values()
                 )
             )
             @Permission.require(permission)
@@ -140,7 +141,7 @@ class Commander:
             def inner(*args, **kwargs):
                 return func(*args, **kwargs)
 
-            self.no_match_action = inner
+            self.__no_match_action = inner
             return inner
 
         return wrapper
@@ -159,8 +160,8 @@ class Commander:
         def wrapper(func):
             @self.__filter(
                 tuple(
-                    [self.TypeMessage[event] for event in events if event in self.TypeMessage]
-                    or self.TypeMessage.values()
+                    [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
+                    or self.__TypeMessage.values()
                 )
             )
             @Permission.require(permission)
@@ -170,7 +171,7 @@ class Commander:
                 return func(*args, **kwargs)
 
             for name in names:
-                self.options[name] = inner
+                self.__options[name] = inner
             return inner
 
         return wrapper

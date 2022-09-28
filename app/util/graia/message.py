@@ -18,12 +18,13 @@ class Message:
 
     未封装的方法请通过content访问源消息链对象
 
-    Typical usage example::
-      >>> from app.util.graia import message
-      >>> message([Plain("123456"), Image(url="https://example.com")])   # 创建消息链
-      >>> .target(Group(1234567890))                                     # 指定消息发送对象
-      >>> .at(Member(123456789))                                         # 指定@对象
-      >>> .send()                                                        # 发送消息
+    Examples:
+
+    >>> from app.util.graia import message
+    >>> message([Plain("123456"), Image(url="https://example.com")])   # 创建消息链
+    ... .target(Group(1234567890))                                     # 指定消息发送对象
+    ... .at(Member(123456789))                                         # 指定@对象
+    ... .send()                                                        # 发送消息
     """
 
     __root__: MessageChain

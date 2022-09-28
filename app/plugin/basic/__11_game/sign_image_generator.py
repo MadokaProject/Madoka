@@ -22,7 +22,7 @@ _Ink = Union[str, int, Tuple[int, int, int], Tuple[int, int, int, int]]
 
 
 def get_qlogo(id: int) -> bytes:
-    return asyncio.run(general_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={str(id)}&s=640", _type="byte"))
+    return asyncio.run(general_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={id}&s=640", _type="byte"))
 
 
 def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink = "white") -> Image.Image:
@@ -32,18 +32,18 @@ def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink =
     h *= 4
     bar_canvase = Image.new("RGBA", (w, h), "#00000000")
     bar_draw = ImageDraw.Draw(bar_canvase)
-    # draw background
-    bar_draw.ellipse((0, 0, h, h), fill=bg)
-    bar_draw.ellipse((w - h, 0, w, h), fill=bg)
-    bar_draw.rectangle((h // 2, 0, w - h // 2, h), fill=bg)
-
+    _draw_background_from_progress_bar(bar_draw, h, bg, w)
     # draw progress bar
     n_w = w * progress if progress <= 1 else w
-    bar_draw.ellipse((0, 0, h, h), fill=fg)
-    bar_draw.ellipse((n_w - h, 0, n_w, h), fill=fg)
-    bar_draw.rectangle((h // 2, 0, n_w - h // 2, h), fill=fg)
-
+    _draw_background_from_progress_bar(bar_draw, h, fg, n_w)
     return bar_canvase.resize((origin_w, origin_h), Image.LANCZOS)
+
+
+def _draw_background_from_progress_bar(bar_draw, h, fill, arg3):
+    # draw background
+    bar_draw.ellipse((0, 0, h, h), fill=fill)
+    bar_draw.ellipse((arg3 - h, 0, arg3, h), fill=fill)
+    bar_draw.rectangle((h // 2, 0, arg3 - h // 2, h), fill=fill)
 
 
 def get_time() -> str:
@@ -194,15 +194,12 @@ def get_sign_image(
 
     gift_1 = f"+{coin}"
     temp = consecutive_days
-    if temp > 7:
-        temp = 7
+    temp = min(temp, 7)
     gift_2 = f"+{BotGame.get_intimacy_by_consecutive_days(temp)}"
     y = avatar_xy + avatar_size + 100
     draw.text((avatar_xy + 30, y), f"共签到 {total_days} 天", font=font_3, fill="#ffffff")
 
-    if total_days == 1 or consecutive_days == 1:
-        y += font_3.getsize("签到")[1] + 30
-    else:
+    if total_days != 1 and consecutive_days != 1:
         y += font_3.getsize("签到")[1] + 20
         draw.text(
             (avatar_xy + 30, y),
@@ -210,8 +207,7 @@ def get_sign_image(
             font=font_3,
             fill="#ffffff",
         )
-        y += font_3.getsize("签到")[1] + 30
-
+    y += font_3.getsize("签到")[1] + 30
     datetime_text = f"现在是 {get_time()}，祝你天天开心捏~"
 
     primogem = Image.open(str(base_path.joinpath("primogems.png"))).convert("RGBA")

@@ -26,6 +26,9 @@ from app.util.text2image import create_image
 from app.util.tools import app_path, to_thread
 from app.util.version import compare_version
 
+TypePluginInfo = Dict[str, str]
+"""插件信息类型"""
+
 
 class PluginType(Enum):
     """描述插件类型"""
@@ -143,7 +146,7 @@ class PluginManager(metaclass=Singleton):
 
     def reload(
         self,
-        plugin_info: Union[str, Dict[str, str]] = "all_plugin",
+        plugin_info: Union[str, TypePluginInfo] = "all_plugin",
         plugin_type: PluginType = PluginType.Extension,
     ) -> bool:
         """重载插件
@@ -216,14 +219,14 @@ class PluginManager(metaclass=Singleton):
             plugin = plugin.__name__
         return bool(self.__plugins.get(plugin))
 
-    async def exist(self, plugin_info: Dict[str, str]) -> bool:
+    async def exist(self, plugin_info: TypePluginInfo) -> bool:
         """查找插件是否存在
 
         :param plugin_info: 插件信息字典
         """
         return bool(await self.get_info(plugin_info))
 
-    async def get_info(self, plugins: Union[str, Dict[str, str]]) -> List[Dict[str, str]]:
+    async def get_info(self, plugins: Union[str, TypePluginInfo]) -> List[TypePluginInfo]:
         """获取插件信息
 
         :param plugins: 插件名称或插件信息字典
@@ -242,7 +245,7 @@ class PluginManager(metaclass=Singleton):
         except FileNotFoundError:
             return []
 
-    async def record_info(self, plugin_info: Dict[str, str]) -> None:
+    async def record_info(self, plugin_info: TypePluginInfo) -> TypePluginInfo:
         """记录插件信息
 
         :param plugin_info: 插件信息
@@ -257,7 +260,7 @@ class PluginManager(metaclass=Singleton):
         with open(self.__info_path, "w", encoding="UTF-8") as f:
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
-    async def remove_info(self, plugin_info: Dict[str, str]) -> None:
+    async def remove_info(self, plugin_info: TypePluginInfo) -> None:
         """删除插件信息
 
         :param plugin_info: 插件信息
@@ -296,7 +299,7 @@ class PluginManager(metaclass=Singleton):
                 return False
         return True
 
-    async def install(self, plugin_info: Dict[str, str]) -> bool:
+    async def install(self, plugin_info: TypePluginInfo) -> bool:
         """安装插件
 
         :param plugin_info: 插件信息
@@ -337,7 +340,7 @@ class PluginManager(metaclass=Singleton):
             logger.error(f"插件安装失败，请尝试重新安装: {plugin_info['name']} - {plugin_info['author']}")
             return False
 
-    def delete(self, plugin_info: Dict[str, str]) -> None:
+    def delete(self, plugin_info: TypePluginInfo) -> None:
         """删除插件
 
         仅支持删除扩展插件

@@ -1,140 +1,125 @@
 import pickle
 from datetime import datetime, timedelta
-from typing import Union
 
 import aiohttp.client
-from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
-from graia.ariadne.model import Friend, Group, Member
-from graia.scheduler import GraiaScheduler, timers
 from loguru import logger
 
 from app.core.app import AppCore
-from app.core.commander import CommandDelegateManager
 from app.core.config import Config
 from app.core.settings import REPO
+from app.util.alconna import Args, Arpamar, Commander, Option, Subcommand
 from app.util.control import Permission
+from app.util.graia import GraiaScheduler, Group, GroupMessage, Plain, message, timers
 from app.util.network import general_request
 from app.util.online_config import save_config
-from app.util.phrases import args_error, print_help, unknown_error
+from app.util.phrases import args_error
 from app.util.tools import app_path
 
 core: AppCore = AppCore()
 config: Config = Config()
 app = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
-manager: CommandDelegateManager = CommandDelegateManager()
-
-
-@manager.register(
-    entry="github",
-    brief_help="Github监听",
-    alc=Alconna(
-        "github",
-        Subcommand(
-            "add",
-            help_text="添加监听仓库",
-            args=Args["repo", str]["api", str, "project/repo"],
-            options=[Option("--branch|-b", args=Args["branch", str, "*"], help_text="指定监听的分支,使用 , 分隔, 默认监听全部分支")],
-        ),
-        Subcommand(
-            "modify",
-            help_text="修改监听仓库配置",
-            args=Args["repo", str],
-            options=[
-                Option("--name|-n", args=Args["name", str], help_text="修改仓库名"),
-                Option("--api|-a", args=Args["api", str, "project/repo"], help_text="修改监听API"),
-                Option("--branch|-b", args=Args["branch", str, "*"], help_text="修改监听的分支, 使用 , 分隔, *: 监听所有分支"),
-            ],
-        ),
-        Option("remove", help_text="删除监听仓库", args=Args["repo", str]),
-        Option("list", help_text="列出当前群组所有监听仓库"),
-        meta=CommandMeta("Github 监听, 仅管理可用"),
+command = Commander(
+    "github",
+    "Github监听",
+    Subcommand(
+        "add",
+        help_text="添加监听仓库",
+        args=Args["repo", str]["api", str, "project/repo"],
+        options=[Option("--branch|-b", args=Args["branch", str, "*"], help_text="指定监听的分支,使用 , 分隔, 默认监听全部分支")],
     ),
+    Subcommand(
+        "modify",
+        help_text="修改监听仓库配置",
+        args=Args["repo", str],
+        options=[
+            Option("--name|-n", args=Args["name", str], help_text="修改仓库名"),
+            Option("--api|-a", args=Args["api", str, "project/repo"], help_text="修改监听API"),
+            Option("--branch|-b", args=Args["branch", str, "*"], help_text="修改监听的分支, 使用 , 分隔, *: 监听所有分支"),
+        ],
+    ),
+    Option("remove", help_text="删除监听仓库", args=Args["repo", str]),
+    Option("list", help_text="列出当前群组所有监听仓库"),
+    help_text="Github 监听, 仅管理可用",
 )
-@Permission.require(level=Permission.GROUP_ADMIN)
-async def process(
-    sender: Union[Friend, Group],
-    command: Arpamar,
-    alc: Alconna,
-    _: Union[Friend, Member],
-):
-    add = command.subcommands.get("add")
-    modify = command.subcommands.get("modify")
-    remove = command.options.get("remove")
-    list_ = command.options.get("list")
-    if all([not add, not modify, not remove, not list_]):
-        return await print_help(alc.get_help())
-    if not isinstance(sender, Group):
-        return MessageChain("请在群聊中使用")
-    try:
-        if add:
-            branch = add["branch"]["branch"].replace("，", ",").split(",") if "branch" in add else ["*"]
-            group_id = str(sender.id)
-            if REPO.__contains__(group_id) and add["repo"] in REPO[group_id]:
-                return MessageChain([Plain("添加失败，该仓库名已存在!")])
-            if add["api"] == "project/repo":
-                return MessageChain([Plain("添加失败，监听仓库不能为空!")])
-            repo_info = {
-                add["repo"]: {
-                    "api": f"https://api.github.com/repos/{add['api'].strip('/')}/branches",
-                    "branch": branch,
-                }
-            }
-            await save_config("repo", sender, repo_info, model="add")
-            if group_id not in REPO:
-                REPO[group_id] = repo_info
-            else:
-                REPO[group_id].update(repo_info)
-            return MessageChain([Plain("添加成功!")])
-        elif modify:
-            group_id = str(sender.id)
-            repo = modify["repo"]
-            _name = modify.get("name")
-            _api = modify.get("api")
-            _branch = modify.get("branch")
-            if all([not _name, not _api, not _branch]):
-                return args_error()
-            if not REPO.__contains__(group_id) or repo not in REPO[group_id]:
-                return MessageChain([Plain("修改失败，该仓库名不存在!")])
-            if _name:
-                _name = _name["name"]
-                await save_config("repo", sender, repo, model="remove")
-                await save_config("repo", sender, {_name: REPO[group_id][repo]}, model="add")
-                REPO[group_id][_name] = REPO[group_id].pop(repo)
-                repo = _name
-            if _api:
-                if _api["api"] == "project/repo":
-                    return MessageChain([Plain("修改失败，监听仓库不能为空!")])
-                _api = f"https://api.github.com/repos/{_api['api'].strip('/')}/branches"
-                REPO[group_id][repo]["api"] = _api
-                await save_config("repo", sender, {repo: REPO[group_id][repo]}, model="add")
-            if _branch:
-                _branch = _branch["branch"]
-                REPO[group_id][repo]["branch"] = _branch.replace("，", ",").split(",")
-                await save_config("repo", sender, {repo: REPO[group_id][repo]}, model="add")
-            return MessageChain([Plain("修改成功!")])
-        elif remove:
-            group_id = str(sender.id)
-            if not REPO.__contains__(group_id) or remove["repo"] not in REPO[group_id]:
-                return MessageChain([Plain("删除失败，该仓库名不存在!")])
-            await save_config("repo", sender, remove["repo"], model="remove")
-            REPO[group_id].pop(remove["repo"])
-            return MessageChain([Plain("删除成功！")])
-        elif list_:
-            if REPO.get(str(sender.id), 0):
-                return MessageChain(
-                    "\r\n".join(
-                        f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}"
-                        for name, info in REPO[str(sender.id)].items()
-                    )
+
+
+@command.parse("add", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
+async def add(sender: Group, cmd: Arpamar):
+    branch = cmd.query("branch").replace("，", ",").split(",") if cmd.find("branch") else ["*"]
+    group_id = str(sender.id)
+    if group_id in REPO and cmd.query("repo") in REPO[group_id]:
+        return message("添加失败，该仓库名已存在!").target(sender).send()
+    if cmd.query("api") == "project/repo":
+        return message("添加失败，监听仓库不能为空!").target(sender).send()
+    repo_info = {
+        cmd.query("repo"): {
+            "api": f"https://api.github.com/repos/{add['api'].strip('/')}/branches",
+            "branch": branch,
+        }
+    }
+    await save_config("repo", sender, repo_info, model="add")
+    if group_id not in REPO:
+        REPO[group_id] = repo_info
+    else:
+        REPO[group_id].update(repo_info)
+    return message("添加成功!").target(sender).send()
+
+
+@command.parse("modify", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
+async def modify(sender: Group, cmd: Arpamar):
+    group_id = str(sender.id)
+    repo = cmd.query("repo")
+    _name = cmd.query("name")
+    _api = cmd.query("api")
+    _branch = cmd.query("branch")
+    if all([not _name, not _api, not _branch]):
+        return args_error(sender)
+    if group_id not in REPO or repo not in REPO[group_id]:
+        return message("修改失败，该仓库名不存在!").target(sender).send()
+    if _name:
+        await save_config("repo", sender, repo, model="remove")
+        await save_config("repo", sender, {_name: REPO[group_id][repo]}, model="add")
+        REPO[group_id][_name] = REPO[group_id].pop(repo)
+        repo = _name
+    if _api:
+        if _api == "project/repo":
+            return message("修改失败，监听仓库不能为空!").target(sender).send()
+        _api = f"https://api.github.com/repos/{_api.strip('/')}/branches"
+        REPO[group_id][repo]["api"] = _api
+        await save_config("repo", sender, {repo: REPO[group_id][repo]}, model="add")
+    if _branch:
+        _branch = _branch["branch"]
+        REPO[group_id][repo]["branch"] = _branch.replace("，", ",").split(",")
+        await save_config("repo", sender, {repo: REPO[group_id][repo]}, model="add")
+    return message("修改成功!").target(sender).send()
+
+
+@command.parse("remove", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
+async def remove(sender: Group, cmd: Arpamar):
+    group_id = str(sender.id)
+    repo = cmd.query("repo")
+    if group_id not in REPO or repo not in REPO[group_id]:
+        return message("删除失败，该仓库名不存在!").target(sender).send()
+    await save_config("repo", sender, repo, model="remove")
+    REPO[group_id].pop(repo)
+    return message("删除成功!").target(sender).send()
+
+
+@command.parse("list", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
+async def list(sender: Group, cmd: Arpamar):
+    if str(sender.id) in REPO:
+        return (
+            message(
+                "\r\n".join(
+                    f"{name}: \r\napi: {info['api']}\r\nbranch: {info['branch']}"
+                    for name, info in REPO[str(sender.id)].items()
                 )
-            return MessageChain("该群组未配置Github监听仓库！")
-        return args_error()
-    except Exception as e:
-        logger.exception(e)
-        return unknown_error()
+            )
+            .target(sender)
+            .send()
+        )
+    return message("该群组未配置Github监听仓库！").target(sender).send()
 
 
 @sche.schedule(timers.crontabify(config.REPO_TIME))
@@ -181,15 +166,12 @@ async def message_push(group, repo, branch):
         datetime.strptime(commit_info["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8),
         "%Y-%m-%d %H:%M:%S",
     )
-    await app.send_group_message(
-        group,
-        MessageChain(
-            [
-                Plain("Recent Commits to " + repo + ":" + branch["name"]),
-                Plain("\r\nCommit: " + commit_info["commit"]["message"]),
-                Plain("\r\nAuthor: " + commit_info["commit"]["author"]["name"]),
-                Plain("\r\nUpdated: " + commit_time),
-                Plain("\r\nLink: " + commit_info["html_url"]),
-            ]
-        ),
-    )
+    message(
+        [
+            Plain(f"Recent Commits to {repo}: {branch['name']}"),
+            Plain(f"\nCommit: {commit_info['commit']['message']}"),
+            Plain(f"\nAuthor: {commit_info['commit']['author']['name']}"),
+            Plain(f"\nUpdated: {commit_time}"),
+            Plain(f"\nLink: {commit_info['html_url']}"),
+        ]
+    ).target(group).send()

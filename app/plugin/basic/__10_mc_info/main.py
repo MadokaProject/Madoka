@@ -6,20 +6,25 @@ import time
 from typing import Union
 
 import jsonpath
-from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
-from graia.ariadne import Ariadne
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
-from graia.ariadne.model import Friend, Group, Member
-from graia.scheduler import GraiaScheduler, timers
 from loguru import logger
 from peewee import OperationalError
 
 from app.core.app import AppCore
-from app.core.commander import CommandDelegateManager
 from app.core.config import Config
+from app.util.alconna import Args, Arpamar, Commander, Option, Subcommand
 from app.util.control import Permission
-from app.util.phrases import arg_type_error, not_admin, unknown_error
+from app.util.graia import (
+    Ariadne,
+    Friend,
+    GraiaScheduler,
+    Group,
+    Member,
+    MessageChain,
+    Plain,
+    message,
+    timers,
+)
+from app.util.phrases import not_admin
 from app.util.tools import app_path
 
 from .database.database import McServer as DBMcServer
@@ -28,7 +33,6 @@ core: AppCore = AppCore()
 config: Config = Config()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
-manager: CommandDelegateManager = CommandDelegateManager()
 path = app_path().joinpath("tmp/mcserver")
 path.mkdir(parents=True, exist_ok=True)
 
@@ -46,122 +50,117 @@ except OperationalError:
     logger.warning("数据表读取异常，无法自动监听MC服务器")
 
 
-@manager.register(
-    entry="mc",
-    brief_help="MC状态",
-    alc=Alconna(
-        "mc",
-        Args["host;O|H", str]["port;O|H", int],
-        Subcommand(
-            "default", help_text="设置默认MC服务器(仅主人可用)", args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]
-        ),
-        Subcommand(
-            "set",
-            help_text="设置监听服务器(仅主人可用)",
-            args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]["delay;H", int, 60],
-            options=[Option("on", help_text="开启监听(默认)"), Option("off", help_text="关闭监听")],
-        ),
-        Subcommand(
-            "listen",
-            help_text="配置监听服务器",
-            args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565],
-            options=[Option("on", help_text="开启监听(默认)"), Option("off", help_text="关闭监听")],
-        ),
-        Option("--timeout|-t", help_text="超时时间", args=Args["timeout", int]),
-        Option("--view|-v", help_text="查看"),
-        meta=CommandMeta("检测MC服务器信息"),
+command = Commander(
+    "mc",
+    "MC状态",
+    Args["host;O|H", str]["port;O|H", int],
+    Subcommand("default", help_text="设置默认MC服务器(仅主人可用)", args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]),
+    Subcommand(
+        "set",
+        help_text="设置监听服务器(仅主人可用)",
+        args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]["delay;H", int, 60],
+        options=[Option("on", help_text="开启监听(默认)"), Option("off", help_text="关闭监听")],
     ),
+    Subcommand(
+        "listen",
+        help_text="配置监听服务器",
+        args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565],
+        options=[Option("on", help_text="开启监听(默认)"), Option("off", help_text="关闭监听")],
+    ),
+    Option("--timeout|-t", help_text="超时时间", args=Args["timeout", int]),
+    Option("--view|-v", help_text="查看"),
+    help_text="检测MC服务器信息",
 )
-async def process(cmd: Arpamar, target: Union[Friend, Member], sender: Union[Friend, Group]):
+
+
+@command.parse("set", permission=Permission.MASTER)
+async def set(sender: Union[Friend, Group], cmd: Arpamar):
+    if cmd.find("view"):
+        msg = "正在监听的服务器:\n" + "".join(f"{i[0]}: {i[1]}\n" for i in LISTEN_MC_SERVER.keys())
+        msg += "已设置的监听服务器:\n" + "\n".join(
+            f"{_.host}: {_.port}" for _ in DBMcServer.select().where(DBMcServer.listen == 1)
+        )
+        return message(msg).target(sender).send()
+    status = 0 if "off" in cmd["set"]["options"] else 1
+    DBMcServer.replace(
+        host=cmd.query("host"),
+        port=cmd.query("port"),
+        listen=status,
+        delay=cmd.query("delay"),
+    ).execute()
+    return message("设置成功, 重启后生效!").target(sender).send()
+
+
+@command.parse("default")
+async def default(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
+    if cmd.find("view"):
+        if default_server := DBMcServer.get_or_none(default=1):
+            return message(f"默认服务器：{default_server.host}:{default_server.port}").target(sender).send()
+        return message("未设置默认服务器").target(sender).send()
+    return await set_default_mc(target, sender, cmd.query("host"), cmd.query("port"))
+
+
+@command.parse("listen")
+async def listen(sender: Union[Friend, Group], cmd: Arpamar):
+    if isinstance(sender, Friend):
+        target = f"f{sender.id}"
+        msg = "您正在监听的服务器:\n"
+    elif isinstance(sender, Group) and not Permission.manual(target, Permission.GROUP_ADMIN) and not cmd.find("view"):
+        return not_admin(sender)
+    else:
+        target = f"g{sender.id}"
+        msg = "本群正在监听的服务器:\n"
+    if cmd.find("view"):
+        for k, v in LISTEN_MC_SERVER.items():
+            if target in v["report"]:
+                msg += f"{k[0]}: {k[1]}\n"
+        return message(msg).target(sender).send()
+    if not (res := DBMcServer.get_or_none(host=cmd.query("host"), port=cmd.query("port"))):
+        return message("未找到该服务器，请联系管理员添加!").target(sender).send()
+    res.report = res.report or ""
+    report = (
+        ",".join(filter(lambda x: x != target, res.report.split(",")))
+        if "off" in cmd["listen"]["options"]
+        else ",".join({target, *res.report.split(",")})
+    )
+
+    DBMcServer.update(report=report).where(
+        (DBMcServer.host == cmd.query("host")) & (DBMcServer.port == cmd.query("port"))
+    ).execute()
+    logger.info(type(report))
+    LISTEN_MC_SERVER[(cmd.query("host"), cmd.query("port"))]["report"] = [i for i in report.split(",") if i]
+    return message("设置成功!").target(sender).send()
+
+
+@command.no_match()
+async def mc(sender: Union[Friend, Group], cmd: Arpamar):
+    if res := DBMcServer.get_or_none(default=1):
+        default = (
+            cmd.query("host") or res.host,
+            cmd.query("port") or res.port,
+            cmd.query("timeout"),
+        )
+    else:
+        default = (
+            cmd.query("host") or "127.0.0.1",
+            cmd.query("port") or 25565,
+            cmd.query("timeout") or 10,
+        )
     try:
-        if all([cmd.find("set"), Permission.manual(target, Permission.MASTER)]):
-            if cmd.find("view"):
-                msg = "正在监听的服务器:\n" + "".join(f"{i[0]}: {i[1]}\n" for i in LISTEN_MC_SERVER.keys())
-                msg += "已设置的监听服务器:\n" + "\n".join(
-                    f"{_.host}: {_.port}" for _ in DBMcServer.select().where(DBMcServer.listen == 1)
-                )
-                return MessageChain(msg)
-            status = 0 if "off" in cmd["set"]["options"] else 1
-            DBMcServer.replace(
-                host=cmd.query("host"),
-                port=cmd.query("port"),
-                listen=status,
-                delay=cmd.query("delay"),
-            ).execute()
-            return MessageChain("设置成功, 重启后生效!")
-        elif cmd.find("default"):
-            if cmd.find("view"):
-                if default_server := DBMcServer.get_or_none(default=1):
-                    return MessageChain(f"默认服务器：{default_server.host}:{default_server.port}")
-                return MessageChain("未设置默认服务器")
-            return await set_default_mc(target, cmd.query("host"), cmd.query("port"))
-        elif cmd.find("listen"):
-            if isinstance(sender, Friend):
-                target = f"f{sender.id}"
-                msg = "您正在监听的服务器:\n"
-            elif (
-                isinstance(sender, Group)
-                and not Permission.manual(target, Permission.GROUP_ADMIN)
-                and not cmd.find("view")
-            ):
-                return not_admin()
-            else:
-                target = f"g{sender.id}"
-                msg = "本群正在监听的服务器:\n"
-            if cmd.find("view"):
-                for k, v in LISTEN_MC_SERVER.items():
-                    if target in v["report"]:
-                        msg += f"{k[0]}: {k[1]}\n"
-                return MessageChain(msg)
-            if res := DBMcServer.get_or_none(host=cmd.query("host"), port=cmd.query("port")):
-                res.report = res.report or ""
-                if "off" in cmd["listen"]["options"]:
-                    report = ",".join(filter(lambda x: x != target, res.report.split(",")))
-                    DBMcServer.update(report=report).where(
-                        (DBMcServer.host == cmd.query("host")) & (DBMcServer.port == cmd.query("port"))
-                    ).execute()
-                else:
-                    report = ",".join({target, *res.report.split(",")})
-                    DBMcServer.update(report=report).where(
-                        (DBMcServer.host == cmd.query("host")) & (DBMcServer.port == cmd.query("port"))
-                    ).execute()
-                logger.info(type(report))
-                LISTEN_MC_SERVER[(cmd.query("host"), cmd.query("port"))]["report"] = [i for i in report.split(",") if i]
-                return MessageChain("设置成功!")
-            else:
-                return MessageChain("未找到该服务器，请联系管理员添加!")
-        else:
-            if res := DBMcServer.get_or_none(default=1):
-                default = (
-                    cmd.query("host") or res.host,
-                    cmd.query("port") or res.port,
-                    cmd.query("timeout"),
-                )
-            else:
-                default = (
-                    cmd.query("host") or "127.0.0.1",
-                    cmd.query("port") or 25565,
-                    cmd.query("timeout") or 10,
-                )
-            return MessageChain(StatusPing(*default).get_status(str_format=True))
+        return message(StatusPing(*default).get_status(str_format=True)).target(sender).send()
     except EnvironmentError as e:
         logger.warning(e)
-        return MessageChain([Plain("由于目标计算机积极拒绝，无法连接。服务器可能已关闭。")])
-    except ValueError:
-        return arg_type_error()
-    except Exception as e:
-        logger.exception(e)
-        return unknown_error()
+        return message([Plain("由于目标计算机积极拒绝，无法连接。服务器可能已关闭。")]).target(sender).send()
 
 
 @Permission.require(level=Permission.MASTER)
-async def set_default_mc(_: Union[Friend, Member], host="127.0.0.1", port=25565):
+async def set_default_mc(_: Union[Friend, Member], sender: Union[Friend, Group], host="127.0.0.1", port=25565):
     DBMcServer.update(default=0).where(DBMcServer.default == 1).execute()
     if DBMcServer.get_or_none(DBMcServer.host == host and DBMcServer.port == port):
         DBMcServer.update(default=1).where(DBMcServer.host == host and DBMcServer.port == port).execute()
     else:
         DBMcServer.create(host=host, port=port, default=1)
-    return MessageChain([Plain("设置成功!")])
+    return message("设置成功!").target(sender).send()
 
 
 class StatusPing:
@@ -268,30 +267,30 @@ class StatusPing:
         response = json.loads(data.decode("utf8"))
         response["ping"] = int(time.time() * 1000) - struct.unpack("Q", unix)[0]
 
-        if str_format:
-            _version = jsonpath.jsonpath(response, "$..version[name]")[0]
-            _description = jsonpath.jsonpath(response, "$..description")[0]
-            if jsonpath.jsonpath(_description, "$..text"):
-                _description = jsonpath.jsonpath(_description, "$..text")[-1]
-            _ping = jsonpath.jsonpath(response, "$..ping")[0]
-            _max = jsonpath.jsonpath(response, "$..online")[0]
-            _online = jsonpath.jsonpath(response, "$..max")[0]
-            msg = "版本: %s\r\n描述: %s\r\n延迟: %d ms\r\n在线: %d/%d" % (
-                _version,
-                _description,
-                _ping,
-                _max,
-                _online,
-            )
-            name = jsonpath.jsonpath(response, "$..sample[..name]")
-            if name:
-                msg += "\r\n玩家: "
-                for index in range(len(name)):
-                    if index != 0:
-                        msg += ", "
-                    msg += name[index]
-            return msg
-        return response
+        return self._str_format_from_get_status_(response) if str_format else response
+
+    def _str_format_from_get_status_(self, response):
+        _version = jsonpath.jsonpath(response, "$..version[name]")[0]
+        _description = jsonpath.jsonpath(response, "$..description")[0]
+        if jsonpath.jsonpath(_description, "$..text"):
+            _description = jsonpath.jsonpath(_description, "$..text")[-1]
+        _ping = jsonpath.jsonpath(response, "$..ping")[0]
+        _max = jsonpath.jsonpath(response, "$..online")[0]
+        _online = jsonpath.jsonpath(response, "$..max")[0]
+        msg = "版本: %s\r\n描述: %s\r\n延迟: %d ms\r\n在线: %d/%d" % (
+            _version,
+            _description,
+            _ping,
+            _max,
+            _online,
+        )
+        if name := jsonpath.jsonpath(response, "$..sample[..name]"):
+            msg += "\r\n玩家: "
+            for index in range(len(name)):
+                if index != 0:
+                    msg += ", "
+                msg += name[index]
+        return msg
 
 
 class McServer:
@@ -325,34 +324,38 @@ class McServer:
             players.clear()
 
         if init:
-            self.status = status
-            self.players = players
-            self.description = description
+            self._init_from_update_(status, players, description)
         else:
-            resp = MessageChain(
-                [
-                    Plain(f"地址：{self.ip}:{self.port}\r\n"),
-                    Plain(f"描述：{description}\r\n"),
-                    Plain("信息：\r\n"),
-                ]
-            )
-            resp_content = MessageChain([])
-            if status and (status != self.status):
-                resp_content.extend(MessageChain([Plain("服务器已开启！\r\n")]))
-            for player in self.players - players:
-                resp_content.extend(MessageChain([Plain(f"{player}退出了服务器！\r\n")]))
-            for player in players - self.players:
-                resp_content.extend(MessageChain([Plain(f"{player}加入了服务器！\r\n")]))
-            if (not status) and (status != self.status):
-                resp_content.extend(MessageChain([Plain("服务器已关闭！\r\n")]))
-            self.status = status
-            self.players = players
-            self.description = description
-            self.time = time.time()
-            if resp_content.__root__:
-                resp.extend(resp_content)
-                return resp
-            return None
+            return self._no_init_from_update_(description, status, players)
+
+    def _no_init_from_update_(self, description, status, players):
+        resp = MessageChain(
+            [
+                Plain(f"地址：{self.ip}:{self.port}\r\n"),
+                Plain(f"描述：{description}\r\n"),
+                Plain("信息：\r\n"),
+            ]
+        )
+        resp_content = MessageChain([])
+        if status and (status != self.status):
+            resp_content.extend(MessageChain([Plain("服务器已开启！\r\n")]))
+        for player in self.players - players:
+            resp_content.extend(MessageChain([Plain(f"{player}退出了服务器！\r\n")]))
+        for player in players - self.players:
+            resp_content.extend(MessageChain([Plain(f"{player}加入了服务器！\r\n")]))
+        if (not status) and (status != self.status):
+            resp_content.extend(MessageChain([Plain("服务器已关闭！\r\n")]))
+        self._extracted_from_update_21(status, players, description)
+        self.time = time.time()
+        if resp_content.__root__:
+            resp.extend(resp_content)
+            return resp
+        return None
+
+    def _init_from_update_(self, status, players, description):
+        self.status = status
+        self.players = players
+        self.description = description
 
 
 async def mc_listener(ips):
@@ -374,14 +377,10 @@ async def mc_listener(ips):
             continue
         if target[0] == "f":
             target = await app.get_friend(int(target[1:]))
-            if not target:
-                continue
-            await app.send_friend_message(target, resp)
         elif target[0] == "g":
             target = await app.get_group(int(target[1:]))
-            if not target:
-                continue
-            await app.send_group_message(target, resp)
+        if target:
+            message(resp).target(target).send()
 
 
 for k, v in LISTEN_MC_SERVER.items():
