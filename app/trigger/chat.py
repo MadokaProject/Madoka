@@ -1,12 +1,9 @@
 import json
 import random
 
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import At, Plain
-from graia.ariadne.model import Group
-
 from app.core.settings import GROUP_RUNING_LIST, config
 from app.trigger.trigger import Trigger
+from app.util.graia import At, Group, Plain, message
 from app.util.network import general_request
 
 no_answer = [
@@ -39,10 +36,9 @@ class Chat(Trigger):
     async def process(self):
         if not isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in ".,;!?。，；！？/\\":
             return
-        message = [str(item).strip() for item in self.message.get(Plain) if str(item) is not None]
-        if not message or message[0] in ".,;!?。，；！？/\\":
+        msg = "".join(str(item).strip() for item in self.message.get(Plain) if str(item) is not None)
+        if not msg or msg[0] in ".,;!?。，；！？/\\":
             return
-        message = "".join(message)
         url = "http://api.qingyunke.com/api.php"
         if (
             self.target.id in GROUP_RUNING_LIST
@@ -53,17 +49,13 @@ class Chat(Trigger):
         params = {
             "key": "free",
             "appid": 0,
-            "msg": message,
+            "msg": msg,
         }
         response = json.loads(await general_request(url=url, method="GET", params=params))
-        resp = MessageChain([At(self.target)])
+        resp = message(At(self.target))
         if response["result"] == 0:
-            resp.extend(
-                MessageChain(
-                    [Plain(" " + str(response["content"]).replace("{br}", "\r\n").replace("菲菲", config.BOT_NAME))]
-                )
-            )
+            resp.extend(Plain(" " + str(response["content"]).replace("{br}", "\r\n").replace("菲菲", config.BOT_NAME)))
         else:
-            resp.extend(MessageChain([Plain(f" {random.choice(no_answer)}")]))
-        await self.do_send(resp)
+            resp.extend(Plain(f" {random.choice(no_answer)}"))
+        resp.target(self.sender).send()
         self.as_last = True

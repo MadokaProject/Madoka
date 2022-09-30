@@ -1,7 +1,6 @@
-from graia.ariadne.model import Group
-
 from app.trigger.trigger import Trigger
 from app.util.control import Permission
+from app.util.graia import Group
 from app.util.msg import save
 
 

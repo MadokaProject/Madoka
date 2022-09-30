@@ -74,7 +74,7 @@ command = Commander(
 
 
 @command.parse("set", permission=Permission.MASTER)
-async def set(sender: Union[Friend, Group], cmd: Arpamar):
+async def set_server(sender: Union[Friend, Group], cmd: Arpamar):
     if cmd.find("view"):
         msg = "正在监听的服务器:\n" + "".join(f"{i[0]}: {i[1]}\n" for i in LISTEN_MC_SERVER.keys())
         msg += "已设置的监听服务器:\n" + "\n".join(
@@ -92,7 +92,7 @@ async def set(sender: Union[Friend, Group], cmd: Arpamar):
 
 
 @command.parse("default")
-async def default(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
+async def default_server(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     if cmd.find("view"):
         if default_server := DBMcServer.get_or_none(default=1):
             return message(f"默认服务器：{default_server.host}:{default_server.port}").target(sender).send()
@@ -101,7 +101,7 @@ async def default(target: Union[Friend, Member], sender: Union[Friend, Group], c
 
 
 @command.parse("listen")
-async def listen(sender: Union[Friend, Group], cmd: Arpamar):
+async def listen_server(sender: Union[Friend, Group], cmd: Arpamar):
     if isinstance(sender, Friend):
         target = f"f{sender.id}"
         msg = "您正在监听的服务器:\n"
@@ -133,7 +133,7 @@ async def listen(sender: Union[Friend, Group], cmd: Arpamar):
 
 
 @command.no_match()
-async def mc(sender: Union[Friend, Group], cmd: Arpamar):
+async def mc_server(sender: Union[Friend, Group], cmd: Arpamar):
     if res := DBMcServer.get_or_none(default=1):
         default = (
             cmd.query("host") or res.host,

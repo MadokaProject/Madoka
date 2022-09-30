@@ -1,10 +1,8 @@
 import aiohttp.client
-from graia.ariadne.app import Ariadne
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.core.config import Config
+from app.util.graia import Ariadne, MessageChain, Plain
 from app.util.network import general_request
 
 

@@ -2,8 +2,6 @@ import asyncio
 from datetime import datetime
 
 from dateutil.relativedelta import relativedelta
-from graia.ariadne import Ariadne
-from graia.ariadne.event.message import FriendMessage
 from graia.ariadne.event.mirai import (
     BotGroupPermissionChangeEvent,
     BotInvitedJoinGroupRequestEvent,
@@ -13,18 +11,22 @@ from graia.ariadne.event.mirai import (
     BotMuteEvent,
     NudgeEvent,
 )
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
-from graia.ariadne.model import Friend
-from graia.ariadne.util.interrupt import FunctionWaiter
 from loguru import logger
 
 from app.core.app import AppCore
 from app.core.config import Config
 from app.core.settings import ACTIVE_GROUP, ADMIN_USER, NUDGE_INFO
 from app.entities.group import BotGroup
+from app.util.graia import (
+    Ariadne,
+    Friend,
+    FriendMessage,
+    FunctionWaiter,
+    MessageChain,
+    Plain,
+    message,
+)
 from app.util.online_config import get_config
-from app.util.send_message import safeSendGroupMessage
 
 config: Config = Config()
 core: AppCore = AppCore()
@@ -35,18 +37,15 @@ bcc = core.get_bcc()
 async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
     """被邀请入群"""
     if event.source_group in ACTIVE_GROUP:
-        await app.send_friend_message(
-            config.MASTER_QQ,
-            MessageChain(
-                [
-                    Plain("收到邀请入群事件"),
-                    Plain(f"\r\n邀请者: {event.supplicant} | {event.nickname}"),
-                    Plain(f"\r\n群号: {event.source_group}"),
-                    Plain(f"\r\n群名: {event.group_name}"),
-                    Plain("\r\n该群为白名单群，已同意加入"),
-                ]
-            ),
-        )
+        message(
+            [
+                Plain("收到邀请入群事件"),
+                Plain(f"\r\n邀请者: {event.supplicant} | {event.nickname}"),
+                Plain(f"\r\n群号: {event.source_group}"),
+                Plain(f"\r\n群名: {event.group_name}"),
+                Plain("\r\n该群为白名单群，已同意加入"),
+            ]
+        ).target(config.MASTER_QQ).send()
         await event.accept()
     else:
         await app.send_friend_message(
@@ -92,38 +91,29 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
 async def join_group(app: Ariadne, event: BotJoinGroupEvent):
     """收到入群事件"""
     member_num = len(await app.get_member_list(event.group))
-    await app.send_friend_message(
-        config.MASTER_QQ,
-        MessageChain(
-            [
-                Plain("收到加入群聊事件"),
-                Plain(f"\n群号：{event.group.id}"),
-                Plain(f"\n群名：{event.group.name}"),
-                Plain(f"\n群人数：{member_num}"),
-            ]
-        ),
-    )
+    message(
+        [
+            Plain("收到加入群聊事件"),
+            Plain(f"\n群号：{event.group.id}"),
+            Plain(f"\n群名：{event.group.name}"),
+            Plain(f"\n群人数：{member_num}"),
+        ]
+    ).target(config.MASTER_QQ).send()
     if event.group.id not in ACTIVE_GROUP:
-        await safeSendGroupMessage(
-            event.group.id,
-            MessageChain(f"该群未在白名单中，正在退出，如有需要请联系{config.MASTER_QQ}申请白名单"),
-        )
-        await app.send_friend_message(config.MASTER_QQ, MessageChain("该群未在白名单中，正在退出"))
+        message(f"该群未在白名单中，正在退出，如有需要请联系{config.MASTER_QQ}申请白名单").target(event.group).send()
+        message("该群未在白名单中，正在退出").target(config.MASTER_QQ).send()
         return await app.quit_group(event.group.id)
 
-    await safeSendGroupMessage(
-        event.group.id,
-        MessageChain(
-            f"我是{config.MASTER_NAME}"
-            f"的机器人{config.BOT_NAME}，"
-            f"如果有需要可以联系主人QQ“{config.MASTER_QQ}”，"
-            f"添加{config.BOT_NAME}好友后请私聊说明用途后即可拉进其他群，主人看到后会选择是否同意入群"
-            f"\n{config.BOT_NAME}被群禁言后会自动退出该群。"
-            "\n发送 <.help> 可以查看功能列表"
-            "\n拥有管理员以上权限可以开关功能"
-            f"\n注：@{config.BOT_NAME}可以触发聊天功能"
-        ),
-    )
+    message(
+        f"我是{config.MASTER_NAME}"
+        f"的机器人{config.BOT_NAME}，"
+        f"如果有需要可以联系主人QQ“{config.MASTER_QQ}”，"
+        f"添加{config.BOT_NAME}好友后请私聊说明用途后即可拉进其他群，主人看到后会选择是否同意入群"
+        f"\n{config.BOT_NAME}被群禁言后会自动退出该群。"
+        "\n发送 <.help> 可以查看功能列表"
+        "\n拥有管理员以上权限可以开关功能"
+        f"\n注：@{config.BOT_NAME}可以触发聊天功能"
+    ).target(event.group).send()
 
 
 @bcc.receiver(BotLeaveEventKick)
@@ -135,10 +125,7 @@ async def leave_kick(app: Ariadne, event: BotLeaveEventKick):
     except Exception as e:
         logger.warning(e)
     for qq in ADMIN_USER:
-        await app.send_friend_message(
-            qq,
-            MessageChain("收到被踢出群聊事件" f"\r\n群号: {event.group.id}" f"\r\n群名: {event.group.name}" "\r\n已移出白名单"),
-        )
+        message("收到被踢出群聊事件" f"\r\n群号: {event.group.id}" f"\r\n群名: {event.group.name}" "\r\n已移出白名单").target(qq).send()
 
 
 @bcc.receiver(BotLeaveEventActive)
@@ -150,27 +137,21 @@ async def leave_active(app: Ariadne, event: BotLeaveEventActive):
     except Exception as e:
         logger.warning(e)
     for qq in ADMIN_USER:
-        await app.send_friend_message(
-            qq,
-            MessageChain("收到主动退出群聊事件" f"\r\n群号: {event.group.id}" f"\r\n群名: {event.group.name}" "\r\n已移出白名单"),
-        )
+        message("收到主动退出群聊事件" f"\r\n群号: {event.group.id}" f"\r\n群名: {event.group.name}" "\r\n已移出白名单").target(qq).send()
 
 
 @bcc.receiver(BotGroupPermissionChangeEvent)
 async def group_permission_change(app: Ariadne, event: BotGroupPermissionChangeEvent):
     """群内权限变动"""
     for qq in ADMIN_USER:
-        await app.send_friend_message(
-            qq,
-            MessageChain(
-                [
-                    Plain("收到权限变动事件"),
-                    Plain(f"\r\n群号: {event.group.id}"),
-                    Plain(f"\r\n群名: {event.group.name}"),
-                    Plain(f"\r\n权限变更为: {event.current}"),
-                ]
-            ),
-        )
+        message(
+            [
+                Plain("收到权限变动事件"),
+                Plain(f"\r\n群号: {event.group.id}"),
+                Plain(f"\r\n群名: {event.group.name}"),
+                Plain(f"\r\n权限变更为: {event.current}"),
+            ]
+        ).target(qq).send()
 
 
 @bcc.receiver(BotMuteEvent)
@@ -185,17 +166,14 @@ async def mute(app: Ariadne, event: BotMuteEvent):
             logger.warning(e)
 
         for qq in ADMIN_USER:
-            await app.send_friend_message(
-                qq,
-                MessageChain(
-                    [
-                        Plain("收到禁言事件， 已退出该群，并移出白名单"),
-                        Plain(f"\r\n群号: {event.operator.group.id}"),
-                        Plain(f"\r\n群名: {event.operator.group.id}"),
-                        Plain(f"\r\n操作者: {event.operator.name} | {event.operator.id}"),
-                    ]
-                ),
-            )
+            message(
+                [
+                    Plain("收到禁言事件， 已退出该群，并移出白名单"),
+                    Plain(f"\r\n群号: {event.operator.group.id}"),
+                    Plain(f"\r\n群名: {event.operator.group.id}"),
+                    Plain(f"\r\n操作者: {event.operator.name} | {event.operator.id}"),
+                ]
+            ).target(qq).send()
         await app.quit_group(event.operator.group)
 
 
@@ -227,11 +205,8 @@ async def nudge(app: Ariadne, event: NudgeEvent):
                         }
                     elif count == 2:
                         try:
+                            message(" 不许戳了！").at(member).target(member.group).send()
                             await app.send_nudge(member)
-                            await app.send_group_message(
-                                member.group.id,
-                                MessageChain([Plain(text="不许戳了！")]),
-                            )
                         except Exception as e:
                             logger.warning(e)
                         NUDGE_INFO[member.group.id][member.id] = {
@@ -240,11 +215,8 @@ async def nudge(app: Ariadne, event: NudgeEvent):
                         }
                     elif count == 3:
                         try:
+                            message(" 说了不许再戳了！").at(member).target(member.group).send()
                             await app.send_nudge(member)
-                            await app.send_group_message(
-                                member.group.id,
-                                MessageChain([Plain(text="说了不许再戳了！")]),
-                            )
                         except Exception as e:
                             logger.warning(e)
                         NUDGE_INFO[member.group.id][member.id] = {
@@ -262,11 +234,8 @@ async def nudge(app: Ariadne, event: NudgeEvent):
                         }
                     elif count == 5:
                         try:
+                            message(" 呜呜呜你欺负我，不理你了！").at(member).target(member.group).send()
                             await app.send_nudge(member)
-                            await app.send_group_message(
-                                member.group.id,
-                                MessageChain([Plain(text="呜呜呜你欺负我，不理你了！")]),
-                            )
                         except Exception as e:
                             logger.warning(e)
                         NUDGE_INFO[member.group.id][member.id] = {
@@ -280,11 +249,8 @@ async def nudge(app: Ariadne, event: NudgeEvent):
                         }
                     elif count == 10:
                         try:
+                            message(" 你真的很有耐心诶。").at(member).target(member.group).send()
                             await app.send_nudge(member)
-                            await app.send_group_message(
-                                member.group.id,
-                                MessageChain([Plain(text="你真的很有耐心欸。")]),
-                            )
                         except Exception as e:
                             logger.warning(e)
                 else:

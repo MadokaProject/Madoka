@@ -1,9 +1,9 @@
 import random
 
-from graia.ariadne.model import Group
 from loguru import logger
 
 from app.trigger.trigger import Trigger
+from app.util.graia import Group, message
 from app.util.msg import repeated, save
 
 
@@ -18,7 +18,7 @@ class Repeat(Trigger):
         probability = random.randint(0, 101)
         try:
             if (probability < 1) and repeated(self.sender.id, self.app.account, 2):
-                await self.app.send_group_message(self.sender, self.message.as_sendable())
+                message(self.message.as_sendable()).target(self.sender).send()
                 save(
                     self.sender.id,
                     self.app.account,
@@ -26,7 +26,7 @@ class Repeat(Trigger):
                 )
                 logger.info(f"Random Repeat: {self.message.display}")
             if repeated(self.sender.id, self.app.account, 2):
-                await self.app.send_group_message(self.sender, self.message.as_sendable())
+                message(self.message.as_sendable()).target(self.sender).send()
                 save(
                     self.sender.id,
                     self.app.account,

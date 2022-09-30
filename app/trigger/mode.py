@@ -1,10 +1,9 @@
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
 from loguru import logger
 
 from app.core.settings import config
 from app.trigger.trigger import Trigger
 from app.util.control import Permission
+from app.util.graia import MessageChain, Plain
 
 
 class ChangeMode(Trigger):

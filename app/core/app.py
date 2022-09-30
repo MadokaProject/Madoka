@@ -152,7 +152,7 @@ class AppCore(metaclass=Singleton):
             for group in group_list:
                 logger.info(f"群ID: {str(group.id).ljust(14)}群名: {group.name}")
 
-            logger.success("Madoka is ready")
+            logger.info("Madoka is ready")
         except Exception as e:
             logger.exception(e)
             self.__app.stop()

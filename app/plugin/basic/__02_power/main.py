@@ -28,11 +28,7 @@ def shell(target: Union[Friend, Member], sender: Union[Friend, Group]):
 
 
 @command.parse("u", permission=Permission.MASTER)
-async def update(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    cmd: Arpamar,
-):
+async def update(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     timeout = cmd.query("timeout") or 10
     try:
         ret = subprocess.call("git pull", timeout=timeout, shell=True)
@@ -50,10 +46,7 @@ async def update(
 
 
 @command.parse("r", permission=Permission.MASTER)
-async def restart(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-):
+async def restart(target: Union[Friend, Member], sender: Union[Friend, Group]):
     core.restart(*shell(target, sender))
 
 

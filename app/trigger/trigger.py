@@ -1,10 +1,6 @@
 from typing import List, Union
 
-from graia.ariadne.app import Ariadne
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Source
-from graia.ariadne.model import Friend, Group, Member
-
+from app.util.graia import Ariadne, Friend, Group, Member, MessageChain, Source, message
 from app.util.tools import parse_args
 
 
@@ -36,7 +32,7 @@ class Trigger:
         """发送消息"""
         if not isinstance(resp, MessageChain):
             return
-        await self.app.send_message(self.sender, resp)
+        message(resp).target(self.sender).send()
 
     def not_admin(self):
         return

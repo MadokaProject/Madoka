@@ -1,18 +1,24 @@
 from datetime import datetime
 
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import FlashImage, Forward, ForwardNode, Plain
-from graia.ariadne.model import Friend, Group
-
 from app.core.settings import config
 from app.trigger.trigger import Trigger
+from app.util.graia import (
+    FlashImage,
+    Forward,
+    ForwardNode,
+    Friend,
+    Group,
+    MessageChain,
+    Plain,
+    message,
+)
 from app.util.online_config import get_config
 
 
 class FlashPng(Trigger):
     async def process(self):
         if self.message.has(FlashImage):
-            message = MessageChain(
+            msg = message(
                 Forward(
                     [
                         ForwardNode(
@@ -29,6 +35,6 @@ class FlashPng(Trigger):
                 )
             )
             if isinstance(self.sender, Friend):
-                await self.app.send_friend_message(config.MASTER_QQ, message)
+                msg.target(config.MASTER_QQ).send()
             elif isinstance(self.sender, Group) and await get_config("flash_png", self.sender.id):
-                await self.do_send(message)
+                msg.target(self.sender).send()

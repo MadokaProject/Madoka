@@ -1,8 +1,5 @@
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import At, Plain
-from graia.ariadne.model import Group
-
 from app.trigger.trigger import Trigger
+from app.util.graia import At, Group, MessageChain, Plain
 from app.util.online_config import get_config
 
 
@@ -14,6 +11,6 @@ class Reply(Trigger):
             return
         res = await get_config("group_reply", self.sender.id)
         message = self.message.display
-        if res and res.__contains__(message):
-            await self.do_send(MessageChain([At(self.target), Plain(f" {res[message]}")]))
+        if res := res.get(message, None):
+            await self.do_send(MessageChain([At(self.target), Plain(f" {res}")]))
             self.as_last = True

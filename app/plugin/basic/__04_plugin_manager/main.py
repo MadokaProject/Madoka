@@ -112,10 +112,7 @@ command = Commander(
 
 
 async def choose_plugin(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    inc: InterruptControl,
-    plugin: str,
+    target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, plugin: str
 ) -> Optional[Dict[str, str]]:
     """选择插件"""
     plugins = await plugin_mgr.get_info(plugin)
@@ -240,11 +237,8 @@ async def remove(target: Union[Friend, Member], sender: Union[Friend, Group], in
         return message("等待超时").target(sender).send()
 
 
-@command.parse("list", Permission.GROUP_ADMIN)
-async def list(
-    sender: Union[Friend, Group],
-    cmd: Arpamar,
-):
+@command.parse("list", permission=Permission.GROUP_ADMIN)
+async def list(sender: Union[Friend, Group], cmd: Arpamar):
     msg = PrettyTable()
     msg.field_names = ["序号", "插件名", "作者", "版本号", "介绍"]
     if cmd.find("remote"):
@@ -274,12 +268,7 @@ async def list(
 
 
 @command.parse("load", permission=Permission.MASTER)
-async def load(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    inc: InterruptControl,
-    cmd: Arpamar,
-):
+async def load(target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, cmd: Arpamar):
     try:
         plugin = cmd.query("plugin")
         load_plugin = await choose_plugin(target, sender, inc, plugin)
@@ -299,12 +288,7 @@ async def load(
 
 
 @command.parse("unload", permission=Permission.MASTER)
-async def unload(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    inc: InterruptControl,
-    cmd: Arpamar,
-):
+async def unload(target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, cmd: Arpamar):
     try:
         plugin = cmd.query("plugin")
         unload_plugin = await choose_plugin(target, sender, inc, plugin)
@@ -321,12 +305,7 @@ async def unload(
 
 
 @command.parse("reload", permission=Permission.MASTER)
-async def reload(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    inc: InterruptControl,
-    cmd: Arpamar,
-):
+async def reload(target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, cmd: Arpamar):
     try:
         plugin = cmd.query("plugin")
         if plugin == "all_plugin":
@@ -357,11 +336,7 @@ async def check(sender: Union[Friend, Group]):
 
 
 @command.parse("on", permission=Permission.GROUP_ADMIN)
-async def on(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    cmd: Arpamar,
-):
+async def on(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     perm = ""
     _target = None
     if cmd.find("friend"):
@@ -385,11 +360,7 @@ async def on(
 
 
 @command.parse("off", permission=Permission.GROUP_ADMIN)
-async def off(
-    target: Union[Friend, Member],
-    sender: Union[Friend, Group],
-    cmd: Arpamar,
-):
+async def off(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     perm = ""
     _target = None
     if cmd.find("friend"):
