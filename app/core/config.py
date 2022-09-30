@@ -65,6 +65,8 @@ class Config(metaclass=Singleton):
 
             self.COMMAND_HEADERS = self.cf.get("command", "headers", fallback=".").split()
 
+            self.mq_limit = self.cf.getfloat("message_queue", "limit", fallback=1.5)
+
             self.WEBSERVER_ENABLE = self.cf.getboolean("webserver", "enable", fallback=False)
             self.WEBSERVER_HOST = self.cf.get("webserver", "host", fallback="0.0.0.0")
             self.WEBSERVER_PORT = self.cf.get("webserver", "port", fallback=8080)

@@ -5,6 +5,7 @@ from time import sleep
 
 from loguru import logger
 
+from app.core.config import Config
 from app.util.decorator import Singleton
 
 
@@ -61,4 +62,4 @@ class MQ(metaclass=Singleton):
         logger.success("消息队列已停止")
 
 
-mq = MQ()
+mq = MQ(limit=Config().mq_limit)
