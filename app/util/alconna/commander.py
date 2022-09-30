@@ -125,7 +125,7 @@ class Commander:
         """无匹配子命令时的回调函数
 
         :param events: 事件过滤器，默认不过滤
-        :param permission: 鉴权，默认允许非黑名单外所有用户
+        :param permission: 鉴权，默认允许黑名单外所有用户
         """
 
         def wrapper(func):
@@ -153,7 +153,7 @@ class Commander:
 
         :param name: 需要匹配的子命令
         :param events: 事件过滤器，默认不过滤
-        :param permission: 鉴权，默认允许非黑名单外所有用户
+        :param permission: 鉴权，默认允许黑名单外所有用户
         """
         names = name if isinstance(name, list) else [name]
 
