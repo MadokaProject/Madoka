@@ -70,6 +70,12 @@ class Message:
             raise ValueError("未指定消息发送对象")
         mq.put(self.__send)
 
+    async def immediately_send(self) -> None:
+        """立即发送消息"""
+        if not self.__target:
+            raise ValueError("未指定消息发送对象")
+        await self.__send()
+
     async def __send(self) -> Union[ActiveFriendMessage, ActiveGroupMessage]:
         """发送消息"""
         if isinstance(self.__target, int):
@@ -81,7 +87,6 @@ class Message:
         elif isinstance(self.__target, Group):
             if self.__at:
                 self.__root__ = MessageChain(At(at) for at in self.__at).extend(self.content)
-                print(self.__root__)
             return await app.send_group_message(self.__target, message=self.content, quote=self.__quote)
         elif isinstance(self.__target, Member):
             return await app.send_temp_message(self.__target, message=self.content, quote=self.__quote)
