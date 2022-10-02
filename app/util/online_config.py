@@ -35,7 +35,7 @@ async def save_config(name: str, uid: Union[Group, int], value, model: str = Non
     if uid not in CONFIG:
         CONFIG[uid] = {name: params}
     else:
-        CONFIG[uid].update({name: params})
+        CONFIG[uid][name] = params
 
 
 async def get_config(name: str, uid: Union[Group, int]) -> Optional[dict]:
@@ -45,8 +45,15 @@ async def get_config(name: str, uid: Union[Group, int]) -> Optional[dict]:
     :param uid: 配置群组
     """
     uid = str(uid.id) if isinstance(uid, Group) else str(uid)
+    if uid in CONFIG:
+        if name in CONFIG[uid]:
+            return CONFIG[uid][name]
+    else:
+        CONFIG[uid] = {}
     if res := DBConfig.get_or_none(name=name, uid=uid):
-        return json.loads(res.value)
+        res = json.loads(res.value)
+        CONFIG[uid][name] = res
+        return res
 
 
 async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:

@@ -89,7 +89,6 @@ async def modify(sender: Group, cmd: Arpamar):
         REPO[group_id][repo]["api"] = _api
         await save_config("repo", sender, {repo: REPO[group_id][repo]}, model="add")
     if _branch:
-        _branch = _branch["branch"]
         REPO[group_id][repo]["branch"] = _branch.replace("，", ",").split(",")
         await save_config("repo", sender, {repo: REPO[group_id][repo]}, model="add")
     return message("修改成功!").target(sender).send()
@@ -107,7 +106,7 @@ async def remove(sender: Group, cmd: Arpamar):
 
 
 @command.parse("list", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def list(sender: Group, cmd: Arpamar):
+async def list(sender: Group):
     if str(sender.id) in REPO:
         return (
             message(

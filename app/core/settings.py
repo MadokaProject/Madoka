@@ -60,12 +60,6 @@ try:
     """在游戏的群"""
     GROUP_GAME_PROCESS = {}
     """成员答题限次"""
-
-    # 签到模块
-    IntimacyLevel = (0, 10000, 15500, 20500, 26000, 31750, 37500, 43500, 49750, 56500)
-    """描述各个好感度等级所需要的好感度"""
-    IntimacyGet = (200, 350, 575, 912, 1418, 2177, 3315)
-    """获取的好感度"""
 except OperationalError as e:
     logger.error(e)
     exit(e)
