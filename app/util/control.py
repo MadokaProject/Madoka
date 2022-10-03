@@ -73,7 +73,7 @@ class Permission:
                     if sender and target:
                         break
                 else:
-                    raise TypeError("被装饰函数必须包含一个 Friend 或 Member 参数")
+                    raise TypeError("被装饰函数必须包含一个 Friend 或 Member 和 Group 参数")
                 if cls.manual(target, level):
                     return await func(*args, **kwargs)
                 else:

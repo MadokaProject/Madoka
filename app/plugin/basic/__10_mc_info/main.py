@@ -345,7 +345,7 @@ class McServer:
             resp_content.extend(MessageChain([Plain(f"{player}加入了服务器！\r\n")]))
         if (not status) and (status != self.status):
             resp_content.extend(MessageChain([Plain("服务器已关闭！\r\n")]))
-        self._extracted_from_update_21(status, players, description)
+        self._init_from_update_(status, players, description)
         self.time = time.time()
         if resp_content.__root__:
             resp.extend(resp_content)

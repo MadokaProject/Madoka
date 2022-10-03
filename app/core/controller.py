@@ -6,7 +6,7 @@ from loguru import logger
 from app.core.commander import CommandDelegateManager
 from app.core.exceptions import BannedError, NotActivatedError
 from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, BANNED_USER, config
-from app.trigger import trigger
+from app.trigger.trigger import Trigger
 from app.util.control import Permission
 from app.util.decorator import ArgsAssigner
 from app.util.graia import (
@@ -63,8 +63,8 @@ class Controller:
 
     async def trigger(self):
         """预处理"""
-        for trig in trigger.Trigger.__subclasses__():
-            obj: trigger.Trigger
+        for trig in Trigger.__subclasses__():
+            obj: Trigger
             obj = trig(self.app, self.target, self.sender, self.source, self.message)
             if obj.enable:
                 await obj.process()

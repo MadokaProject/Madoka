@@ -57,6 +57,9 @@ dev = [
 
 [tool.isort]
 profile = "black"
+extend_skip_glob = [
+    "app/trigger/__init__.py",
+]
 
 [tool.black]
 line-length = 120
@@ -70,6 +73,7 @@ ignore = [
     "**/tmp/**",
     "**/temp/**/*.py",
     "app/util/network.py",
+    "app/trigger/__init__.py",
 ]
 
 [tool.pydocstyle]
