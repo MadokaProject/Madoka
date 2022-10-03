@@ -40,7 +40,7 @@ async def avatar_black_and_white(qq: int) -> bytes:
     """
     url = f"https://q1.qlogo.cn/g?b=qq&nk={qq}&s=4"
     resp = await general_request(url, _type="byte")
-    img = IMG.open(BytesIO(resp.content))
+    img = IMG.open(BytesIO(resp))
     img = img.convert("L")
     img.save(img2io := BytesIO(), "JPEG")
     return img2io.getvalue()
