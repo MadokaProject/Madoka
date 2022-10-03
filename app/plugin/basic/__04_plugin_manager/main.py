@@ -134,7 +134,7 @@ async def choose_plugin(
 @command.parse("install", permission=Permission.MASTER)
 async def install(target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, cmd: Arpamar):
     plugin = cmd.query("plugin")
-    upgrade = "upgrade" in install
+    upgrade = bool(cmd.query("install.upgrade"))
 
     try:
         if upgrade:  # 更新插件
