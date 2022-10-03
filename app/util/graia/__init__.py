@@ -44,17 +44,19 @@ from graia.ariadne.model import MemberInfo as MemberInfo
 from graia.ariadne.model import MemberPerm as MemberPerm
 from graia.ariadne.model import Profile as Profile
 from graia.ariadne.model import Stranger as Stranger
-from graia.ariadne.util.interrupt import FunctionWaiter as FunctionWaiter
+from graia.ariadne.util.interrupt import FunctionWaiter as DefaultFunctionWaiter
 from graia.broadcast.interrupt import InterruptControl as InterruptControl
 from graia.broadcast.interrupt.waiter import Waiter as Waiter
 from graia.scheduler import GraiaScheduler as GraiaScheduler
 from graia.scheduler import timers as timers
 
 from .message import Message
+from .tools import MadokaFunctionWaiter as FunctionWaiter
 
 message = Message
 __all__ = [
     "message",
+    "FunctionWaiter",
     "Ariadne",
     "ActiveFriendMessage",
     "ActiveGroupMessage",
@@ -100,7 +102,7 @@ __all__ = [
     "MemberPerm",
     "Profile",
     "Stranger",
-    "FunctionWaiter",
+    "DefaultFunctionWaiter",
     "InterruptControl",
     "Waiter",
     "GraiaScheduler",
