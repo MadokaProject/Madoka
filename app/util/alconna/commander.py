@@ -58,6 +58,7 @@ class Commander:
         entry,
         brief_help: str,
         *args: Union[Args, Option, Subcommand],
+        command=None,
         help_text: str = None,
         enable: bool = True,
         hidden: bool = False,
@@ -68,16 +69,18 @@ class Commander:
         :param entry: 主命令
         :param brief_help: 简短帮助信息
         :param args: 命令选项
+        :param command: 真·主命令，默认为 entry
         :param help_text: 帮助信息，默认为 brief_help
         :param enable: 插件开关，默认开启
         :param hidden: 隐藏插件，默认不隐藏
         """
         self.__entry = entry
         self.__brief_help = brief_help
+        self.__command = command or entry
         self.__help_text = help_text or brief_help
         self.__enable = enable
         self.__hidden = hidden
-        self.alconna = Alconna(entry, *args, meta=CommandMeta(self.__help_text), **kwargs)
+        self.alconna = Alconna(self.__command, *args, meta=CommandMeta(self.__help_text), **kwargs)
         self.__module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").split("/")[-5:])
         self.__options: dict[str, Callable] = {}
         self.__no_match_action: Callable = None

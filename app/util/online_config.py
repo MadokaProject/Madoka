@@ -1,5 +1,5 @@
 import json
-from typing import Optional, Union
+from typing import Union
 
 from graia.ariadne.model import Group
 from loguru import logger
@@ -38,7 +38,7 @@ async def save_config(name: str, uid: Union[Group, int], value, model: str = Non
         CONFIG[uid][name] = params
 
 
-async def get_config(name: str, uid: Union[Group, int]) -> Optional[dict]:
+async def get_config(name: str, uid: Union[Group, int]) -> dict:
     """在线配置获取
 
     :param name: 配置名
@@ -54,6 +54,7 @@ async def get_config(name: str, uid: Union[Group, int]) -> Optional[dict]:
         res = json.loads(res.value)
         CONFIG[uid][name] = res
         return res
+    return {}
 
 
 async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
