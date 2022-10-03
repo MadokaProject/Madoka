@@ -173,4 +173,4 @@ async def message_push(group, repo, branch):
             Plain(f"\nUpdated: {commit_time}"),
             Plain(f"\nLink: {commit_info['html_url']}"),
         ]
-    ).target(group).send()
+    ).target(int(group)).send()
