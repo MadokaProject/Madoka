@@ -81,7 +81,7 @@ async def set_server(sender: Union[Friend, Group], cmd: Arpamar):
             f"{_.host}: {_.port}" for _ in DBMcServer.select().where(DBMcServer.listen == 1)
         )
         return message(msg).target(sender).send()
-    status = 0 if "off" in cmd["set"]["options"] else 1
+    status = 0 if cmd.query("set.off") else 1
     DBMcServer.replace(
         host=cmd.query("host"),
         port=cmd.query("port"),
@@ -120,7 +120,7 @@ async def listen_server(sender: Union[Friend, Group], cmd: Arpamar):
     res.report = res.report or ""
     report = (
         ",".join(filter(lambda x: x != target, res.report.split(",")))
-        if "off" in cmd["listen"]["options"]
+        if cmd.query("listen.off")
         else ",".join({target, *res.report.split(",")})
     )
 

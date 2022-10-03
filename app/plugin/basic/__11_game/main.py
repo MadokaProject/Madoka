@@ -169,7 +169,7 @@ async def rank(target: Union[Friend, Member], sender: Union[Friend, Group]):
 
 @command.parse("auto")
 async def auto(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
-    status = 1 if auto["status"] else 0
+    status = 1 if cmd.find("status") else 0
     await BotGame(target.id).auto_signin(status)
     return message("开启成功，将于每日8点为您自动签到！" if status else "关闭成功！").target(sender).send()
 

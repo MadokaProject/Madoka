@@ -9,7 +9,7 @@ command = Commander(
     "群管",
     Subcommand(
         "mute",
-        args=Args["at|O", At],
+        args=Args["at;O", At],
         help_text="禁言指定群成员",
         options=[
             Option("--time|-t", args=Args["time", int, 10], help_text="禁言时间(分)"),
@@ -17,7 +17,7 @@ command = Commander(
         ],
     ),
     Subcommand(
-        "unmute", args=Args["at|O", At], help_text="取消禁言指定群成员", options=[Option("--all|-a", help_text="关闭全员禁言")]
+        "unmute", args=Args["at;O", At], help_text="取消禁言指定群成员", options=[Option("--all|-a", help_text="关闭全员禁言")]
     ),
     Subcommand(
         "func",
@@ -79,11 +79,11 @@ async def revoke(app: Ariadne, sender: Group, source: Source, cmd: Arpamar):
 @command.parse("mute", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def mute(app: Ariadne, sender: Group, cmd: Arpamar):
     try:
-        if cmd.find("all"):
+        if cmd.query("mute.all"):
             await app.mute_all(sender)
             message("已开启全员禁言").target(sender).send()
         elif cmd.find("at"):
-            await app.mute(sender, cmd.query("at").target, cmd.query("time") * 60)
+            await app.mute(sender, cmd.query("at").target, (cmd.query("time") or 10) * 60)
             message("禁言成功").target(sender).send()
     except PermissionError:
         return exec_permission_error()
@@ -92,7 +92,7 @@ async def mute(app: Ariadne, sender: Group, cmd: Arpamar):
 @command.parse("unmute", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def unmute(app: Ariadne, sender: Group, cmd: Arpamar):
     try:
-        if cmd.find("all"):
+        if cmd.query("unmute.all"):
             await app.unmute_all(sender)
             message("已关闭全员禁言").target(sender).send()
         elif cmd.find("at"):
@@ -105,23 +105,23 @@ async def unmute(app: Ariadne, sender: Group, cmd: Arpamar):
 @command.parse("func", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def func(sender: Group, cmd: Arpamar):
     tag = None
-    if cmd.query("card"):
+    if cmd.query("func.card"):
         tag = "member_card_change"
-    elif cmd.query("quit"):
+    elif cmd.query("func.quit"):
         tag = "member_quit"
-    elif cmd.query("kick"):
+    elif cmd.query("func.kick"):
         tag = "member_kick"
-    elif cmd.query("flash"):
+    elif cmd.query("func.flash"):
         tag = "flash_png"
-    elif cmd.query("recall"):
+    elif cmd.query("func.recall"):
         tag = "member_recall"
     if tag:
         await save_config(tag, sender, cmd.query("status"))
-        return message("开启成功！" if func["status"] else "关闭成功！").target(sender).send()
+        return message("开启成功！" if cmd.query("status") else "关闭成功！").target(sender).send()
 
 
 @command.parse("刷屏检测", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def check_repeat(app: Ariadne, sender: Group, cmd: Arpamar):
+async def check_repeat(sender: Group, cmd: Arpamar):
     await save_config(
         "mute", sender, {"time": cmd.query("time"), "mute": cmd.query("mute_time") * 60, "message": cmd.query("reply")}
     )
