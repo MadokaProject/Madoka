@@ -193,7 +193,7 @@ async def install(target: Union[Friend, Member], sender: Union[Friend, Group], i
 
             if await plugin_mgr.exist(install_plugin):
                 return message("该插件已存在, 请使用 --upgrade 更新插件").target(sender).send()
-            await message("插件正在安装中...").target(sender).send()
+            message("插件正在安装中...").target(sender).send()
 
         message(f"正在尝试安装插件: {install_plugin['name']} - {install_plugin['author']}").target(sender).send()
         if await plugin_mgr.install(install_plugin):
