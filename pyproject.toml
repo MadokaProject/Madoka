@@ -5,7 +5,7 @@ authors = [
 requires-python = ">=3.9,<4.0"
 license = {text = "AGPL-3"}
 dependencies = [
-    "graia-ariadne==0.9.4",
+    "graia-ariadne==0.9.6",
     "graia-scheduler==0.0.8",
     "graia-saya==0.0.16",
     "richuru==0.1.1",
@@ -24,6 +24,7 @@ dependencies = [
 [project.optional-dependencies]
 mysql = [
     "pymysql~=1.0.2",
+    "cryptography>=38.0.1",
 ]
 
 [build-system]
