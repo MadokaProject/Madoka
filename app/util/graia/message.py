@@ -91,16 +91,20 @@ class Message:
         elif isinstance(self.__target, Member):
             return await app.send_temp_message(self.__target, message=self.content, quote=self.__quote)
 
-    def target(self, target: Union[Friend, Member, Group, int]) -> Self:
+    def target(self, target: Union[Friend, Member, Group, int, str]) -> Self:
         """指定消息发送对象
 
         Friend: -> 好友消息
         Group: -> 群组消息
         Member: -> 临时消息
         int: -> 自动查找好友对象 或 群组对象
+        str: 尝试转换为 int
         """
-        assert isinstance(target, (Friend, Member, Group, int))
-        self.__target = target
+        if isinstance(target, str):
+            self.__target = int(target)
+        else:
+            assert isinstance(target, (Friend, Member, Group, int))
+            self.__target = target
         return self
 
     def quote(self, quote: Union[Source, int]) -> Self:
