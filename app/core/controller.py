@@ -148,8 +148,6 @@ class Controller:
                     message(f"{e}").target(self.sender).send()
                 finally:
                     sys.stdout = current
-            else:
-                message("此功能未开启！").target(self.sender).send()
 
         # 主菜单帮助发送
         if send_help:
