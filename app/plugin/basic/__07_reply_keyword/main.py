@@ -16,18 +16,18 @@ command = Commander(
 
 
 @command.parse("add", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def add(sender: Group, cmd: Arpamar):
+async def add_reply(sender: Group, cmd: Arpamar):
     await save_config("group_reply", sender, {cmd.query("keyword"): "\n".join(cmd.query("text"))}, model="add")
     return message("添加/修改成功！").target(sender).send()
 
 
 @command.parse("remove", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def remove(sender: Group, cmd: Arpamar):
+async def remove_reply(sender: Group, cmd: Arpamar):
     await save_config("group_reply", sender, cmd.query("keyword"), model="remove")
     return message("删除成功！").target(sender).send()
 
 
 @command.parse("list", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def list(sender: Group):
+async def list_reply(sender: Group):
     res = await get_config("group_reply", sender)
     return message("\n".join(f"{key}" for key in res.keys()) if res else "该群组暂未配置！").target(sender).send()

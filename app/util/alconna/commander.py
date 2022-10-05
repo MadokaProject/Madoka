@@ -1,6 +1,6 @@
 import traceback
 from functools import wraps
-from typing import Callable, Union
+from typing import Callable, Optional, Type, Union
 
 from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from loguru import logger
@@ -16,13 +16,14 @@ from app.util.graia import (
     InterruptControl,
     Member,
     MessageChain,
-    MessageEvent,
     Source,
     Stranger,
     StrangerMessage,
     TempMessage,
 )
 from app.util.phrases import print_help, unknown_error
+
+_K_T = Type[Union[FriendMessage, GroupMessage, TempMessage, StrangerMessage]]
 
 
 class Commander:
@@ -81,9 +82,9 @@ class Commander:
         self.__enable = enable
         self.__hidden = hidden
         self.alconna = Alconna(self.__command, *args, meta=CommandMeta(self.__help_text), **kwargs)
-        self.__module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").split("/")[-5:])
+        self.__module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").replace("\\", "/").split("/")[-5:])
         self.__options: dict[str, Callable] = {}
-        self.__no_match_action: Callable = None
+        self.__no_match_action: Optional[Callable] = None
         from app.core.commander import CommandDelegateManager
 
         manager: CommandDelegateManager = CommandDelegateManager()
@@ -111,7 +112,8 @@ class Commander:
                 logger.exception(e)
                 return unknown_error(sender)
 
-    def __filter(self, events: tuple):
+    @staticmethod
+    def __filter(events: tuple):
         """事件过滤器"""
 
         def wrapper(func: Callable):
@@ -124,7 +126,7 @@ class Commander:
 
         return wrapper
 
-    def no_match(self, /, events: list[MessageEvent] = [], permission: int = Permission.DEFAULT):
+    def no_match(self, /, events: list[_K_T] = None, permission: int = Permission.DEFAULT):
         """无匹配子命令时的回调函数
 
         :param events: 事件过滤器，默认不过滤
@@ -135,7 +137,8 @@ class Commander:
             @self.__filter(
                 tuple(
                     [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
-                    or self.__TypeMessage.values()
+                    if events
+                    else self.__TypeMessage.values()
                 )
             )
             @Permission.require(permission)
@@ -149,9 +152,7 @@ class Commander:
 
         return wrapper
 
-    def parse(
-        self, name: Union[str, list[str]], /, events: list[MessageEvent] = [], permission: int = Permission.DEFAULT
-    ):
+    def parse(self, name: Union[str, list[str]], /, events: list[_K_T] = None, permission: int = Permission.DEFAULT):
         """子命令匹配器
 
         :param name: 需要匹配的子命令
@@ -164,7 +165,8 @@ class Commander:
             @self.__filter(
                 tuple(
                     [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
-                    or self.__TypeMessage.values()
+                    if events
+                    else self.__TypeMessage.values()
                 )
             )
             @Permission.require(permission)

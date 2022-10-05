@@ -106,7 +106,7 @@ async def remove(sender: Group, cmd: Arpamar):
 
 
 @command.parse("list", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def list(sender: Group):
+async def list_github(sender: Group):
     if str(sender.id) in REPO:
         return (
             message(

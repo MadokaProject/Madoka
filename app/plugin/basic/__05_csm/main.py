@@ -65,7 +65,7 @@ async def kick(app: Ariadne, sender: Group, cmd: Arpamar):
         await app.kick_member(sender, cmd.query("at").target)
         message("飞机票快递成功!").target(sender).send()
     except PermissionError:
-        return exec_permission_error()
+        return exec_permission_error(sender)
 
 
 @command.parse("revoke", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
@@ -73,7 +73,7 @@ async def revoke(app: Ariadne, sender: Group, source: Source, cmd: Arpamar):
     try:
         await app.recall_message(source.id - cmd.query("id"), sender)
     except PermissionError:
-        return exec_permission_error()
+        return exec_permission_error(sender)
 
 
 @command.parse("mute", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
@@ -83,10 +83,10 @@ async def mute(app: Ariadne, sender: Group, cmd: Arpamar):
             await app.mute_all(sender)
             message("已开启全员禁言").target(sender).send()
         elif cmd.find("at"):
-            await app.mute(sender, cmd.query("at").target, (cmd.query("time") or 10) * 60)
+            await app.mute_member(sender, cmd.query("at").target, (cmd.query("time") or 10) * 60)
             message("禁言成功").target(sender).send()
     except PermissionError:
-        return exec_permission_error()
+        return exec_permission_error(sender)
 
 
 @command.parse("unmute", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
@@ -96,10 +96,10 @@ async def unmute(app: Ariadne, sender: Group, cmd: Arpamar):
             await app.unmute_all(sender)
             message("已关闭全员禁言").target(sender).send()
         elif cmd.find("at"):
-            await app.unmute(sender, cmd.query("at").target)
+            await app.unmute_member(sender, cmd.query("at").target)
             message("取消禁言成功").target(sender).send()
     except PermissionError:
-        return exec_permission_error()
+        return exec_permission_error(sender)
 
 
 @command.parse("func", events=[GroupMessage], permission=Permission.GROUP_ADMIN)

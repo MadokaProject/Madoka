@@ -92,7 +92,7 @@ async def set_server(sender: Union[Friend, Group], cmd: Arpamar):
 
 
 @command.parse("default")
-async def default_server(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
+async def default_mc_server(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     if cmd.find("view"):
         if default_server := DBMcServer.get_or_none(default=1):
             return message(f"默认服务器：{default_server.host}:{default_server.port}").target(sender).send()
@@ -101,7 +101,7 @@ async def default_server(target: Union[Friend, Member], sender: Union[Friend, Gr
 
 
 @command.parse("listen")
-async def listen_server(sender: Union[Friend, Group], cmd: Arpamar):
+async def listen_server(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     if isinstance(sender, Friend):
         target = f"f{sender.id}"
         msg = "您正在监听的服务器:\n"
@@ -269,7 +269,8 @@ class StatusPing:
 
         return self._str_format_from_get_status_(response) if str_format else response
 
-    def _str_format_from_get_status_(self, response):
+    @staticmethod
+    def _str_format_from_get_status_(response):
         _version = jsonpath.jsonpath(response, "$..version[name]")[0]
         _description = jsonpath.jsonpath(response, "$..description")[0]
         if jsonpath.jsonpath(_description, "$..text"):
@@ -383,9 +384,9 @@ async def mc_listener(ips):
             message(resp).target(target).send()
 
 
-for k, v in LISTEN_MC_SERVER.items():
+for _k, _v in LISTEN_MC_SERVER.items():
 
-    @sche.schedule(timers.every_custom_seconds(v["delay"]))
+    @sche.schedule(timers.every_custom_seconds(_v["delay"]))
     async def mc_listen_schedule():
         if config.ONLINE:
-            await mc_listener(k)
+            await mc_listener(_k)

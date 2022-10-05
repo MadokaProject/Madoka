@@ -29,7 +29,8 @@ class MQ(metaclass=Singleton):
         """写入消息"""
         self.__message_queue.put(msg)
 
-    async def send(self, message):
+    @staticmethod
+    async def send(message):
         try:
             await message()
         except Exception as e:

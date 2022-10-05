@@ -34,7 +34,7 @@ def restart(*args):
     os.execl(python, python, *[sys.argv[0], *args])
 
 
-def app_path(*join_paths: List[str]) -> Path:
+def app_path(*join_paths) -> Path:
     """获取 app 绝对路径"""
     return Path(__file__).parent.parent.joinpath(*join_paths)
 

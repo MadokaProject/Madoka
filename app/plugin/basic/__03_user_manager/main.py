@@ -21,7 +21,7 @@ async def list(app: Ariadne, cmd: Arpamar, sender: Union[Friend, Group]):
         msg = message(
             "\n".join(f"好友ID：{str(friend.id).ljust(14)}好友昵称：{str(friend.nickname)}" for friend in friend_list)
         )
-    elif rs_type in ["group", "g"]:
+    else:
         group_list = await app.get_group_list()
         msg = message("\n".join(f"群ID：{str(group.id).ljust(14)}群名：{group.name}" for group in group_list))
     msg.target(sender).send()
@@ -37,7 +37,7 @@ async def delete(app: Ariadne, cmd: Arpamar, sender: Union[Friend, Group]):
             msg = "成功删除该好友！"
         else:
             msg = "没有找到该好友！"
-    elif rs_type in ["group", "g"]:
+    else:
         if await app.get_group(target_id):
             await app.quit_group(target_id)
             msg = "成功退出该群组！"

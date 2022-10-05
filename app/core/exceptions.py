@@ -87,9 +87,7 @@ class FrequencyLimitExceededDoNothingError(Error):
 
     def __init__(self, target, limit):
         Error.__init__(
-            self,
-            "Frequency limit exceeded and do nothing: %r, Remaining disable time: %s" % target,
-            limit,
+            self, "Frequency limit exceeded and do nothing: %r, Remaining disable time: %s" % (target, limit)
         )
         self.target = target
         self.limit = limit

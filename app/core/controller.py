@@ -30,7 +30,7 @@ class Controller:
     def __init__(
         self,
         app: Ariadne,
-        message: MessageChain,
+        _message: MessageChain,
         target: Union[Friend, Member],
         sender: Union[Friend, Group],
         source: Source,
@@ -39,7 +39,7 @@ class Controller:
     ):
         """存储消息"""
         self.app = app
-        self.message = message
+        self.message = _message
         self.target = target
         self.sender = sender
         self.source = source

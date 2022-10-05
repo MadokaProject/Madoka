@@ -245,7 +245,7 @@ class PluginManager(metaclass=Singleton):
         except FileNotFoundError:
             return []
 
-    async def record_info(self, plugin_info: TypePluginInfo) -> TypePluginInfo:
+    async def record_info(self, plugin_info: TypePluginInfo) -> None:
         """记录插件信息
 
         :param plugin_info: 插件信息

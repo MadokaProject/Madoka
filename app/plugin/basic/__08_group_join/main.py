@@ -16,29 +16,25 @@ command = Commander(
 
 
 @command.parse("set", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def set(sender: Group, cmd: Arpamar):
+async def set_group_join(sender: Group, cmd: Arpamar):
     await save_config("member_join", sender, {"active": 1, "text": "\n".join(cmd.query("msg"))})
     return message("设置成功！").target(sender).send()
 
 
 @command.parse("view", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def view(sender: Group):
-    res = await get_config("member_join", sender)
-    return (
+async def view_group_join(sender: Group):
+    if res := await get_config("member_join", sender):
         message(
             [
                 Plain(f"欢迎消息：{res['text'] if 'text' in res else '默认欢迎消息'}"),
                 Plain(f"\n开启状态: {res['active']}"),
             ]
-        )
-        .target(sender)
-        .send()
-        if res
-        else message("该群组未配置欢迎消息！").target(sender).send()
-    )
+        ).target(sender).send()
+    else:
+        message("该群组未配置欢迎消息！").target(sender).send()
 
 
 @command.parse("status", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
-async def status(sender: Group, cmd: Arpamar):
+async def status_group_join(sender: Group, cmd: Arpamar):
     await save_config("member_join", sender, {"active": cmd.query("bool")}, model="add")
-    return message("开启成功!" if status["bool"] else "关闭成功!").target(sender).send()
+    return message("开启成功!" if cmd.query("bool") else "关闭成功!").target(sender).send()

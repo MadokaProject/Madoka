@@ -52,9 +52,9 @@ class AnswerWaiter(Waiter.create([FriendMessage, GroupMessage])):
         self,
         target: Union[Friend, Member],
         sender: Union[Friend, Group],
-        message: MessageChain,
+        _message: MessageChain,
     ):
-        self.message = message.display
+        self.message = _message.display
         if all([target == self.target, sender == self.sender]):
             result = await self.event()
             if result is not None:
@@ -238,7 +238,7 @@ async def remove(target: Union[Friend, Member], sender: Union[Friend, Group], in
 
 
 @command.parse("list", permission=Permission.GROUP_ADMIN)
-async def list(sender: Union[Friend, Group], cmd: Arpamar):
+async def list_plugin(sender: Union[Friend, Group], cmd: Arpamar):
     msg = PrettyTable()
     msg.field_names = ["序号", "插件名", "作者", "版本号", "介绍"]
     if cmd.query("list.remote"):

@@ -34,10 +34,10 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
-        if not isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in ".,;!?。，；！？/\\":
+        if not isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in config.COMMAND_HEADERS:
             return
         msg = "".join(str(item).strip() for item in self.message.get(Plain) if str(item) is not None)
-        if not msg or msg[0] in ".,;!?。，；！？/\\":
+        if not msg:
             return
         url = "http://api.qingyunke.com/api.php"
         if (

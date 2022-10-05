@@ -117,7 +117,7 @@ async def join_group(app: Ariadne, event: BotJoinGroupEvent):
 
 
 @bcc.receiver(BotLeaveEventKick)
-async def leave_kick(app: Ariadne, event: BotLeaveEventKick):
+async def leave_kick(event: BotLeaveEventKick):
     """被踢出群"""
     try:
         await BotGroup(event.group.id, 0).group_deactivate()
@@ -129,7 +129,7 @@ async def leave_kick(app: Ariadne, event: BotLeaveEventKick):
 
 
 @bcc.receiver(BotLeaveEventActive)
-async def leave_active(app: Ariadne, event: BotLeaveEventActive):
+async def leave_active(event: BotLeaveEventActive):
     """主动退群"""
     try:
         await BotGroup(event.group.id, 0).group_deactivate()
