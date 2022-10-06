@@ -48,18 +48,15 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
         ).target(config.MASTER_QQ).send()
         await event.accept()
     else:
-        await app.send_friend_message(
-            config.MASTER_QQ,
-            MessageChain(
-                [
-                    Plain("收到邀请入群事件"),
-                    Plain(f"\r\n邀请者: {event.supplicant} | {event.nickname}"),
-                    Plain(f"\r\n群号: {event.source_group}"),
-                    Plain(f"\r\n群名: {event.group_name}"),
-                    Plain("\n\n请发送“同意”或“拒绝”"),
-                ]
-            ),
-        )
+        message(
+            [
+                Plain("收到邀请入群事件"),
+                Plain(f"\r\n邀请者: {event.supplicant} | {event.nickname}"),
+                Plain(f"\r\n群号: {event.source_group}"),
+                Plain(f"\r\n群名: {event.group_name}"),
+                Plain("\n\n请发送“同意”或“拒绝”"),
+            ]
+        ).target(config.MASTER_QQ).send()
 
         async def waiter(waiter_friend: Friend, waiter_message: MessageChain):
             if waiter_friend.id == config.MASTER_QQ:
@@ -69,7 +66,7 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
                 elif saying == "拒绝":
                     return False
                 else:
-                    await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain("请发送同意或拒绝")]))
+                    message("请发送同意或拒绝").target(config.MASTER_QQ).send()
 
         try:
             if await FunctionWaiter(waiter, [FriendMessage]).wait(300):
@@ -77,14 +74,14 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
                     BotGroup(event.source_group, active=1)
                     ACTIVE_GROUP.update({event.source_group: "*"})
                 await event.accept()
-                await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain("已同意申请并加入白名单")]))
+                message("已同意申请并加入白名单").target(config.MASTER_QQ).send()
             else:
                 await event.reject("主人拒绝加入该群")
-                await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain("已拒绝申请")]))
+                message("已拒绝申请").target(config.MASTER_QQ).send()
 
         except asyncio.TimeoutError:
             await event.reject("由于主人长时间未审核，已自动拒绝")
-            await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain("申请超时已自动拒绝")]))
+            message("申请超时已自动拒绝").target(config.MASTER_QQ).send()
 
 
 @bcc.receiver(BotJoinGroupEvent)
@@ -100,7 +97,7 @@ async def join_group(app: Ariadne, event: BotJoinGroupEvent):
         ]
     ).target(config.MASTER_QQ).send()
     if event.group.id not in ACTIVE_GROUP:
-        message(f"该群未在白名单中，正在退出，如有需要请联系{config.MASTER_QQ}申请白名单").target(event.group).send()
+        await message(f"该群未在白名单中，正在退出，如有需要请联系{config.MASTER_QQ}申请白名单").target(event.group).immediately_send()
         message("该群未在白名单中，正在退出").target(config.MASTER_QQ).send()
         return await app.quit_group(event.group.id)
 
