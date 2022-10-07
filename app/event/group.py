@@ -146,9 +146,9 @@ async def recall(app: Ariadne, event: GroupRecallEvent):
                     ForwardNode(
                         target=event.operator,
                         time=datetime.now(),
-                        message=MessageChain(
-                            (await app.get_message_from_id(event.message_id, event.group)).message_chain
-                        ),
+                        message=(
+                            await app.get_message_from_id(event.message_id, event.group)
+                        ).message_chain.as_sendable(),
                     ),
                 ]
             )

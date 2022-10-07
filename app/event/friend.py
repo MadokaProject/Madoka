@@ -1,10 +1,12 @@
+from datetime import datetime
 from typing import Optional
 
+from graia.ariadne.event.message import FriendMessage
 from graia.ariadne.event.mirai import NewFriendRequestEvent
 
 from app.core.app import AppCore
-from app.core.settings import ADMIN_USER
-from app.util.graia import Ariadne, Plain, message
+from app.core.settings import ADMIN_USER, config
+from app.util.graia import Ariadne, Forward, ForwardNode, MessageChain, Plain, message
 
 core: AppCore = AppCore()
 bcc = core.get_bcc()
@@ -32,3 +34,21 @@ async def new_friend_request(app: Ariadne, event: NewFriendRequestEvent):
             ]
         ).target(qq).send()
     await event.accept()
+
+
+@bcc.receiver(FriendMessage)
+async def friend_message(event: FriendMessage):
+    """收到好友消息"""
+    if event.sender.id != config.MASTER_QQ:
+        message(
+            Forward(
+                [
+                    ForwardNode(
+                        target=event.sender,
+                        time=datetime.now(),
+                        message=MessageChain(f"收到来自{event.sender.nickname} - {event.sender.id}的消息"),
+                    ),
+                    ForwardNode(target=event.sender, time=datetime.now(), message=event.message_chain.as_sendable()),
+                ]
+            )
+        ).target(config.MASTER_QQ).send()
