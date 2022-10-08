@@ -2,8 +2,10 @@ import aiohttp.client
 from loguru import logger
 
 from app.core.config import Config
-from app.util.graia import Ariadne, MessageChain, Plain
+from app.util.graia import Plain, message
 from app.util.network import general_request
+
+config = Config()
 
 
 def compare_version(remote_version: str, native_version: str) -> bool:
@@ -27,7 +29,7 @@ def compare_version(remote_version: str, native_version: str) -> bool:
     return False
 
 
-async def check_version(app: Ariadne, config: Config):
+async def check_version():
     """检查版本信息"""
     try:
         remote_info = await general_request(config.REMOTE_VERSION_URL, method="get", _type="json")
@@ -41,29 +43,26 @@ async def check_version(app: Ariadne, config: Config):
                     log_msg += f"{log['version']}: {log['info']}\r\n"
                 else:
                     break
-            await app.send_friend_message(
-                config.MASTER_QQ,
-                MessageChain(
-                    [
-                        Plain("检测到有新版本发布啦！\r\n"),
-                        Plain("更新提要：\r\n"),
-                        Plain(log_msg),
-                        Plain(f"详情内容请前往{config.INFO_REPO}/releases查看"),
-                    ]
-                ),
-            )
-            await app.send_friend_message(config.MASTER_QQ, MessageChain([Plain("发送.p u可进行更新操作")]))
+            message(
+                [
+                    Plain("检测到有新版本发布啦！\r\n"),
+                    Plain("更新提要：\r\n"),
+                    Plain(log_msg),
+                    Plain(f"详情内容请前往{config.INFO_REPO}/releases查看"),
+                ]
+            ).target(config.MASTER_QQ).send()
+            message("发送.p u可进行更新操作").target(config.MASTER_QQ).send()
     except aiohttp.client.ClientConnectorError:
         logger.warning("获取远程版本信息超时")
     except Exception as e:
         logger.exception(f"获取远程版本信息失败{e}")
 
 
-async def version_notice(app: Ariadne, config: Config):
+async def version_notice():
     """版本信息"""
     logger.info(f"欢迎使用{config.INFO_NAME}")
     logger.info(f"Docs: {config.INFO_DOCS}")
     logger.info(f"Repo: {config.INFO_REPO}")
     logger.info(f"Remote Plugin Repo: {config.REMOTE_REPO_VERSION}")
     logger.info(f"Native Version: {config.INFO_VERSION}")
-    await check_version(app, config)
+    await check_version()

@@ -12,9 +12,9 @@ from app.util.decorator import Singleton
 class MQ(metaclass=Singleton):
     __launched: bool = False
     __message_queue: Queue = Queue(maxsize=0)
-    __limit: int
+    __limit: float
 
-    def __init__(self, limit: int = 1.5):
+    def __init__(self, limit: float = 1.5):
         """初始化消息队列
 
         :param limit: 频率(秒)

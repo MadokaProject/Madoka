@@ -12,14 +12,11 @@ from loguru import logger
 
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
-from app.core.config import Config
 from app.core.controller import Controller
 from app.core.exceptions import DependError
 from app.extend.message_queue import mq
 from app.util.other import offline_notice, online_notice
 from app.util.version import version_notice
-
-config = Config()
 
 LOG_PATH = Path(__file__).parent.joinpath("app/tmp/logs")
 LOG_PATH.mkdir(parents=True, exist_ok=True)
@@ -42,36 +39,35 @@ logger.add(
 
 core = AppCore()
 
-app = core.get_app()
 bcc = core.get_bcc()
 inc = core.get_inc()
 manager = CommandDelegateManager()
 
 
 @bcc.receiver(FriendMessage)
-async def friend_message_handler(_app: Ariadne, message: MessageChain, friend: Friend):
+async def friend_message_handler(app: Ariadne, message: MessageChain, friend: Friend):
     with contextlib.suppress(DependError):
-        await Controller(_app, message, friend, inc, manager).process_event()
+        await Controller(app, message, friend, inc, manager).process_event()
 
 
 @bcc.receiver(GroupMessage)
-async def group_message_handler(_app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
+async def group_message_handler(app: Ariadne, message: MessageChain, group: Group, member: Member, source: Source):
     with contextlib.suppress(DependError):
-        await Controller(_app, message, group, member, source, inc, manager).process_event()
+        await Controller(app, message, group, member, source, inc, manager).process_event()
 
 
 @logger.catch
 @bcc.receiver(ApplicationLaunched)
 async def init():
     await core.bot_launch_init()
-    await online_notice(app, config)
-    await version_notice(app, config)
+    await online_notice()
+    await version_notice()
 
 
 @logger.catch
 @bcc.receiver(ApplicationShutdowned)
 async def stop():
-    await offline_notice(app, config)
+    await offline_notice()
     await mq.stop()
 
 

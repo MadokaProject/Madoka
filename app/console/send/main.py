@@ -1,12 +1,10 @@
-from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option
 from arclet.alconna.graia import AlconnaDispatcher
-from graia.ariadne import Ariadne
 from graia.ariadne.console import Console
-from graia.ariadne.message.chain import MessageChain
-from graia.ariadne.message.element import Plain
 
-from app.console.util import args_error, send
+from app.console.util import send
 from app.core.app import AppCore
+from app.util.alconna import Alconna, Args, Arpamar, CommandMeta, Option
+from app.util.graia import Ariadne, message
 
 con: Console = AppCore().get_console()
 alc = Alconna(
@@ -22,14 +20,4 @@ alc = Alconna(
 async def process(app: Ariadne, cmd: Arpamar):
     if not cmd.matched:
         return send(alc.help_text)
-    if frd := cmd.options.get("friend"):
-        if await app.get_friend(frd["num"]):
-            await app.send_friend_message(frd["num"], MessageChain(Plain(cmd.query("msg"))))
-            return send("发送成功!")
-        return send("未找到该好友")
-    elif gp := cmd.options.get("group"):
-        if await app.get_group(gp["num"]):
-            await app.send_group_message(gp["num"], MessageChain(Plain(cmd.query("msg"))))
-            return send("发送成功!")
-        return send("未找到该群组")
-    return args_error()
+    message(cmd.query("msg")).target(cmd.query("num")).send()
