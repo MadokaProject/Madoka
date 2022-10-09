@@ -8,7 +8,8 @@ from app.util.graia import message
 
 class ChangeMode(Trigger):
     async def process(self):
-        if self.message.display == ".mode":
+        msg = self.message.display
+        if msg[0] in config.COMMAND_HEADERS and msg[1:] == "mode":
             await self.change_mode(self.target, self.sender)
         if config.ONLINE and config.DEBUG:
             self.as_last = True
