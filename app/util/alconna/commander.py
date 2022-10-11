@@ -1,3 +1,4 @@
+import time
 import traceback
 from functools import wraps
 from typing import Callable, Optional, Type, Union
@@ -5,6 +6,12 @@ from typing import Callable, Optional, Type, Union
 from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from loguru import logger
 
+from app.core.config import Config
+from app.core.exceptions import (
+    FrequencyLimitError,
+    FrequencyLimitExceededDoNothingError,
+    FrequencyLimitExceededError,
+)
 from app.util.control import Permission
 from app.util.decorator import ArgsAssigner
 from app.util.graia import (
@@ -63,6 +70,8 @@ class Commander:
         help_text: str = None,
         enable: bool = True,
         hidden: bool = False,
+        friend_limit: float = 0,
+        group_limit: float = 0,
         **kwargs,
     ):
         """创建一个命令
@@ -74,6 +83,8 @@ class Commander:
         :param help_text: 帮助信息，默认为 brief_help
         :param enable: 插件开关，默认开启
         :param hidden: 隐藏插件，默认不隐藏
+        :param friend_limit: 用户频率限制, 0不限制(该配置在群组也生效)
+        :param group_limit: 群组频率限制, 0不限制
         """
         self.__entry = entry
         self.__brief_help = brief_help
@@ -81,10 +92,14 @@ class Commander:
         self.__help_text = help_text or brief_help
         self.__enable = enable
         self.__hidden = hidden
+        self.__friend_limit = friend_limit or Config().COMMAND_FRIEND_LIMIT
+        self.__group_limit = group_limit or Config().COMMAND_GROUP_LIMIT
         self.alconna = Alconna(self.__command, *args, meta=CommandMeta(self.__help_text), **kwargs)
         self.__module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").replace("\\", "/").split("/")[-5:])
         self.__options: dict[str, Callable] = {}
         self.__no_match_action: Optional[Callable] = None
+        self.__frequency_limit: dict[str, dict[int, float]] = {"friend": {}, "group": {}}
+        assert all([self.__friend_limit >= 0, self.__group_limit >= 0]), "limit must be greater than or equal to 0"
         from app.core.commander import CommandDelegateManager
 
         manager: CommandDelegateManager = CommandDelegateManager()
@@ -102,18 +117,24 @@ class Commander:
             result: Arpamar,
         ):
             try:
+                self.__is_frequency_limit__(self.__friend_limit, self.__group_limit, sender, target)
                 for name, func in self.__options.items():
                     if result.find(name):
-                        return await func(sender, app, message, target, sender, source, inc, result)
+                        return await func(sender, target, app, message, target, sender, source, inc, result)
                 if self.__no_match_action:
-                    return await self.__no_match_action(sender, app, message, target, sender, source, inc, result)
+                    return await self.__no_match_action(
+                        sender, target, app, message, target, sender, source, inc, result
+                    )
                 await print_help(sender, self.alconna.get_help())
+            except FrequencyLimitError as e:
+                logger.warning(e)
+                return
             except Exception as e:
                 logger.exception(e)
                 return unknown_error(sender)
 
     @staticmethod
-    def __filter(events: tuple):
+    def __filter__(events: tuple):
         """事件过滤器"""
 
         def wrapper(func: Callable):
@@ -126,15 +147,59 @@ class Commander:
 
         return wrapper
 
-    def no_match(self, /, events: list[_K_T] = None, permission: int = Permission.DEFAULT):
+    def __is_frequency_limit__(
+        self, friend_limit: float, group_limit: float, sender: Union[Friend, Group], target: Union[Friend, Member]
+    ):
+        now_time = time.time()
+        if isinstance(sender, Group) and group_limit != 0:
+            left_time = group_limit - (now_time - self.__frequency_limit["group"].get(sender.id, 0))
+            if left_time > 0:
+                raise FrequencyLimitExceededError(group_limit, left_time)
+            self.__frequency_limit["group"][sender.id] = now_time
+        if friend_limit != 0:
+            left_time = friend_limit - (now_time - self.__frequency_limit["friend"].get(target.id, 0))
+            if left_time > 0:
+                raise FrequencyLimitExceededDoNothingError(friend_limit, left_time)
+            self.__frequency_limit["friend"][target.id] = now_time
+
+    def __frequency_limit__(self, friend_limit: float = 0, group_limit: float = 0):
+        """设置频率限制
+
+        :param friend_limit: 用户频率限制, 0不限制(该配置在群组也生效)
+        :param group_limit: 群组频率限制, 0不限制
+        """
+
+        def wrapper(func: Callable):
+            assert all([friend_limit >= 0, group_limit >= 0]), "limit must be greater than or equal to 0"
+
+            @wraps(func)
+            def inner(sender: Union[Friend, Group], target: Union[Friend, Member], *args, **kwargs):
+                self.__is_frequency_limit__(friend_limit, group_limit, sender, target)
+                return func(sender, *args, **kwargs)
+
+            return inner
+
+        return wrapper
+
+    def no_match(
+        self,
+        /,
+        events: list[_K_T] = None,
+        permission: int = Permission.DEFAULT,
+        friend_limit: float = 0,
+        group_limit: float = 0,
+    ):
         """无匹配子命令时的回调函数
 
         :param events: 事件过滤器，默认不过滤
         :param permission: 鉴权，默认允许黑名单外所有用户
+        :param friend_limit: 用户频率限制, 0不限制(该配置在群组也生效)
+        :param group_limit: 群组频率限制, 0不限制
         """
 
         def wrapper(func):
-            @self.__filter(
+            @self.__frequency_limit__(friend_limit, group_limit)
+            @self.__filter__(
                 tuple(
                     [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
                     if events
@@ -152,17 +217,28 @@ class Commander:
 
         return wrapper
 
-    def parse(self, name: Union[str, list[str]], /, events: list[_K_T] = None, permission: int = Permission.DEFAULT):
+    def parse(
+        self,
+        name: Union[str, list[str]],
+        /,
+        events: list[_K_T] = None,
+        permission: int = Permission.DEFAULT,
+        friend_limit: float = 0,
+        group_limit: float = 0,
+    ):
         """子命令匹配器
 
         :param name: 需要匹配的子命令
         :param events: 事件过滤器，默认不过滤
         :param permission: 鉴权，默认允许黑名单外所有用户
+        :param friend_limit: 用户频率限制, 0不限制(该配置在群组也生效)
+        :param group_limit: 群组频率限制, 0不限制
         """
         names = name if isinstance(name, list) else [name]
 
         def wrapper(func):
-            @self.__filter(
+            @self.__frequency_limit__(friend_limit, group_limit)
+            @self.__filter__(
                 tuple(
                     [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
                     if events

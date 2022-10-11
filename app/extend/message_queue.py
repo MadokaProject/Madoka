@@ -63,4 +63,4 @@ class MQ(metaclass=Singleton):
         logger.success("消息队列已停止")
 
 
-mq = MQ(limit=Config().mq_limit)
+mq = MQ(limit=Config().MQ_LIMIT)

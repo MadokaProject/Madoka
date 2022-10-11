@@ -64,34 +64,32 @@ class AsyncioTasksGetResultError(Error):
         self.args = (task,)
 
 
-class FrequencyLimitExceededError(Error):
+class FrequencyLimitError(Error):
+    """频率限制"""
+
+    pass
+
+
+class FrequencyLimitExceededError(FrequencyLimitError):
     """群组请求超出负载权重限制"""
 
-    def __init__(self, target):
-        Error.__init__(self, "Frequency limit exceeded: %r" % target)
+    def __init__(self, target, time: float):
+        Error.__init__(self, "Frequency limit exceeded: %r, Remaining disable time: %.2f" % (target, time))
         self.target = target
-        self.args = (target,)
+        self.time = time
+        self.args = (target, time)
 
 
-class FrequencyLimitExceededAddBlackListError(Error):
-    """单人请求超出负载权重限制并加入黑名单"""
-
-    def __init__(self, target):
-        Error.__init__(self, "Frequency limit exceeded and add to blacklist: %r" % target)
-        self.target = target
-        self.args = (target,)
-
-
-class FrequencyLimitExceededDoNothingError(Error):
+class FrequencyLimitExceededDoNothingError(FrequencyLimitError):
     """请求者在黑名单中不作回应"""
 
-    def __init__(self, target, limit):
+    def __init__(self, target, time: float):
         Error.__init__(
-            self, "Frequency limit exceeded and do nothing: %r, Remaining disable time: %s" % (target, limit)
+            self, "Frequency limit exceeded and do nothing: %r, Remaining disable time: %.2f" % (target, time)
         )
         self.target = target
-        self.limit = limit
-        self.args = (target, limit)
+        self.limit = time
+        self.args = (target, time)
 
 
 class NonStandardPluginError(Error):

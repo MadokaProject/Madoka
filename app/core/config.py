@@ -64,8 +64,10 @@ class Config(metaclass=Singleton):
             self.REPO_TIME = self.cf.get("github", "time", fallback="*/10  * * * *")
 
             self.COMMAND_HEADERS = self.cf.get("command", "headers", fallback=".").split()
+            self.COMMAND_FRIEND_LIMIT = self.cf.getint("command", "friend_limit", fallback=0)
+            self.COMMAND_GROUP_LIMIT = self.cf.getint("command", "group_limit", fallback=0)
 
-            self.mq_limit = self.cf.getfloat("message_queue", "limit", fallback=1.5)
+            self.MQ_LIMIT = self.cf.getfloat("message_queue", "limit", fallback=1.5)
 
             self.WEBSERVER_ENABLE = self.cf.getboolean("webserver", "enable", fallback=False)
             self.WEBSERVER_HOST = self.cf.get("webserver", "host", fallback="0.0.0.0")
