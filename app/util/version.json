@@ -1,6 +1,10 @@
 {
-  "version": "4.0.1",
+  "version": "4.0.2",
   "update_log": [
+    {
+      "version": "4.0.2",
+      "info": "调整获取远程版本的url, 导出requirements.txt"
+    },
     {
       "version": "4.0.1",
       "info": "添加yaml依赖, 修复已知问题"
