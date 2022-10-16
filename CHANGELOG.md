@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.1](https://github.com/MadokaProject/Madoka/compare/v4.0.0...v4.0.1) (2022-10-16)
+
+
+### Bug Fixes
+
+* 添加yaml依赖, 修复已知问题 ([e98ba46](https://github.com/MadokaProject/Madoka/commit/e98ba46bb78ce45beb069d4aaf508d9958c67214))
+
 ## [4.0.0](https://github.com/MadokaProject/Madoka/compare/v3.3.0...v4.0.0) (2022-10-16)
 
 
