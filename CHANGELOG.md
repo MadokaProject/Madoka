@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.2](https://github.com/MadokaProject/Madoka/compare/v4.0.1...v4.0.2) (2022-10-16)
+
+
+### Bug Fixes
+
+* 调整获取远程版本的url, 导出requirements.txt ([61eefe2](https://github.com/MadokaProject/Madoka/commit/61eefe25c2147bf0a245f013fae541b226648471))
+
 ## [4.0.1](https://github.com/MadokaProject/Madoka/compare/v4.0.0...v4.0.1) (2022-10-16)
 
 
