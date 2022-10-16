@@ -1,5 +1,45 @@
 # Changelog
 
+## [4.0.0](https://github.com/MadokaProject/Madoka/compare/v3.3.0...v4.0.0) (2022-10-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** 调整配置文件位置至 app/data 目录, 需要手动修改配置文件格式
+* use Python features not available in python 3.8.
+
+### Features
+
+* **commander:** 可以指定无子命令匹配时运行的方法了，可以在子命令匹配时添加权限验证 ([a85a082](https://github.com/MadokaProject/Madoka/commit/a85a082523e90daa071daff3c6516a10eba5d41b))
+* **commander:** 对Alconna的部分封装 ([6ecab37](https://github.com/MadokaProject/Madoka/commit/6ecab37b55127c629077feab44e04126ecffbf5b))
+* **commander:** 新增事件过滤 ([19090b2](https://github.com/MadokaProject/Madoka/commit/19090b2711df2fa821a85423839b2df3e26fd508))
+* **commander:** 新增插件限频，支持全局配置、插件配置、插件命令配置 ([97cd0e5](https://github.com/MadokaProject/Madoka/commit/97cd0e54496b25dfe4e06ae5b568b553ebf18fce))
+* **command:** 不允许单文件初始化多个命令 ([7f76463](https://github.com/MadokaProject/Madoka/commit/7f76463e391fc943b3683ed3494b256362e04136))
+* **command:** 命令不用指定命令头了 ([7f76463](https://github.com/MadokaProject/Madoka/commit/7f76463e391fc943b3683ed3494b256362e04136))
+* **command:** 命令半自动补全 ([7f76463](https://github.com/MadokaProject/Madoka/commit/7f76463e391fc943b3683ed3494b256362e04136))
+* **core:** 优化重启 ([7f76463](https://github.com/MadokaProject/Madoka/commit/7f76463e391fc943b3683ed3494b256362e04136))
+* drop support for Python 3.8 ([0d03fd2](https://github.com/MadokaProject/Madoka/commit/0d03fd217699f732b73e1ad9d8964e3f72a3f118))
+* **graia:** 封装了部分 graia 方法，通过消息队列发送消息 ([8549e51](https://github.com/MadokaProject/Madoka/commit/8549e512553f708098e9ee1cbb888d724281b5b5))
+* **mq:** 一个简易的消息队列，控制消息发送速度 ([8549e51](https://github.com/MadokaProject/Madoka/commit/8549e512553f708098e9ee1cbb888d724281b5b5))
+* **mq:** 优化消息队列，使用 queue ([f794434](https://github.com/MadokaProject/Madoka/commit/f794434be17c1ecd99d4ab49aa1e6ab248adfb28))
+* **sqlite:** 调整Sqlite数据库文件存储位置为 app/tmp/db 目录 ([b6fe1bc](https://github.com/MadokaProject/Madoka/commit/b6fe1bc011a516a9443b42896861ac16b853ea38))
+* **util.online_config:** 读取配置时优先获取本地缓存 ([0ec433e](https://github.com/MadokaProject/Madoka/commit/0ec433e86bffd96c0923b1367249b5ce2073e717))
+
+
+### Bug Fixes
+
+* **graia:** 将检测有无指定消息发送对象提前 ([a85a082](https://github.com/MadokaProject/Madoka/commit/a85a082523e90daa071daff3c6516a10eba5d41b))
+* **graia:** 消息存储异常的问题 ([b39c936](https://github.com/MadokaProject/Madoka/commit/b39c936c17187f8106cb661d96fb8c2c6224ef9d))
+* **mq:** 结束时可能多发送一条消息的问题 ([b39c936](https://github.com/MadokaProject/Madoka/commit/b39c936c17187f8106cb661d96fb8c2c6224ef9d))
+* **singletion:** 线程安全 ([8549e51](https://github.com/MadokaProject/Madoka/commit/8549e512553f708098e9ee1cbb888d724281b5b5))
+* **util.online_config:** 获取配置为空时返回空字典 ([2cfa027](https://github.com/MadokaProject/Madoka/commit/2cfa027949f839a2fcf9130348a06e072db9b7f4))
+* 切换DEBUG模式跟随用户配置命令头 ([35b325d](https://github.com/MadokaProject/Madoka/commit/35b325de312655b501b031f586c7d15ace59a466))
+
+
+### Code Refactoring
+
+* **config:** 重构配置文件，采用 yaml 格式 ([42a3d05](https://github.com/MadokaProject/Madoka/commit/42a3d059aee6ac591c6347dcb8902c7a012ee325))
+
 ## [3.3.0](https://github.com/MadokaProject/Madoka/compare/v3.2.2...v3.3.0) (2022-09-15)
 
 
