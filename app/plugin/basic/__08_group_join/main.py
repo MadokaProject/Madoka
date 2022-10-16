@@ -37,4 +37,4 @@ async def view_group_join(sender: Group):
 @command.parse("status", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def status_group_join(sender: Group, cmd: Arpamar):
     await save_config("member_join", sender, {"active": cmd.query("bool")}, model="add")
-    return message("开启成功!" if cmd.query("bool") else "关闭成功!").target(sender).send()
+    return message("开启成功!" if cmd.find("bool") else "关闭成功!").target(sender).send()

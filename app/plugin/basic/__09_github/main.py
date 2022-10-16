@@ -49,7 +49,7 @@ async def add(sender: Group, cmd: Arpamar):
     group_id = str(sender.id)
     if group_id in REPO and cmd.query("repo") in REPO[group_id]:
         return message("添加失败，该仓库名已存在!").target(sender).send()
-    if cmd.query("api") == "project/repo":
+    if cmd.find("api") == "project/repo":
         return message("添加失败，监听仓库不能为空!").target(sender).send()
     repo_info = {
         cmd.query("repo"): {

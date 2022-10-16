@@ -240,7 +240,7 @@ async def remove(target: Union[Friend, Member], sender: Union[Friend, Group], in
 async def list_plugin(sender: Union[Friend, Group], cmd: Arpamar):
     msg = PrettyTable()
     msg.field_names = ["序号", "插件名", "作者", "版本号", "介绍"]
-    if cmd.query("list.remote"):
+    if cmd.find("list.remote"):
         for index, plugin in enumerate(await plugin_mgr.get_remote_info()):
             msg.add_row(
                 [
@@ -338,11 +338,11 @@ async def check(sender: Union[Friend, Group]):
 async def on(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     perm = ""
     _target = None
-    if cmd.query("on.friend"):
+    if cmd.find("on.friend"):
         _target = cmd.query("qq")
     elif isinstance(sender, Group):
         _target = sender
-    if cmd.query("on.all"):
+    if cmd.find("on.all"):
         perm = "*"
     elif plugin := cmd.query("plugin"):
         for plg in manager.get_delegates().values():
@@ -362,11 +362,11 @@ async def on(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: A
 async def off(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     perm = ""
     _target = None
-    if cmd.query("off.friend"):
+    if cmd.find("off.friend"):
         _target = cmd.query("qq")
     elif isinstance(sender, Group):
         _target = sender
-    if cmd.query("off.all"):
+    if cmd.find("off.all"):
         perm = "-"
     elif plugin := cmd.query("plugin"):
         for plg in manager.get_delegates().values():

@@ -13,10 +13,10 @@ from app.util.tools import app_path
 
 class MadokaInfo:
     NAME = "Madoka"
-    VERSION = "3.3.0"
+    VERSION = "4.0.0"
     DOCS = "https://madoka.colsrch.cn"
     REPO = "https://github.com/MadokaProject/Madoka"
-    REMOTE_REPO_VERSION = "release"
+    REMOTE_REPO_VERSION = "v4"
     REMOTE_VERSION_URL = "https://fastly.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json"
 
 

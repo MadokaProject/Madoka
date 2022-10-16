@@ -21,7 +21,7 @@ command = Commander(
     ),
     Subcommand(
         "func",
-        args=Args["status", bool],
+        args=Args["enable", bool],
         help_text="功能开关",
         options=[
             Option("--card|-C", help_text="成员名片修改通知"),
@@ -31,7 +31,7 @@ command = Commander(
             Option("--quit|-Q", help_text="成员退群通知"),
         ],
     ),
-    Option("status", args=Args["bool", bool], help_text="开关群管"),
+    Option("status", args=Args["enable", bool], help_text="开关群管"),
     Option("kick", args=Args["at", At], help_text="踢出指定群成员"),
     Option("revoke", args=Args["id", int], help_text="撤回消息, id=消息ID, 自最后一条消息起算"),
     Option(
@@ -56,7 +56,7 @@ command = Commander(
 @command.parse("status", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def status(sender: Group, cmd: Arpamar):
     await save_config("status", sender, cmd.query("bool"))
-    message(f"群管已{'开启' if cmd.query('bool') else '关闭'}").target(sender).send()
+    message(f"群管已{'开启' if cmd.find('enable') else '关闭'}").target(sender).send()
 
 
 @command.parse("kick", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
@@ -79,7 +79,7 @@ async def revoke(app: Ariadne, sender: Group, source: Source, cmd: Arpamar):
 @command.parse("mute", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def mute(app: Ariadne, sender: Group, cmd: Arpamar):
     try:
-        if cmd.query("mute.all"):
+        if cmd.find("mute.all"):
             await app.mute_all(sender)
             message("已开启全员禁言").target(sender).send()
         elif cmd.find("at"):
@@ -92,7 +92,7 @@ async def mute(app: Ariadne, sender: Group, cmd: Arpamar):
 @command.parse("unmute", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def unmute(app: Ariadne, sender: Group, cmd: Arpamar):
     try:
-        if cmd.query("unmute.all"):
+        if cmd.find("unmute.all"):
             await app.unmute_all(sender)
             message("已关闭全员禁言").target(sender).send()
         elif cmd.find("at"):
@@ -105,19 +105,19 @@ async def unmute(app: Ariadne, sender: Group, cmd: Arpamar):
 @command.parse("func", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def func(sender: Group, cmd: Arpamar):
     tag = None
-    if cmd.query("func.card"):
+    if cmd.find("func.card"):
         tag = "member_card_change"
-    elif cmd.query("func.quit"):
+    elif cmd.find("func.quit"):
         tag = "member_quit"
-    elif cmd.query("func.kick"):
+    elif cmd.find("func.kick"):
         tag = "member_kick"
-    elif cmd.query("func.flash"):
+    elif cmd.find("func.flash"):
         tag = "flash_png"
-    elif cmd.query("func.recall"):
+    elif cmd.find("func.recall"):
         tag = "member_recall"
     if tag:
-        await save_config(tag, sender, cmd.query("status"))
-        return message("开启成功！" if cmd.query("status") else "关闭成功！").target(sender).send()
+        await save_config(tag, sender, cmd.query("enable"))
+        return message("开启成功！" if cmd.find("enable") else "关闭成功！").target(sender).send()
 
 
 @command.parse("刷屏检测", events=[GroupMessage], permission=Permission.GROUP_ADMIN)

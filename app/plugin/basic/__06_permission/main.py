@@ -56,14 +56,14 @@ command = Commander(
 
 @command.parse("user", permission=Permission.SUPER_ADMIN)
 async def user(app: Ariadne, target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
-    if cmd.query("user.add"):
+    if cmd.find("user.add"):
         _target = cmd.query("qq").target if isinstance(cmd.query("qq"), At) else cmd.query("qq")
         if Permission.compare(target, _target):
             BotUser(target, active=1)
             ACTIVE_USER.update({_target: "*"})
             return message("激活成功!").target(sender).send()
         return not_admin(sender)
-    elif cmd.query("user.delete"):
+    elif cmd.find("user.delete"):
         _target = cmd.query("qq").target if isinstance(cmd.query("qq"), At) else cmd.query("qq")
         if Permission.compare(target, _target):
             await BotUser(target, active=0).user_deactivate()
@@ -71,7 +71,7 @@ async def user(app: Ariadne, target: Union[Friend, Member], sender: Union[Friend
                 ACTIVE_USER.pop(target)
             return message("取消激活成功!").target(sender).send()
         return not_admin(sender)
-    elif cmd.query("user.list"):
+    elif cmd.find("user.list"):
         msg = "用户白名单"
         if res := DBUser.select().where(DBUser.active == 1):
             friends = {i.id: i.nickname for i in await app.get_friend_list()}
@@ -85,14 +85,14 @@ async def user(app: Ariadne, target: Union[Friend, Member], sender: Union[Friend
 
 @command.parse("blacklist", permission=Permission.SUPER_ADMIN)
 async def blacklist(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
-    if cmd.query("blacklist.add"):
+    if cmd.find("blacklist.add"):
         _target = cmd.query("qq").target if isinstance(cmd.query("qq"), At) else cmd.query("qq")
         if Permission.compare(target, _target):
             await BotUser(_target).grant_level(0)
             BANNED_USER.append(_target)
             return message("禁用成功!").target(sender).send()
         return not_admin(sender)
-    elif cmd.query("blacklist.delete"):
+    elif cmd.find("blacklist.delete"):
         _target = cmd.query("qq").target if isinstance(cmd.query("qq"), At) else cmd.query("qq")
         if Permission.compare(target, _target):
             await BotUser(_target).grant_level(1)
@@ -100,23 +100,23 @@ async def blacklist(target: Union[Friend, Member], sender: Union[Friend, Group],
                 BANNED_USER.remove(_target)
             return message("解除禁用成功!").target(sender).send()
         return not_admin(sender)
-    elif cmd.query("blacklist.list"):
+    elif cmd.find("blacklist.list"):
         res = DBUser.select().where(DBUser.level == 0)
         return message("\r\n".join(qq.uid for qq in res) if res else "无黑名单用户").target(sender).send()
 
 
 @command.parse("group", permission=Permission.SUPER_ADMIN)
 async def group(app: Ariadne, sender: Union[Friend, Group], cmd: Arpamar):
-    if cmd.query("group.add"):
+    if cmd.find("group.add"):
         BotGroup(cmd.query("group"), active=1)
         ACTIVE_GROUP.update({cmd.query("group"): "*"})
         return message("激活成功!").target(sender).send()
-    elif cmd.query("group.delete"):
+    elif cmd.find("group.delete"):
         await BotGroup(cmd.query("group"), active=0).group_deactivate()
-        if cmd.query("group") in ACTIVE_GROUP:
+        if cmd.find("group") in ACTIVE_GROUP:
             ACTIVE_GROUP.pop(cmd.query("group"))
         return message("禁用成功!").target(sender).send()
-    elif cmd.query("group.list"):
+    elif cmd.find("group.list"):
         msg = "群组白名单"
         if res := DBGroup.select().where(DBGroup.active == 1):
             groups = {i.id: {"name": i.name, "perm": i.account_perm.value} for i in await app.get_group_list()}

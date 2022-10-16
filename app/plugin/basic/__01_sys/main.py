@@ -18,10 +18,10 @@ command = Commander(
 @command.parse("上线通知", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
 async def online_notice(sender: Group, cmd: Arpamar):
     await save_config("online_notice", sender.id, cmd.query("bool"))
-    return message("开启成功！" if cmd.query("bool") else "关闭成功！").target(sender).send()
+    return message("开启成功！" if cmd.find("bool") else "关闭成功！").target(sender).send()
 
 
 @command.parse(["禁言退群"], events=[GroupMessage], permission=Permission.MASTER)
 async def bot_mute(sender: Union[Friend, Group], cmd: Arpamar):
     await save_config("bot_mute_event", sender.id, cmd.query("bool"))
-    return message("开启成功！" if cmd.query("bool") else "关闭成功！").target(sender).send()
+    return message("开启成功！" if cmd.find("bool") else "关闭成功！").target(sender).send()
