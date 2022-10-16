@@ -2,13 +2,11 @@ from typing import Union
 
 from peewee import Model, MySQLDatabase, SqliteDatabase
 
-from app.core.config import Config
-
-config: Config = Config()
+from app.core.config import DB_PARAMS, Config
 
 db = {"sqlite": SqliteDatabase, "mysql": MySQLDatabase}
 
-database: Union[SqliteDatabase, MySQLDatabase] = db[config.DB_TYPE](config.DB_NAME, **config.DB_PARAMS)
+database: Union[SqliteDatabase, MySQLDatabase] = db[Config.database.type](Config.database.name, **DB_PARAMS)
 
 
 class ORM(Model):

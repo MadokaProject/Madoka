@@ -1,7 +1,8 @@
 import json
 import random
 
-from app.core.settings import GROUP_RUNING_LIST, config
+from app.core.config import Config
+from app.core.settings import GROUP_RUNING_LIST
 from app.trigger.trigger import Trigger
 from app.util.graia import At, Group, Plain, message
 from app.util.network import general_request
@@ -34,7 +35,7 @@ class Chat(Trigger):
     """智能聊天系统"""
 
     async def process(self):
-        if not isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in config.COMMAND_HEADERS:
+        if not isinstance(self.sender, Group) or not self.message.display or self.msg[0][0] in Config.command.headers:
             return
         msg = "".join(str(item).strip() for item in self.message.get(Plain) if str(item) is not None)
         if not msg:
@@ -43,7 +44,7 @@ class Chat(Trigger):
         if (
             self.target.id in GROUP_RUNING_LIST
             or not self.message.has(At)
-            or self.message.get_first(At).target != config.LOGIN_QQ
+            or self.message.get_first(At).target != Config.bot.account
         ):
             return
         params = {
@@ -54,7 +55,7 @@ class Chat(Trigger):
         response = json.loads(await general_request(url=url, method="GET", params=params))
         resp = message(At(self.target))
         if response["result"] == 0:
-            resp.extend(Plain(" " + str(response["content"]).replace("{br}", "\r\n").replace("菲菲", config.BOT_NAME)))
+            resp.extend(Plain(" " + str(response["content"]).replace("{br}", "\r\n").replace("菲菲", Config.name)))
         else:
             resp.extend(Plain(f" {random.choice(no_answer)}"))
         resp.target(self.sender).send()

@@ -31,7 +31,6 @@ from app.util.graia import (
 from app.util.phrases import args_error
 from app.util.text2image import create_image
 
-config: Config = Config()
 core: AppCore = AppCore()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
@@ -395,4 +394,4 @@ async def check_plugin_update_tasker():
                 Plain("检测到下列插件有更新啦~\n"),
                 Image(data_bytes=msg),
             ]
-        ).target(config.MASTER_QQ).send()
+        ).target(Config.master_qq).send()

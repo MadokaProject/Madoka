@@ -30,7 +30,6 @@ from app.util.tools import app_path
 from .database.database import McServer as DBMcServer
 
 core: AppCore = AppCore()
-config: Config = Config()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
 path = app_path().joinpath("tmp/mcserver")
@@ -388,5 +387,5 @@ for _k, _v in LISTEN_MC_SERVER.items():
 
     @sche.schedule(timers.every_custom_seconds(_v["delay"]))
     async def mc_listen_schedule():
-        if config.ONLINE:
+        if Config.online:
             await mc_listener(_k)

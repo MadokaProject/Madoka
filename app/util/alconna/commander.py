@@ -92,8 +92,8 @@ class Commander:
         self.__help_text = help_text or brief_help
         self.__enable = enable
         self.__hidden = hidden
-        self.__friend_limit = friend_limit or Config().COMMAND_FRIEND_LIMIT
-        self.__group_limit = group_limit or Config().COMMAND_GROUP_LIMIT
+        self.__friend_limit = friend_limit or Config.command.friend_limit
+        self.__group_limit = group_limit or Config.command.group_limit
         self.alconna = Alconna(self.__command, *args, meta=CommandMeta(self.__help_text), **kwargs)
         self.__module_name = ".".join(traceback.extract_stack()[-2][0].strip(".py").replace("\\", "/").split("/")[-5:])
         self.__options: dict[str, Callable] = {}

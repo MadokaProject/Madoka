@@ -1,4 +1,4 @@
-from app.core.settings import config
+from app.core.config import Config
 from app.util.graia import Image, Plain, message
 from app.util.text2image import create_image
 
@@ -33,7 +33,7 @@ def exec_permission_error(sender):
 
 
 def point_not_enough(sender):
-    message([Plain(f"你的{config.COIN_NAME}不足哦！")]).target(sender).send()
+    message([Plain(f"你的{Config.coin_settings.name}不足哦！")]).target(sender).send()
 
 
 def not_admin(sender):

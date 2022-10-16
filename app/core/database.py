@@ -33,7 +33,6 @@ def db_update(root_dir: Path = app_path().joinpath("plugin")):
 
     :param root_dir: 数据库文件所在目录
     """
-    config = Config()
     for file in sorted(root_dir.rglob("*.sql")):
         _ = file.parent.parent
         name = f"{_.parent.name}.{_.name}"
@@ -43,9 +42,9 @@ def db_update(root_dir: Path = app_path().joinpath("plugin")):
                     sql = sql.strip()
                     flag_mysql = sql.startswith("mysql:")
                     flag_sqlite = sql.startswith("sqlite:")
-                    if config.DB_TYPE == "mysql" and flag_mysql:
+                    if Config.database.type == "mysql" and flag_mysql:
                         sql = sql.replace("mysql:", "")
-                    elif config.DB_TYPE == "sqlite" and flag_sqlite:
+                    elif Config.database.type == "sqlite" and flag_sqlite:
                         sql = sql.replace("sqlite:", "")
                     elif any([flag_mysql, flag_sqlite]):
                         continue

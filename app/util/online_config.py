@@ -80,8 +80,7 @@ async def set_plugin_switch(uid: Union[Group, int], perm: str) -> bool:
                 ACTIVE_GROUP[uid.id] = res
                 DBGroup.update(permission=",".join(res)).where(DBGroup.uid == uid.id).execute()
         else:
-            config: Config = Config()
-            if uid == config.MASTER_QQ:
+            if uid == Config.master_qq:
                 return False
             if perm in {"*", "-"}:
                 DBGroup.update(permission=perm).where(DBGroup.uid == uid).execute()

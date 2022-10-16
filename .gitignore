@@ -10,11 +10,9 @@ venv/
 # pdm
 .pdm.toml
 
-# Environments
-app/core/config.ini
-
 # Prevent generated and test files from being committed
-app/tmp/*
+app/data/
+app/tmp/
 app/plugin/plugin.json
 app/plugin/extension
 k8s/config

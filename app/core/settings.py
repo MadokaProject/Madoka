@@ -9,19 +9,18 @@ from app.plugin.basic.__06_permission.database.database import Group as DBGroup
 from app.plugin.basic.__06_permission.database.database import User as DBUser
 
 try:
-    config = Config()
     GROUP_PERM = {"OWNER": "群主", "ADMINISTRATOR": "管理员", "MEMBER": "普通成员"}
     """描述对象在群内的权限对应名称"""
     ACTIVE_GROUP = {int(_.uid): _.permission for _ in DBGroup.select().where(DBGroup.active == 1)}
     """监听群聊消息列表"""
     ACTIVE_USER = {int(_.uid): _.permission.split(",") for _ in DBUser.select().where(DBUser.active == 1)}
-    ACTIVE_USER[config.MASTER_QQ] = "*"
+    ACTIVE_USER[Config.master_qq] = "*"
     """监听好友消息列表"""
     BANNED_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 0)]
     """黑名单用户列表"""
     ADMIN_USER = [
-        config.MASTER_QQ,
-        *(int(_.uid) for _ in DBUser.select().where(DBUser.level >= 3) if int(_.uid) != config.MASTER_QQ),
+        Config.master_qq,
+        *(int(_.uid) for _ in DBUser.select().where(DBUser.level >= 3) if int(_.uid) != Config.master_qq),
     ]
     """具有超级管理权限以上QQ列表"""
     GROUP_ADMIN_USER = [int(_.uid) for _ in DBUser.select().where(DBUser.level == 2)]

@@ -16,7 +16,6 @@ from app.util.phrases import args_error
 from app.util.tools import app_path
 
 core: AppCore = AppCore()
-config: Config = Config()
 app = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
 command = Commander(
@@ -121,12 +120,12 @@ async def list_github(sender: Group):
     return message("该群组未配置Github监听仓库！").target(sender).send()
 
 
-@sche.schedule(timers.crontabify(config.REPO_TIME))
+@sche.schedule(timers.crontabify(Config.github.time))
 @logger.catch
 async def tasker():
-    if not config.ONLINE:  # 非 ONLINE 模式不监听仓库
+    if not Config.online:  # 非 ONLINE 模式不监听仓库
         return
-    if not config.REPO_ENABLE:  # 未开启仓库监听
+    if not Config.github.enable:  # 未开启仓库监听
         return
     logger.info("github_listener is running...")
 

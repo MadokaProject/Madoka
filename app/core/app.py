@@ -32,7 +32,6 @@ class AppCore(metaclass=Singleton):
     __restart_args: tuple = None
     __scheduler: GraiaScheduler = None
     __thread_pool = None
-    __config: Config = Config()
     __launched: bool = False
     __group_handler_chain = {}
 
@@ -40,12 +39,11 @@ class AppCore(metaclass=Singleton):
         logger.info("Madoka is starting")
         logger.info("Initializing")
         self.__bcc = it(Broadcast)
-        host = f"http://{self.__config.LOGIN_HOST}:{self.__config.LOGIN_PORT}"
         app_config = cfg(
-            self.__config.LOGIN_QQ,
-            self.__config.VERIFY_KEY,
-            HttpClientConfig(host),
-            WebsocketClientConfig(host),
+            Config.bot.account,
+            Config.bot.verify_key,
+            HttpClientConfig(Config.bot.host),
+            WebsocketClientConfig(Config.bot.host),
         )
         self.__app = Ariadne(app_config)
         self.__inc = InterruptControl(self.__bcc)
@@ -91,9 +89,6 @@ class AppCore(metaclass=Singleton):
             return self.__console
         else:
             raise AppCoreNotInitializedError()
-
-    def get_config(self):
-        return self.__config
 
     def launch(self):
         if self.__launched:

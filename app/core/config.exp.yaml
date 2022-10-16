@@ -1,0 +1,49 @@
+# Madoka 配置文件
+# 请将该文件复制为 config.yaml 并填充该文件
+
+name: Madoka                   # 机器人名字
+master_qq:                     # 机器人主人 QQ
+master_name:                   # 机器人主人昵称
+debug: false                   # 机器人测试所用，该项在服务端无需配置，可通过 .mode 命令切换服务端机器人状态
+online: true                   # 机器人处于工作环境（服务端）时请开启
+
+# mirai-api-http 配置
+bot:
+  host: http://127.0.0.1:8080  # mirai-api-http 监听地址
+  account:                     # mirai 登录 QQ
+  verify_key:                  # mirai 验证密钥
+
+# 数据库配置
+database:
+  type: sqlite                 # 数据库类型(支持：sqlite, mysql)
+  name:                        # 数据库名称
+  host: 127.0.0.1              # MySQL 数据库地址
+  port: 3306                   # MySQL 数据库端口
+  user:                        # MySQL 数据库用户名
+  password:                    # MySQL 数据库密码
+
+# 货币配置
+coin_settings:
+  name: 金币                   # 货币名字
+
+# GitHub 监听
+github:
+  enable: False                # 监听开关（默认关闭）
+  time: "*/10 * * * *"         # 监听时间间隔
+
+# 命令配置
+command:
+  headers:                     # 自定义命令头（默认 . )
+    - .
+  friend_limit: 0              # 全局好友限频
+  group_limit: 0               # 全局群组限频
+
+# 消息队列配置
+message_queue:
+  limit: 1.5                   # 发送频率
+
+event:
+  # 群撤回消息监控
+  # True: 转发至 master
+  # False: 回送至原群
+  groupRecall2me: true

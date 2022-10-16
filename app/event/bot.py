@@ -28,13 +28,12 @@ from app.util.graia import (
 )
 from app.util.online_config import get_config
 
-config: Config = Config()
 core: AppCore = AppCore()
 bcc = core.get_bcc()
 
 
 @bcc.receiver(BotInvitedJoinGroupRequestEvent)
-async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupRequestEvent):
+async def invited_join_group_request(event: BotInvitedJoinGroupRequestEvent):
     """被邀请入群"""
     if event.source_group in ACTIVE_GROUP:
         message(
@@ -45,7 +44,7 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
                 Plain(f"\r\n群名: {event.group_name}"),
                 Plain("\r\n该群为白名单群，已同意加入"),
             ]
-        ).target(config.MASTER_QQ).send()
+        ).target(Config.master_qq).send()
         await event.accept()
     else:
         message(
@@ -56,17 +55,17 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
                 Plain(f"\r\n群名: {event.group_name}"),
                 Plain("\n\n请发送“同意”或“拒绝”"),
             ]
-        ).target(config.MASTER_QQ).send()
+        ).target(Config.master_qq).send()
 
         async def waiter(waiter_friend: Friend, waiter_message: MessageChain):
-            if waiter_friend.id == config.MASTER_QQ:
+            if waiter_friend.id == Config.master_qq:
                 saying = waiter_message.display
                 if saying == "同意":
                     return True
                 elif saying == "拒绝":
                     return False
                 else:
-                    message("请发送同意或拒绝").target(config.MASTER_QQ).send()
+                    message("请发送同意或拒绝").target(Config.master_qq).send()
 
         try:
             if await FunctionWaiter(waiter, [FriendMessage]).wait(300):
@@ -74,14 +73,14 @@ async def invited_join_group_request(app: Ariadne, event: BotInvitedJoinGroupReq
                     BotGroup(event.source_group, active=1)
                     ACTIVE_GROUP.update({event.source_group: "*"})
                 await event.accept()
-                message("已同意申请并加入白名单").target(config.MASTER_QQ).send()
+                message("已同意申请并加入白名单").target(Config.master_qq).send()
             else:
                 await event.reject("主人拒绝加入该群")
-                message("已拒绝申请").target(config.MASTER_QQ).send()
+                message("已拒绝申请").target(Config.master_qq).send()
 
         except asyncio.TimeoutError:
             await event.reject("由于主人长时间未审核，已自动拒绝")
-            message("申请超时已自动拒绝").target(config.MASTER_QQ).send()
+            message("申请超时已自动拒绝").target(Config.master_qq).send()
 
 
 @bcc.receiver(BotJoinGroupEvent)
@@ -95,21 +94,21 @@ async def join_group(app: Ariadne, event: BotJoinGroupEvent):
             Plain(f"\n群名：{event.group.name}"),
             Plain(f"\n群人数：{member_num}"),
         ]
-    ).target(config.MASTER_QQ).send()
+    ).target(Config.master_qq).send()
     if event.group.id not in ACTIVE_GROUP:
-        await message(f"该群未在白名单中，正在退出，如有需要请联系{config.MASTER_QQ}申请白名单").target(event.group).immediately_send()
-        message("该群未在白名单中，正在退出").target(config.MASTER_QQ).send()
+        await message(f"该群未在白名单中，正在退出，如有需要请联系{Config.master_qq}申请白名单").target(event.group).immediately_send()
+        message("该群未在白名单中，正在退出").target(Config.master_qq).send()
         return await app.quit_group(event.group.id)
 
     message(
-        f"我是{config.MASTER_NAME}"
-        f"的机器人{config.BOT_NAME}，"
-        f"如果有需要可以联系主人QQ“{config.MASTER_QQ}”，"
-        f"添加{config.BOT_NAME}好友后请私聊说明用途后即可拉进其他群，主人看到后会选择是否同意入群"
-        f"\n{config.BOT_NAME}被群禁言后会自动退出该群。"
+        f"我是{Config.master_name}"
+        f"的机器人{Config.name}，"
+        f"如果有需要可以联系主人QQ“{Config.master_qq}”，"
+        f"添加{Config.name}好友后请私聊说明用途后即可拉进其他群，主人看到后会选择是否同意入群"
+        f"\n{Config.name}被群禁言后会自动退出该群。"
         "\n发送 <.help> 可以查看功能列表"
         "\n拥有管理员以上权限可以开关功能"
-        f"\n注：@{config.BOT_NAME}可以触发聊天功能"
+        f"\n注：@{Config.name}可以触发聊天功能"
     ).target(event.group).send()
 
 
@@ -177,7 +176,7 @@ async def mute(app: Ariadne, event: BotMuteEvent):
 @bcc.receiver(NudgeEvent)
 async def nudge(app: Ariadne, event: NudgeEvent):
     """被戳一戳"""
-    if event.target != config.LOGIN_QQ:
+    if event.target != Config.bot.account:
         return
     if event.context_type == "group":
         if member := await app.get_member(event.group_id, event.supplicant):

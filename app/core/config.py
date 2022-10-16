@@ -1,105 +1,179 @@
-import configparser
 import importlib
+import json
+import shutil
 from pathlib import Path
+from typing import Optional
 
+import yaml
 from loguru import logger
+from pydantic import AnyHttpUrl, BaseSettings, Extra, validator
 
-from app.util.decorator import Singleton
 from app.util.tools import app_path
 
 
-class Config(metaclass=Singleton):
-    INFO_NAME = "Madoka"
-    INFO_VERSION = "3.3.0"
-    INFO_DOCS = "https://madoka.colsrch.cn"
-    INFO_REPO = "https://github.com/MadokaProject/Madoka"
+class MadokaInfo:
+    NAME = "Madoka"
+    VERSION = "3.3.0"
+    DOCS = "https://madoka.colsrch.cn"
+    REPO = "https://github.com/MadokaProject/Madoka"
     REMOTE_REPO_VERSION = "release"
     REMOTE_VERSION_URL = "https://fastly.jsdelivr.net/gh/MadokaProject/Madoka@master/app/util/version.json"
 
-    CONFIG_FILE = Path(__file__).parent.joinpath("config.ini")
 
-    def __init__(self):
-        if not self.CONFIG_FILE.is_file():
-            logger.error("配置文件未找到!")
-            exit()
-        self.cf = configparser.ConfigParser()
-        self.cf.read(self.CONFIG_FILE, encoding="utf-8")
-        try:
-            self.LOGIN_HOST = self.cf.get("bot", "host", fallback="127.0.0.1")
-            self.LOGIN_PORT = self.cf.get("bot", "port", fallback="8080")
-            self.LOGIN_QQ = self.cf.getint("bot", "qq")
-            self.VERIFY_KEY = self.cf.get("bot", "verify_key")
-            self.BOT_NAME = self.cf.get("bot", "bot_name")
-            self.MASTER_QQ = self.cf.getint("bot", "master_qq")
-            self.MASTER_NAME = self.cf.get("bot", "master_name")
-            self.DEBUG = self.cf.getboolean("bot", "debug", fallback=False)
-            self.ONLINE = self.cf.getboolean("bot", "online", fallback=True)
-            self.HEARTBEAT_LOG = self.cf.getboolean("bot", "heartbeat_log", fallback=False)
+class _Bot(BaseSettings, extra=Extra.ignore):
+    account: int
+    verify_key: str
+    host: AnyHttpUrl = "http://127.0.0.1:8080"
+    heartbeat_log: bool = False
 
-            self.DB_TYPE = self.cf.get("database", "type", fallback="sqlite")
-            if self.DB_TYPE not in ("sqlite", "mysql"):
-                raise ValueError("database", "type")
-            self.DB_NAME = self.cf.get("database", "name")
-            if self.DB_TYPE == "mysql":
-                importlib.import_module("pymysql")
 
-                self.DB_PARAMS = {
-                    "host": self.cf.get("database", "host", fallback="localhost"),
-                    "port": self.cf.getint("database", "port", fallback=3306),
-                    "user": self.cf.get("database", "user"),
-                    "password": self.cf.get("database", "password"),
-                }
-            else:
-                importlib.import_module("sqlite3")
+class _Database(BaseSettings, extra=Extra.ignore):
+    host: str = "127.0.0.1"
+    port: int = 3306
+    username: Optional[str]
+    password: Optional[str]
+    name: str
+    type: str = "sqlite"
 
-                self.DB_PARAMS = {}
-                if not self.DB_NAME.endswith(".db"):
-                    self.DB_NAME += ".db"
-                app_path("tmp/db").mkdir(parents=True, exist_ok=True)
-                self.DB_NAME = str(app_path("tmp/db", self.DB_NAME))
+    @validator("type", always=True)
+    def _check_type(cls, v, values):
+        if v == "sqlite":
+            if not values["name"].endswith(".db"):
+                values["name"] += ".db"
+            app_path("data").mkdir(parents=True, exist_ok=True)
+            old_file = app_path("tmp/db", values["name"])
+            if old_file.is_file():
+                logger.warning("检测到旧的数据库文件，正在进行迁移: {} -> {}", old_file, app_path("data", values["name"]))
+                old_file.rename(app_path("data", values["name"]))
+            values["name"] = str(app_path("data", values["name"]))
+            return v
+        elif v == "mysql":
+            try:
+                if values["username"] and values["password"]:
+                    return v
+            except KeyError as e:
+                raise ValueError("username or password is not set") from e
+        raise ValueError("数据库类型不支持")
 
-            self.COIN_NAME = self.cf.get("coin_settings", "name", fallback="金币")
 
-            self.REPO_ENABLE = self.cf.getboolean("github", "enable", fallback=False)
-            self.REPO_TIME = self.cf.get("github", "time", fallback="*/10  * * * *")
+class _CoinSettings(BaseSettings, extra=Extra.ignore):
+    name: str = "金币"
 
-            self.COMMAND_HEADERS = self.cf.get("command", "headers", fallback=".").split()
-            self.COMMAND_FRIEND_LIMIT = self.cf.getint("command", "friend_limit", fallback=0)
-            self.COMMAND_GROUP_LIMIT = self.cf.getint("command", "group_limit", fallback=0)
 
-            self.MQ_LIMIT = self.cf.getfloat("message_queue", "limit", fallback=1.5)
+class _Github(BaseSettings, extra=Extra.ignore):
+    enable: bool = False
+    time: str = "*/10 * * * *"
 
-            self.WEBSERVER_ENABLE = self.cf.getboolean("webserver", "enable", fallback=False)
-            self.WEBSERVER_HOST = self.cf.get("webserver", "host", fallback="0.0.0.0")
-            self.WEBSERVER_PORT = self.cf.get("webserver", "port", fallback=8080)
-            self.WEBSERVER_DEBUG = self.cf.getboolean("webserver", "debug", fallback=False)
 
-            self.EVENT_GROUP_RECALL = self.cf.getboolean("event", "groupRecall2me", fallback=True)
-        except ValueError as e:
-            logger.error("配置项错误: %r 中的 %r 参数错误!" % (e.args[0], e.args[1]))
-            logger.error("请检查配置项后尝试重新启动!")
-            exit()
-        except (configparser.NoOptionError, configparser.NoSectionError) as e:
-            if hasattr(e, "option"):
-                logger.error("配置项缺失: 没有在 %r 中找到 %r" % (e.section, e.option))
-            else:
-                logger.error("配置项缺失: 没有找到 %r " % e.section)
-            logger.error("请检查配置项后尝试重新启动!")
-            exit()
-        except ModuleNotFoundError as e:
-            logger.error("依赖包缺少: %r" % e.name)
-            cmd = "pip install pymysql" if e.name == "pymysql" else "pip install pysqlite3"
-            logger.error("请尝试运行 '%s' 安装该依赖包后重新启动!" % cmd)
-            exit()
+class _Command(BaseSettings, extra=Extra.ignore):
+    headers: list[str] = ["."]
+    friend_limit: float = 0
+    group_limit: float = 0
+
+    @validator("friend_limit")
+    def _friend_limit_validator(cls, v):
+        if v < 0:
+            logger.warning("好友限频小于0, 已自动设置为0")
+            return 0
+        return v
+
+    @validator("group_limit")
+    def _group_limit_validator(cls, v):
+        if v < 0:
+            logger.warning("群组限频小于0, 已自动设置为0")
+            return 0
+        return v
+
+
+class _MessageQueue(BaseSettings, extra=Extra.ignore):
+    limit: float = 1.5
+
+    @validator("limit")
+    def _limit_mq(cls, v):
+        if v < 0:
+            logger.warning("消息队列发送频率小于0, 已自动设置为0")
+            return 0
+        return v
+
+
+class _Event(BaseSettings, extra=Extra.ignore):
+    groupRecall2me: bool = True
+
+
+class _Config(BaseSettings, extra=Extra.ignore):
+    bot: _Bot
+    database: _Database
+    coin_settings: _CoinSettings
+    github: _Github
+    command: _Command
+    message_queue: _MessageQueue
+    event: _Event
+    name: str = "Madoka"
+    master_qq: int
+    master_name: str
+    debug: bool = False
+    online: bool = True
 
     def change_debug(self):
-        if not self.ONLINE:
+        if not self.online:
             return
-        if self.DEBUG:
-            self.cf.set("bot", "debug", "false")
-            self.DEBUG = False
+        if self.debug:
+            self.debug = False
         else:
-            self.cf.set("bot", "debug", "true")
-            self.DEBUG = True
-        with open(self.CONFIG_FILE, "w+") as fb:
-            self.cf.write(fb)
+            self.debug = True
+        save_config()
+
+
+class NoAliasDumper(yaml.SafeDumper):
+    def ignore_aliases(self, data):
+        return True
+
+
+def save_config():
+    CONFIG_FILE.write_text(
+        yaml.dump(json.loads(Config.json()), Dumper=NoAliasDumper, allow_unicode=True, sort_keys=False),
+        encoding="utf-8",
+    )
+
+
+app_path("data").mkdir(parents=True, exist_ok=True)
+CONFIG_FILE = app_path("data/config.yaml")
+if not CONFIG_FILE.is_file():
+    shutil.copy(Path(__file__).parent.joinpath("config.exp.yaml"), app_path("data/config.yaml"))
+    logger.warning("配置文件不存在，已自动生成，请修改配置文件后重启!")
+    exit(1)
+cf: dict = yaml.load(CONFIG_FILE.read_text("utf-8"), Loader=yaml.FullLoader)
+try:
+    Config = _Config.parse_obj(cf)
+    if Config.database.type == "mysql":
+        importlib.import_module("pymysql")
+        DB_PARAMS = {
+            "host": Config.database.host,
+            "port": Config.database.port,
+            "user": Config.database.username,
+            "password": Config.database.password,
+        }
+    else:
+        DB_PARAMS = {}
+except ValueError as e:
+    err_info = []
+    pos_maxlen = 0
+    for err in json.loads(e.json()):
+        err_pos = ".".join(str(x) for x in err["loc"])
+        err_msg = err["msg"]
+        pos_maxlen = max(pos_maxlen, len(err_pos))
+        err_info.append([err_pos, err_msg])
+    logger.critical("以下配置项填写错误:")
+    for err in err_info:
+        logger.critical(f"{err[0].ljust(pos_maxlen)} => {err[1]}")
+    logger.error("请检查配置文件上诉内容后尝试重新启动!")
+    exit(1)
+except ModuleNotFoundError as e:
+    logger.error("依赖包缺少: %r" % e.name)
+    cmd = "pip install pymysql" if e.name == "pymysql" else "pip install pysqlite3"
+    logger.error("请尝试运行 '%s' 安装该依赖包后重新启动!" % cmd)
+    exit(1)
+except Exception as e:
+    logger.exception(e)
+    logger.critical("读取配置文件时发生未知错误，请检查配置文件是否填写正确")
+    exit(1)

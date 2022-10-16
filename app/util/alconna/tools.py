@@ -2,7 +2,7 @@ from arclet.alconna import Namespace, config
 
 from app.core.config import Config
 
-config.namespaces["plugin"] = Namespace(name="plugin", headers=Config().COMMAND_HEADERS)
+config.namespaces["plugin"] = Namespace(name="plugin", headers=Config.command.headers)
 config.namespaces["console"] = Namespace(name="console", fuzzy_match=True)
 
 

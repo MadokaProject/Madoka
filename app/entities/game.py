@@ -166,7 +166,7 @@ class BotGame:
         )
 
     @classmethod
-    async def ladder_rent_collection(cls, config: Config) -> int:
+    async def ladder_rent_collection(cls) -> int:
         """收租
 
         :param config: Config 类
@@ -177,7 +177,7 @@ class BotGame:
             ladder_rent = int((1 - (math.floor(user.coins / 1000) / 100)) * user.coins)
             Game.update(coins=ladder_rent).where(Game.qid == user.qid).execute()
             total_rent += user.coins - ladder_rent
-            logger.info(f"{user.qid} 被收取 {user.coins - ladder_rent} {config.COIN_NAME}")
+            logger.info(f"{user.qid} 被收取 {user.coins - ladder_rent} {Config.coin_settings.name}")
         return total_rent
 
     @classmethod

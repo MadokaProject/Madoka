@@ -6,6 +6,7 @@ from loguru import logger
 from prettytable import PrettyTable
 
 from app.core.app import AppCore
+from app.core.config import Config
 from app.entities.game import BotGame
 from app.util.alconna import Args, Arpamar, Commander, Option
 from app.util.graia import (
@@ -29,7 +30,6 @@ from .database.database import Game as DBGame
 from .sign_image_generator import get_sign_image
 
 core: AppCore = AppCore()
-config = core.get_config()
 app: Ariadne = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
 
@@ -51,9 +51,9 @@ async def no_match(target: Union[Friend, Member], sender: Union[Friend, Group]):
     user = BotGame(target.id)
     coin = await user.coins
     if isinstance(sender, Group):
-        return message([At(target), Plain(f" 你的{config.COIN_NAME}为%d!" % int(coin))]).target(sender).send()
+        return message([At(target), Plain(f" 你的{Config.coin_settings.name}为%d!" % int(coin))]).target(sender).send()
     else:
-        return message([Plain(f" 你的{config.COIN_NAME}为%d!" % int(coin))]).target(sender).send()
+        return message([Plain(f" 你的{Config.coin_settings.name}为%d!" % int(coin))]).target(sender).send()
 
 
 @command.parse("signin")
@@ -128,7 +128,7 @@ async def tf(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: A
                 At(target),
                 Plain(" 已转赠给"),
                 At(tf_target),
-                Plain(f" %d{config.COIN_NAME}！" % coin),
+                Plain(f" %d{Config.coin_settings.name}!" % coin),
             ]
         )
         .target(sender)
@@ -139,11 +139,11 @@ async def tf(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: A
 @command.parse("rank")
 async def rank(target: Union[Friend, Member], sender: Union[Friend, Group]):
     group_user = {item.id: item.name for item in await app.get_member_list(sender)}
-    resp = MessageChain([Plain(f"群内{config.COIN_NAME}排行:\n")])
+    resp = MessageChain([Plain(f"群内{Config.coin_settings.name}排行:\n")])
     user = target.id
     index = 1
     msg = PrettyTable()
-    msg.field_names = ["序号", "群昵称", f"{config.COIN_NAME}"]
+    msg.field_names = ["序号", "群昵称", f"{Config.coin_settings.name}"]
     _user_rank = []
     for res in DBGame.select().order_by(DBGame.coins.desc()):
         if user == int(res.qid):
@@ -171,7 +171,7 @@ async def rank(target: Union[Friend, Member], sender: Union[Friend, Group]):
 async def auto(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     status = 1 if cmd.find("status") else 0
     await BotGame(target.id).auto_signin(status)
-    return message("开启成功，将于每日8点为您自动签到！" if status else "关闭成功！").target(sender).send()
+    return message("开启成功，将于每日 8 点为您自动签到！" if status else "关闭成功！").target(sender).send()
 
 
 @sche.schedule(timers.crontabify("0 7 * * * 0"))
@@ -192,11 +192,11 @@ async def auto_sing():
 @sche.schedule(timers.crontabify("59 23 * * * 50"))
 async def tasks():
     sign_info = await BotGame.count()
-    total_rent = await BotGame.ladder_rent_collection(config)
+    total_rent = await BotGame.ladder_rent_collection()
     message(
         [
             Plain(f"签到统计成功，昨日共有 {sign_info[0]} / {sign_info[1]} 人完成了签到，"),
             Plain(f"签到率为 {'{:.2%}'.format(sign_info[0] / sign_info[1])}\n"),
-            Plain(f"今日收取了 {total_rent} {config.COIN_NAME}"),
+            Plain(f"今日收取了 {total_rent} {Config.coin_settings.name}"),
         ]
-    ).target(config.MASTER_QQ).send()
+    ).target(Config.master_qq).send()

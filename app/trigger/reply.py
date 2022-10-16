@@ -8,7 +8,7 @@ class Reply(Trigger):
     """自定义消息回复"""
 
     async def process(self):
-        if not isinstance(self.sender, Group) or self.msg[0][0] in Config().COMMAND_HEADERS:
+        if not isinstance(self.sender, Group) or self.msg[0][0] in Config.command.headers:
             return
         res = await get_config("group_reply", self.sender.id)
         message = self.message.display

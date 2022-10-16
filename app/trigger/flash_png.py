@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from app.core.settings import config
+from app.core.config import Config
 from app.trigger.trigger import Trigger
 from app.util.graia import (
     FlashImage,
@@ -35,6 +35,6 @@ class FlashPng(Trigger):
                 )
             )
             if isinstance(self.sender, Friend):
-                msg.target(config.MASTER_QQ).send()
+                msg.target(Config.master_qq).send()
             elif isinstance(self.sender, Group) and await get_config("flash_png", self.sender.id):
                 msg.target(self.sender).send()

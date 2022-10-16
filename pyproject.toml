@@ -9,8 +9,8 @@ dependencies = [
     "graia-scheduler==0.0.8",
     "graia-saya==0.0.16",
     "richuru==0.1.1",
-    "arclet-alconna==1.3.0",
-    "arclet-alconna-graia==0.7.3",
+    "arclet-alconna==1.3.2.1",
+    "arclet-alconna-graia==0.8.0",
     "prompt-toolkit~=3.0.31",
     "prettytable~=3.4.1",
     "retrying~=1.3.3",
@@ -18,7 +18,7 @@ dependencies = [
     "pillow~=9.2.0",
     "jsonpath~=0.82",
     "pip~=22.2.2",
-    "arclet-alconna-tools>=0.1.2",
+    "arclet-alconna-tools>=0.2.1",
 ]
 
 [project.optional-dependencies]

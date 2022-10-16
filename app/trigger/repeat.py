@@ -14,7 +14,7 @@ class Repeat(Trigger):
     async def process(self):
         if not isinstance(self.sender, Group):
             return
-        if self.msg[0][0] in Config().COMMAND_HEADERS:  # 判断是否为指令
+        if self.msg[0][0] in Config.command.headers:  # 判断是否为指令
             return
         probability = random.randint(0, 101)
         try:

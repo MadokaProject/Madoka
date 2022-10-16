@@ -4,8 +4,9 @@ from typing import Union
 from loguru import logger
 
 from app.core.commander import CommandDelegateManager
+from app.core.config import Config
 from app.core.exceptions import BannedError, NotActivatedError
-from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, BANNED_USER, config
+from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, BANNED_USER
 from app.trigger.trigger import Trigger
 from app.util.control import Permission
 from app.util.decorator import ArgsAssigner
@@ -79,12 +80,12 @@ class Controller:
         self.is_activate()
         await self.trigger()
 
-        if config.ONLINE and config.DEBUG:
+        if Config.online and Config.debug:
             return
 
         self.is_banned()
 
-        if msg[0] not in config.COMMAND_HEADERS:  # 判断是否为指令
+        if msg[0] not in Config.command.headers:  # 判断是否为指令
             return
 
         # 判断是否为主菜单帮助
@@ -92,7 +93,7 @@ class Controller:
             send_help = True
             _info = ("群菜单", self.sender.name) if isinstance(self.sender, Group) else ("好友菜单", self.sender.nickname)
             resp = [
-                f"{config.BOT_NAME} {_info[0]} / {self.sender.id}\n{_info[1]}\n",
+                f"{Config.name} {_info[0]} / {self.sender.id}\n{_info[1]}\n",
                 "========================================================",
             ]
 
@@ -155,7 +156,7 @@ class Controller:
                 [
                     "========================================================",
                     "详细功能帮助菜单请发送 .<功能> --help, -h, 例如: .gp --help",
-                    f"所有功能均需添加前缀 {' '.join(config.COMMAND_HEADERS)}",
+                    f"所有功能均需添加前缀 {' '.join(Config.command.headers)}",
                     "源码: github.com/MadokaProject/Madoka",
                 ]
             )

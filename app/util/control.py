@@ -22,7 +22,6 @@ class Permission:
     USER = 1
     BANNED = 0
     DEFAULT = USER
-    config: Config = Config()
 
     @classmethod
     def get(cls, member: Union[Member, Friend, int]) -> int:
@@ -42,7 +41,7 @@ class Permission:
             user = member
             user_permission = cls.DEFAULT
 
-        if user == int(cls.config.MASTER_QQ):
+        if user == int(Config.master_qq):
             return cls.MASTER
         elif user in ADMIN_USER:
             return cls.SUPER_ADMIN

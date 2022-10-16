@@ -39,7 +39,7 @@ async def upgrade(cmd: Arpamar):
     if not cmd.matched:
         return send(alc_upgrade.help_text)
     try:
-        shell = f"-t {Config().MASTER_QQ}"
+        shell = f"-t {Config.master_qq}"
         timeout = cmd.options.get("time", 10)
         try:
             ret = subprocess.call("git pull", timeout=timeout, shell=True)

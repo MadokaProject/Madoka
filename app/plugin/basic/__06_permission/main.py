@@ -19,7 +19,6 @@ from app.util.phrases import not_admin
 from .database.database import Group as DBGroup
 from .database.database import User as DBUser
 
-config: Config = Config()
 command = Commander(
     "perm",
     "授权",
@@ -139,7 +138,7 @@ async def grant(target: Union[Friend, Member], sender: Union[Friend, Group], cmd
     _target = cmd.query("qq").target if isinstance(cmd.query("qq"), At) else cmd.query("qq")
     level = grant["level"]
     if target.id == target and level != 4 and Permission.manual(target, 4):
-        return message(f"怎么有master想给自己改权限呢？{config.BOT_NAME}很担心你呢，快去脑科看看吧！").target(sender).send()
+        return message(f"怎么有master想给自己改权限呢？{Config.name}很担心你呢，快去脑科看看吧！").target(sender).send()
     if await BotUser(_target).level == 0:
         return message("在黑名单中的用户无法调整权限！若想调整其权限请先将其移出黑名单！").target(sender).send()
     if 1 <= level <= 2:

@@ -28,7 +28,6 @@ from app.util.graia import (
 from app.util.network import general_request
 from app.util.online_config import get_config
 
-config: Config = Config()
 core: AppCore = AppCore()
 bcc = core.get_bcc()
 inc = core.get_inc()
@@ -49,22 +48,22 @@ async def avatar_black_and_white(qq: int) -> bytes:
 @bcc.receiver(MemberCardChangeEvent)
 async def card_change(app: Ariadne, event: MemberCardChangeEvent):
     """群名片被修改"""
-    if event.member.id == config.LOGIN_QQ:
-        if event.current != config.BOT_NAME:
+    if event.member.id == Config.bot.account:
+        if event.current != Config.name:
             for qq in ADMIN_USER:
                 message(
                     [
-                        Plain(f"检测到 {config.BOT_NAME} 群名片变动"),
+                        Plain(f"检测到 {Config.name} 群名片变动"),
                         Plain(f"\n群号：{event.member.group.id}"),
                         Plain(f"\n群名：{event.member.group.name}"),
                         Plain(f"\n被修改为：{event.current}"),
-                        Plain(f"\n已为你修改回：{config.BOT_NAME}"),
+                        Plain(f"\n已为你修改回：{Config.name}"),
                     ]
                 ).target(qq).send()
             await app.modify_member_info(
                 group=event.member.group.id,
-                member=config.LOGIN_QQ,
-                info=MemberInfo(name=config.BOT_NAME),
+                member=Config.bot.account,
+                info=MemberInfo(name=Config.name),
             )
             message("请不要修改我的群名片").target(event.member.group).send()
     elif await get_config("member_card_change", event.member.group.id) and event.current not in [None, ""]:
@@ -97,7 +96,7 @@ async def leave_kick(event: MemberLeaveEventKick):
     msg = [
         Image(data_bytes=await avatar_black_and_white(event.member.id)),
         Plain(f"\n{event.member.name} 被 "),
-        At(event.operator.id) if event.operator else Plain(config.BOT_NAME),
+        At(event.operator.id) if event.operator else Plain(Config.name),
         Plain(" 踢出本群"),
     ]
     if await get_config("member_kick", event.member.group.id):
@@ -130,7 +129,7 @@ async def recall(app: Ariadne, event: GroupRecallEvent):
     """有人撤回消息"""
     if event.operator is None:
         return
-    if config.EVENT_GROUP_RECALL or await get_config("member_recall", event.group.id):
+    if Config.event.groupRecall2me or await get_config("member_recall", event.group.id):
         msg = message(
             Forward(
                 [
@@ -139,7 +138,7 @@ async def recall(app: Ariadne, event: GroupRecallEvent):
                         time=datetime.now(),
                         message=MessageChain(
                             f"{event.group.name}: {event.group.id} 群有人撤回了一条消息"
-                            if config.EVENT_GROUP_RECALL
+                            if Config.event.groupRecall2me
                             else "有人撤回了一条消息"
                         ),
                     ),
@@ -153,7 +152,7 @@ async def recall(app: Ariadne, event: GroupRecallEvent):
                 ]
             )
         )
-        if config.EVENT_GROUP_RECALL:
-            msg.target(config.MASTER_QQ).send()
+        if Config.event.groupRecall2me:
+            msg.target(Config.master_qq).send()
         else:
             msg.target(event.group).send()
