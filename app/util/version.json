@@ -1,6 +1,10 @@
 {
-  "version": "4.0.0",
+  "version": "4.0.1",
   "update_log": [
+    {
+      "version": "4.0.1",
+      "info": "添加yaml依赖, 修复已知问题"
+    },
     {
       "version": "4.0.0",
       "info": "弃用 python3.8, 请使用 python 3.9 以上版本运行;\n重构配置文件, 调整配置文件存放目录;\n新增Commander工具, 支持插件限频;\n新增消息队列;\n修复已知 bug;\n优化代码"
