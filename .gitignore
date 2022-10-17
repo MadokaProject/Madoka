@@ -13,8 +13,6 @@ venv/
 # Prevent generated and test files from being committed
 app/data/
 app/tmp/
-app/plugin/plugin.json
 app/plugin/extension
 k8s/config
 k8s/
-*.db

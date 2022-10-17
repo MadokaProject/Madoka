@@ -23,7 +23,7 @@ from app.core.exceptions import LocalPluginNotFoundError, NonStandardPluginError
 from app.util.decorator import Singleton
 from app.util.network import download, general_request
 from app.util.text2image import create_image
-from app.util.tools import app_path, to_thread
+from app.util.tools import app_path, data_path, to_thread
 from app.util.version import compare_version
 
 TypePluginInfo = Dict[str, str]
@@ -53,10 +53,10 @@ class PluginManager(metaclass=Singleton):
 
     __plugins: Dict[str, ModuleType]
     __ignore = ["__init__.py", "__pycache__"]
-    __base_path = app_path().joinpath("plugin")
+    __base_path = app_path("plugin")
     __base_url = f"https://raw.fastgit.org/MadokaProject/Plugins/{MadokaInfo.REMOTE_REPO_VERSION}/"
     __folder_path = __base_path.joinpath("extension")
-    __info_path = __base_path.joinpath("plugin.json")
+    __info_path = data_path("plugin.json")
 
     def __init__(self):
         self.__plugins = {}

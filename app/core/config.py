@@ -8,12 +8,12 @@ import yaml
 from loguru import logger
 from pydantic import AnyHttpUrl, BaseSettings, Extra, validator
 
-from app.util.tools import app_path
+from app.util.tools import app_path, data_path
 
 
 class MadokaInfo:
     NAME = "Madoka"
-    VERSION = "4.0.3"
+    VERSION = "4.0.4"
     DOCS = "https://madoka.colsrch.cn"
     REPO = "https://github.com/MadokaProject/Madoka"
     REMOTE_REPO_VERSION = "v4"
@@ -39,12 +39,11 @@ class _Database(BaseSettings, extra=Extra.ignore):
         if v == "sqlite":
             if not values["name"].endswith(".db"):
                 values["name"] += ".db"
-            app_path("data").mkdir(parents=True, exist_ok=True)
             old_file = app_path("tmp/db", values["name"])
             if old_file.is_file():
-                logger.warning("检测到旧的数据库文件，正在进行迁移: {} -> {}", old_file, app_path("data", values["name"]))
-                old_file.rename(app_path("data", values["name"]))
-            values["name"] = str(app_path("data", values["name"]))
+                logger.warning("检测到旧的数据库文件，正在进行迁移: {} -> {}", old_file, data_path(values["name"]))
+                old_file.rename(data_path(values["name"]))
+            values["name"] = str(data_path(values["name"]))
             return v
         elif v == "mysql":
             try:
@@ -135,10 +134,10 @@ def save_config():
     )
 
 
-app_path("data").mkdir(parents=True, exist_ok=True)
-CONFIG_FILE = app_path("data/config.yaml")
+data_path().mkdir(parents=True, exist_ok=True)
+CONFIG_FILE = data_path("config.yaml")
 if not CONFIG_FILE.is_file():
-    shutil.copy(Path(__file__).parent.joinpath("config.exp.yaml"), app_path("data/config.yaml"))
+    shutil.copy(Path(__file__).parent.joinpath("config.exp.yaml"), data_path("config.yaml"))
     logger.warning("配置文件不存在，已自动生成，请修改配置文件后重启!")
     exit(1)
 cf: dict = yaml.load(CONFIG_FILE.read_text("utf-8"), Loader=yaml.FullLoader)
@@ -154,6 +153,10 @@ try:
         }
     else:
         DB_PARAMS = {}
+    old_plugin = app_path("plugin/plugin.json")
+    if old_plugin.is_file():
+        logger.warning("检测到旧的插件记录文件，正在进行迁移: {} -> {}", old_plugin, data_path("plugin.json"))
+        old_plugin.rename(data_path("plugin.json"))
 except ValueError as e:
     err_info = []
     pos_maxlen = 0

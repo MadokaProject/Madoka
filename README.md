@@ -6,7 +6,7 @@
 
 > 只要将想要守护的事物一直守护到底就好了。
 
-[![Release](https://img.shields.io/github/v/release/MadokaProject/Application)](https://github.com/MadokaProject/Application/releases/latest)
+[![Release](https://img.shields.io/github/v/release/MadokaProject/Madoka)](https://github.com/MadokaProject/Madoka/releases/latest)
 [![Python](https://img.shields.io/badge/python-3.9%20|%203.10%20|%203.11%20|%203.12-blue)](https://docs.python.org/zh-cn/3.9/)
 
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://github.com/psf/black)
