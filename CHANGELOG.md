@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.4](https://github.com/MadokaProject/Madoka/compare/v4.0.3...v4.0.4) (2022-10-17)
+
+
+### Bug Fixes
+
+* 调整插件信息文件存放位置, 添加一个v3升级v4的配置文件转换脚本 ([a4269f7](https://github.com/MadokaProject/Madoka/commit/a4269f71a85af42a97f6cb433ad276f8c19ebf6c))
+
 ## [4.0.3](https://github.com/MadokaProject/Madoka/compare/v4.0.2...v4.0.3) (2022-10-17)
 
 
