@@ -13,8 +13,8 @@ from loguru import logger
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.controller import Controller
-from app.core.exceptions import DependError
 from app.extend.message_queue import mq
+from app.util.exceptions.depend import DependError
 from app.util.other import offline_notice, online_notice
 from app.util.version import version_notice
 

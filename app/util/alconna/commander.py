@@ -7,13 +7,14 @@ from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcomma
 from loguru import logger
 
 from app.core.config import Config
-from app.core.exceptions import (
+from app.util.control import Permission
+from app.util.decorator import ArgsAssigner
+from app.util.exceptions.command import (
+    AbortProcessError,
     FrequencyLimitError,
     FrequencyLimitExceededDoNothingError,
     FrequencyLimitExceededError,
 )
-from app.util.control import Permission
-from app.util.decorator import ArgsAssigner
 from app.util.graia import (
     Ariadne,
     Friend,
@@ -129,6 +130,9 @@ class Commander:
             except FrequencyLimitError as e:
                 logger.warning(e)
                 return
+            except AbortProcessError as e:
+                logger.info(e)
+                return
             except Exception as e:
                 logger.exception(e)
                 return unknown_error(sender)
@@ -142,6 +146,7 @@ class Commander:
             def inner(sender, *args, **kwargs):
                 if isinstance(sender, events):
                     return func(*args, **kwargs)
+                raise AbortProcessError("事件不匹配")
 
             return inner
 

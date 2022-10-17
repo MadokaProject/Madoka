@@ -8,10 +8,13 @@ from prettytable import PrettyTable
 from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.exceptions import LocalPluginNotFoundError, RemotePluginNotFoundError
 from app.core.plugins import PluginManager
 from app.util.alconna import Args, Arpamar, Commander, Option, Subcommand
 from app.util.control import Permission, Switch
+from app.util.exceptions.plugin import (
+    LocalPluginNotFoundError,
+    RemotePluginNotFoundError,
+)
 from app.util.graia import (
     Ariadne,
     Friend,

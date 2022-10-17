@@ -19,8 +19,8 @@ from app.core.app import AppCore
 from app.core.commander import CommandDelegateManager
 from app.core.config import MadokaInfo
 from app.core.database import db_init, db_update
-from app.core.exceptions import LocalPluginNotFoundError, NonStandardPluginError
 from app.util.decorator import Singleton
+from app.util.exceptions.plugin import LocalPluginNotFoundError, NonStandardPluginError
 from app.util.network import download, general_request
 from app.util.text2image import create_image
 from app.util.tools import app_path, data_path, to_thread

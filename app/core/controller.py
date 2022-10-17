@@ -5,11 +5,11 @@ from loguru import logger
 
 from app.core.commander import CommandDelegateManager
 from app.core.config import Config
-from app.core.exceptions import BannedError, NotActivatedError
 from app.core.settings import ACTIVE_GROUP, ACTIVE_USER, BANNED_USER
 from app.trigger.trigger import Trigger
 from app.util.control import Permission
 from app.util.decorator import ArgsAssigner
+from app.util.exceptions.depend import BannedError, NotActivatedError
 from app.util.graia import (
     Ariadne,
     Friend,

@@ -17,9 +17,12 @@ from prompt_toolkit.formatted_text import HTML
 from prompt_toolkit.styles import Style
 
 from app.core.config import Config
-from app.core.exceptions import AppCoreNotInitializedError, AriadneAlreadyLaunchedError
 from app.extend.power import power
 from app.util.decorator import Singleton
+from app.util.exceptions.app import (
+    AppCoreNotInitializedError,
+    AriadneAlreadyLaunchedError,
+)
 from app.util.tools import restart
 
 
