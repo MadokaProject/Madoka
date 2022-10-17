@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.5](https://github.com/MadokaProject/Madoka/compare/v4.0.4...v4.0.5) (2022-10-17)
+
+
+### Bug Fixes
+
+* **commander:** 事件不匹配时会额外报错的问题 ([d424af3](https://github.com/MadokaProject/Madoka/commit/d424af3e26ef6739102610b1318b985e90e11ef1))
+
 ## [4.0.4](https://github.com/MadokaProject/Madoka/compare/v4.0.3...v4.0.4) (2022-10-17)
 
 
