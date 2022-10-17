@@ -1,5 +1,5 @@
 # Madoka 配置文件
-# 请将该文件复制为 config.yaml 并填充该文件
+# 请将该文件复制至 app/data/config.yaml 并填充该文件
 
 name: Madoka                   # 机器人名字
 master_qq:                     # 机器人主人 QQ
@@ -44,6 +44,6 @@ message_queue:
 
 event:
   # 群撤回消息监控
-  # True: 转发至 master
-  # False: 回送至原群
-  groupRecall2me: true
+  # true: 转发至 master
+  # false: 回送至原群
+  groupRecall2me: false

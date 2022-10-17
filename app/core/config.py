@@ -13,7 +13,7 @@ from app.util.tools import app_path
 
 class MadokaInfo:
     NAME = "Madoka"
-    VERSION = "4.0.2"
+    VERSION = "4.0.3"
     DOCS = "https://madoka.colsrch.cn"
     REPO = "https://github.com/MadokaProject/Madoka"
     REMOTE_REPO_VERSION = "v4"
@@ -24,7 +24,6 @@ class _Bot(BaseSettings, extra=Extra.ignore):
     account: int
     verify_key: str
     host: AnyHttpUrl = "http://127.0.0.1:8080"
-    heartbeat_log: bool = False
 
 
 class _Database(BaseSettings, extra=Extra.ignore):

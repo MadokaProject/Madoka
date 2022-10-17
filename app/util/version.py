@@ -1,3 +1,5 @@
+import json
+
 import aiohttp.client
 from loguru import logger
 
@@ -30,7 +32,7 @@ def compare_version(remote_version: str, native_version: str) -> bool:
 async def check_version():
     """检查版本信息"""
     try:
-        remote_info = await general_request(MadokaInfo.REMOTE_VERSION_URL, method="get", _type="json")
+        remote_info = json.loads(await general_request(MadokaInfo.REMOTE_VERSION_URL, method="get", _type="text"))
         remote_version = remote_info["version"]
         remote_update_logs = remote_info["update_log"]
         logger.info(f"Remote Version: {remote_version}")

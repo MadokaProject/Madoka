@@ -1,6 +1,10 @@
 {
-  "version": "4.0.2",
+  "version": "4.0.3",
   "update_log": [
+    {
+      "version": "4.0.3",
+      "info": "修复无法获取远程版本信息的问题，修复已知问题"
+    },
     {
       "version": "4.0.2",
       "info": "调整获取远程版本的url, 导出requirements.txt"
