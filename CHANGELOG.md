@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.0.3](https://github.com/MadokaProject/Madoka/compare/v4.0.2...v4.0.3) (2022-10-17)
+
+
+### Bug Fixes
+
+* 无法获取远程版本信息 ([7f36070](https://github.com/MadokaProject/Madoka/commit/7f360707b769bffe7978af940cc726e3a62dc543))
+
 ## [4.0.2](https://github.com/MadokaProject/Madoka/compare/v4.0.1...v4.0.2) (2022-10-16)
 
 
