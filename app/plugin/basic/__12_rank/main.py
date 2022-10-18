@@ -17,8 +17,8 @@ from app.util.text2image import create_image
 command = Commander("rank", "排行", Option("msg", help_text="显示群内成员发言排行榜"), help_text="查询各类榜单")
 
 
-@command.parse("rank", events=[GroupMessage])
-async def rank(app: Ariadne, sender: Group):
+@command.parse("msg", events=[GroupMessage])
+async def msg(app: Ariadne, sender: Group):
     members = await app.get_member_list(sender)
     group_user = {item.id: item.name for item in members}
     index = 1
