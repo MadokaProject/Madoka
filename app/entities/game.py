@@ -147,7 +147,7 @@ class BotGame:
             Game.qid == self.qq
         ).execute()
 
-    async def auto_signin(self, status: int) -> None:
+    async def auto_signin(self, status: bool) -> None:
         """自动签到开关
 
         :param status: 开关状态
