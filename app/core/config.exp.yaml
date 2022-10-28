@@ -47,3 +47,11 @@ event:
   # true: 转发至 master
   # false: 回送至原群
   groupRecall2me: false
+
+# 百度 AI
+baidu_ai:
+  moderation:                  # 内容审核
+    enable: false              # 开关
+    app_id:                    # App ID
+    api_key:                   # API Key
+    secret_key:                # Secret Key

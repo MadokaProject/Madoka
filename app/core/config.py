@@ -49,6 +49,7 @@ class _Database(BaseSettings, extra=Extra.ignore):
             try:
                 if values["username"] and values["password"]:
                     return v
+                raise KeyError
             except KeyError as e:
                 raise ValueError("username or password is not set") from e
         raise ValueError("数据库类型不支持")
@@ -98,6 +99,29 @@ class _Event(BaseSettings, extra=Extra.ignore):
     groupRecall2me: bool = True
 
 
+class _BaiduAIModeration(BaseSettings, extra=Extra.ignore):
+    app_id: Optional[str]
+    api_key: Optional[str]
+    secret_key: Optional[str]
+    enable: bool = False
+
+    @validator("enable", always=True)
+    def _enable(cls, v, values):
+        if v:
+            try:
+                if values["app_id"] and values["api_key"] and values["secret_key"]:
+                    importlib.import_module("aip")
+                    return v
+                raise KeyError
+            except KeyError as e:
+                raise ValueError("app_id or api_key or secret_key is not set") from e
+        return False
+
+
+class _BaiduAI(BaseSettings, extra=Extra.ignore):
+    moderation: _BaiduAIModeration
+
+
 class _Config(BaseSettings, extra=Extra.ignore):
     bot: _Bot
     database: _Database
@@ -106,6 +130,7 @@ class _Config(BaseSettings, extra=Extra.ignore):
     command: _Command
     message_queue: _MessageQueue
     event: _Event
+    baidu_ai: _BaiduAI
     name: str = "Madoka"
     master_qq: int
     master_name: str
@@ -115,10 +140,7 @@ class _Config(BaseSettings, extra=Extra.ignore):
     def change_debug(self):
         if not self.online:
             return
-        if self.debug:
-            self.debug = False
-        else:
-            self.debug = True
+        self.debug = not self.debug
         save_config()
 
 
@@ -172,7 +194,12 @@ except ValueError as e:
     exit(1)
 except ModuleNotFoundError as e:
     logger.error("依赖包缺少: %r" % e.name)
-    cmd = "pip install pymysql" if e.name == "pymysql" else "pip install pysqlite3"
+    if e.name == "pymysql":
+        cmd = "pdm install -G mysql || pip install pymysql"
+    elif e.name in ["aip", "chardet"]:
+        cmd = "pdm install -G baidu || pip install baidu-aip"
+    else:
+        cmd = "重新安装依赖"
     logger.error("请尝试运行 '%s' 安装该依赖包后重新启动!" % cmd)
     exit(1)
 except Exception as e:

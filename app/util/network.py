@@ -67,7 +67,7 @@ async def general_request(url, method="GET", _type="TEXT", params=None, headers=
 
     :param url: str 请求的网址*
     :param method: str 请求方法
-    :param _type: str 返回类型 [text(default),json,header, byte]
+    :param _type: str 返回类型 [text(default),json,header, bytes(byte)]
     :param params: dict param 请求参数
     :param headers: dict 请求头(可自动生成)
     :param data: body 请求参数
@@ -92,10 +92,13 @@ async def general_request(url, method="GET", _type="TEXT", params=None, headers=
             return await r.json(encoding="utf-8")
         elif _type in ["HEADER", "header"]:
             return r.headers
+        elif _type in ["BYTES", "bytes"]:
+            return await r.read()
         elif _type in ["BYTE", "byte"]:
+            logger.warning("请将 _type 参数设置为 bytes|BYTES, byte|BYTE 将在不久之后的版本移除")
             return await r.read()
         else:
-            return "please set _type in [text, json, header, byte]"
+            return "please set _type in [text, json, header, bytes]"
 
 
 @retry(stop_max_attempt_number=5, wait_fixed=1000)

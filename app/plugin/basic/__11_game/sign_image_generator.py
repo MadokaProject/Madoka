@@ -22,7 +22,7 @@ _Ink = Union[str, int, Tuple[int, int, int], Tuple[int, int, int, int]]
 
 
 def get_qlogo(id: int) -> bytes:
-    return asyncio.run(general_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={id}&s=640", _type="byte"))
+    return asyncio.run(general_request(url=f"http://q1.qlogo.cn/g?b=qq&nk={id}&s=640", _type="bytes"))
 
 
 def progress_bar(w: int, h: int, progress: float, bg: _Ink = "black", fg: _Ink = "white") -> Image.Image:

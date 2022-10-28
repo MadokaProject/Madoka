@@ -38,7 +38,7 @@ async def avatar_black_and_white(qq: int) -> bytes:
     获取群成员头像黑白化
     """
     url = f"https://q1.qlogo.cn/g?b=qq&nk={qq}&s=4"
-    resp = await general_request(url, _type="byte")
+    resp = await general_request(url, _type="bytes")
     img = IMG.open(BytesIO(resp))
     img = img.convert("L")
     img.save(img2io := BytesIO(), "JPEG")

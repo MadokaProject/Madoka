@@ -118,7 +118,7 @@ class Commander:
             result: Arpamar,
         ):
             try:
-                self.__is_frequency_limit__(self.__friend_limit, self.__group_limit, sender, target)
+                self.__is_frequency_limit__("__main__", self.__friend_limit, self.__group_limit, sender, target)
                 for name, func in self.__options.items():
                     if result.find(name):
                         return await func(sender, target, app, message, target, sender, source, inc, result)
@@ -153,23 +153,33 @@ class Commander:
         return wrapper
 
     def __is_frequency_limit__(
-        self, friend_limit: float, group_limit: float, sender: Union[Friend, Group], target: Union[Friend, Member]
+        self,
+        name: str,
+        friend_limit: float,
+        group_limit: float,
+        sender: Union[Friend, Group],
+        target: Union[Friend, Member],
     ):
         now_time = time.time()
         if isinstance(sender, Group) and group_limit != 0:
-            left_time = group_limit - (now_time - self.__frequency_limit["group"].get(sender.id, 0))
+            if name not in self.__frequency_limit["group"]:
+                self.__frequency_limit["group"][name] = {}
+            left_time = group_limit - (now_time - self.__frequency_limit["group"][name].get(sender.id, 0))
             if left_time > 0:
                 raise FrequencyLimitExceededError(group_limit, left_time)
-            self.__frequency_limit["group"][sender.id] = now_time
+            self.__frequency_limit["group"][name][sender.id] = now_time
         if friend_limit != 0:
-            left_time = friend_limit - (now_time - self.__frequency_limit["friend"].get(target.id, 0))
+            if name not in self.__frequency_limit["friend"]:
+                self.__frequency_limit["friend"][name] = {}
+            left_time = friend_limit - (now_time - self.__frequency_limit["friend"][name].get(target.id, 0))
             if left_time > 0:
                 raise FrequencyLimitExceededDoNothingError(friend_limit, left_time)
-            self.__frequency_limit["friend"][target.id] = now_time
+            self.__frequency_limit["friend"][name][target.id] = now_time
 
-    def __frequency_limit__(self, friend_limit: float = 0, group_limit: float = 0):
+    def __frequency_limit__(self, name: str, friend_limit: float = 0, group_limit: float = 0):
         """设置频率限制
 
+        :param name: 指定子命令
         :param friend_limit: 用户频率限制, 0不限制(该配置在群组也生效)
         :param group_limit: 群组频率限制, 0不限制
         """
@@ -179,7 +189,7 @@ class Commander:
 
             @wraps(func)
             def inner(sender: Union[Friend, Group], target: Union[Friend, Member], *args, **kwargs):
-                self.__is_frequency_limit__(friend_limit, group_limit, sender, target)
+                self.__is_frequency_limit__(name, friend_limit, group_limit, sender, target)
                 return func(sender, *args, **kwargs)
 
             return inner
@@ -203,7 +213,7 @@ class Commander:
         """
 
         def wrapper(func):
-            @self.__frequency_limit__(friend_limit, group_limit)
+            @self.__frequency_limit__("__no_match__", friend_limit, group_limit)
             @self.__filter__(
                 tuple(
                     [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]
@@ -242,7 +252,7 @@ class Commander:
         names = name if isinstance(name, list) else [name]
 
         def wrapper(func):
-            @self.__frequency_limit__(friend_limit, group_limit)
+            @self.__frequency_limit__(names[0], friend_limit, group_limit)
             @self.__filter__(
                 tuple(
                     [self.__TypeMessage[event] for event in events if event in self.__TypeMessage]

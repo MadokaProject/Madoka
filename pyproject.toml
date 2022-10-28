@@ -27,6 +27,10 @@ mysql = [
     "pymysql~=1.0.2",
     "cryptography>=38.0.1",
 ]
+baidu = [
+    "baidu-aip>=4.16.8",
+    "chardet>=5.0.0",
+]
 
 [build-system]
 requires = ["pdm-pep517>=1.0.0"]
