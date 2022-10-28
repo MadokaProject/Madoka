@@ -4,7 +4,7 @@ WORKDIR /build
 COPY pdm.lock pyproject.toml ./
 
 RUN pdm config python.use_venv false
-RUN pdm install -G mysql --prod --no-lock --no-editable
+RUN pdm install -G mysql -G baidu --prod --no-lock --no-editable
 
 FROM python:3.9-slim
 
