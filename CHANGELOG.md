@@ -1,5 +1,22 @@
 # Changelog
 
+## [4.1.0](https://github.com/MadokaProject/Madoka/compare/v4.0.5...v4.1.0) (2022-10-29)
+
+
+### Features
+
+* **util.baidu.moderation:** 新增百度文本、图片审核 ([0d4080e](https://github.com/MadokaProject/Madoka/commit/0d4080ed53d330b6b4537782980580807551fbf4))
+* 移除requirements.txt, 请使用 pdm 更新依赖 ([df9ef3d](https://github.com/MadokaProject/Madoka/commit/df9ef3d08489583d422bebc833b30959fdfdd47e))
+
+
+### Bug Fixes
+
+* **core.config:** 修复数据库配置读取的问题 ([0d4080e](https://github.com/MadokaProject/Madoka/commit/0d4080ed53d330b6b4537782980580807551fbf4))
+* **Dockerfile:** 添加baiduAI SDK ([877ed65](https://github.com/MadokaProject/Madoka/commit/877ed655db9173a2011cef36fcfef90883b83a3b))
+* **game:** 自动签到无法关闭 ([7713f09](https://github.com/MadokaProject/Madoka/commit/7713f09573e361635628855195c91a3b646d2ffa))
+* plugin.rank ([fa0dc83](https://github.com/MadokaProject/Madoka/commit/fa0dc8313e5aada4fdabedb4c40ac9265bc325c0))
+* **util.alconna.commander:** 修复频率限制的冲突的bug ([0d4080e](https://github.com/MadokaProject/Madoka/commit/0d4080ed53d330b6b4537782980580807551fbf4))
+
 ## [4.0.5](https://github.com/MadokaProject/Madoka/compare/v4.0.4...v4.0.5) (2022-10-17)
 
 
