@@ -19,6 +19,8 @@ COPY app/ app/
 COPY main.py .
 
 RUN pip config set install.prefix /user_pkgs && \
-    echo "/user_pkgs/lib/python3.9/site-packages" > /usr/local/lib/python3.9/site-packages/user_pkgs.pth
+    echo "/user_pkgs/lib/python3.9/site-packages" > /usr/local/lib/python3.9/site-packages/user_pkgs.pth && \
+    apt-get update && apt-get install git zbar-tools -y && \
+    apt-get autoclean && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 CMD ["python", "main.py"]

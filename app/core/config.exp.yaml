@@ -50,7 +50,7 @@ event:
 
 # 百度 AI
 baidu_ai:
-  moderation:                  # 内容审核
+  moderation:                  # 内容审核 (https://ai.baidu.com/solution/censoring)
     enable: false              # 开关
     app_id:                    # App ID
     api_key:                   # API Key
