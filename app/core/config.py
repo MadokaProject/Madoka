@@ -159,8 +159,8 @@ def save_config():
 data_path().mkdir(parents=True, exist_ok=True)
 CONFIG_FILE = data_path("config.yaml")
 if not CONFIG_FILE.is_file():
-    shutil.copy(Path(__file__).parent.joinpath("config.exp.yaml"), data_path("config.yaml"))
-    logger.warning("配置文件不存在，已自动生成，请修改配置文件后重启!")
+    shutil.copy(Path(__file__).parent.joinpath("config.exp.yaml"), CONFIG_FILE)
+    logger.warning(f"配置文件不存在，已自动生成，请修改配置文件后重启! - {CONFIG_FILE}")
     exit(1)
 cf: dict = yaml.load(CONFIG_FILE.read_text("utf-8"), Loader=yaml.FullLoader)
 try:
