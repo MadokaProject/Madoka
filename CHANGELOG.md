@@ -1,5 +1,18 @@
 # Changelog
 
+## [4.2.0](https://github.com/MadokaProject/Madoka/compare/v4.1.0...v4.2.0) (2022-12-27)
+
+
+### Features
+
+* **config:** 显示生成的配置文件路径 ([f547498](https://github.com/MadokaProject/Madoka/commit/f547498950105adc94282c9c11d85f4a1fb9b245))
+
+
+### Bug Fixes
+
+* **ariadne:** memory leak ([58cb76a](https://github.com/MadokaProject/Madoka/commit/58cb76a9ec890a54530378b8a20b23fa4b5822d7))
+* dockerfile ([f71d3e9](https://github.com/MadokaProject/Madoka/commit/f71d3e94040e04a1e4a284a99cfc246ec2357a50))
+
 ## [4.1.0](https://github.com/MadokaProject/Madoka/compare/v4.0.5...v4.1.0) (2022-10-29)
 
 
