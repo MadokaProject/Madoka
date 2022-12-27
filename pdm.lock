@@ -225,7 +225,7 @@ dependencies = [
 
 [[package]]
 name = "graia-ariadne"
-version = "0.9.8"
+version = "0.9.10"
 requires_python = ">=3.8,<4.0"
 summary = "Another elegant Python QQ Bot framework for mirai and mirai-api-http v2."
 dependencies = [
@@ -598,7 +598,7 @@ summary = "Backport of pathlib-compatible object wrapper for zip files"
 
 [metadata]
 lock_version = "4.0"
-content_hash = "sha256:a089bcd3bbf876748fac6d2ca24d746b8af9fb31b4cadbcf20f4733d590c41fa"
+content_hash = "sha256:a874bc1fc7f133792c48ba84464f9fc89fafb0c7830854f936c770ab5df66fa0"
 
 [metadata.files]
 "aiohttp 3.8.1" = [
@@ -936,9 +936,9 @@ content_hash = "sha256:a089bcd3bbf876748fac6d2ca24d746b8af9fb31b4cadbcf20f4733d5
     {url = "https://files.pythonhosted.org/packages/4f/0d/434bae97145de0e5bda33e4757c5def19e034fdb12a32ea2dd7d0d4d1c70/graia_amnesia-0.6.0-py3-none-any.whl", hash = "sha256:c1e347171cd42d81b10dea4fb6afef4bed4e836fa9c698ecf595ccaa5c2d1939"},
     {url = "https://files.pythonhosted.org/packages/e4/17/23accd9a4466a7cebc4cd6f74821197ad1e74b23cd5395acee7ccd19ce1f/graia-amnesia-0.6.0.tar.gz", hash = "sha256:9f4ed226ebd2ccfe5e09489e4afffd9e58ae28c3fa93211dda72c3c6b9a439f0"},
 ]
-"graia-ariadne 0.9.8" = [
-    {url = "https://files.pythonhosted.org/packages/43/32/e7d19083e9c1f076573ea98d3b5fc7d35335863259ce1a2e8836d09d27da/graia_ariadne-0.9.8-py3-none-any.whl", hash = "sha256:15802d3bd8bf72be88f3d36518547ae43fcd1e84981505595790b20fe6d9dcc8"},
-    {url = "https://files.pythonhosted.org/packages/60/b4/316a9b17af0e3957086d83796a5938c0df1abdc0f2df85d4b6c107e77b85/graia-ariadne-0.9.8.tar.gz", hash = "sha256:211c47b4aebfb31aa07f769f57f4640621361770ec9f98fd73b621f187d1d86c"},
+"graia-ariadne 0.9.10" = [
+    {url = "https://files.pythonhosted.org/packages/11/e3/9d43be713d10bf1877c1e3a5c3b2ddd16b09afdcb5c03179cd639c4c703b/graia-ariadne-0.9.10.tar.gz", hash = "sha256:558e957fad6ebc70c7e48a17f7cf6c37776f63ae310b8304fabc2127f730d98a"},
+    {url = "https://files.pythonhosted.org/packages/a0/f7/2f8b4764c576d9778a2f29033d07f522a64ead83c16be2b3c67a878333e0/graia_ariadne-0.9.10-py3-none-any.whl", hash = "sha256:e4596e2c04fb5df82cea994195e0b8d492c778bbb2e685ba0de4d3bc000dac19"},
 ]
 "graia-broadcast 0.19.0" = [
     {url = "https://files.pythonhosted.org/packages/18/88/c87afe3d5f6cfa0a8befc8491a5e4a648966325421fbaa0a355ac61704d2/graia_broadcast-0.19.0-py3-none-any.whl", hash = "sha256:16a6cb0eaa7e405f243d5380a7e9acdf563000e2b8158dc3bc5c2b984d1b4411"},
@@ -1138,10 +1138,6 @@ content_hash = "sha256:a089bcd3bbf876748fac6d2ca24d746b8af9fb31b4cadbcf20f4733d5
 "pre-commit 2.20.0" = [
     {url = "https://files.pythonhosted.org/packages/1e/ba/8cf8b88d0e07588818de46877effc9971305541d9421bc6377b06639d135/pre_commit-2.20.0.tar.gz", hash = "sha256:a978dac7bc9ec0bcee55c18a277d553b0f419d259dadb4b9418ff2d00eb43959"},
     {url = "https://files.pythonhosted.org/packages/b2/6c/9ccb5213a3d9fd3f8c0fd69d207951901eaef86b7a1a69bcc478364d3072/pre_commit-2.20.0-py2.py3-none-any.whl", hash = "sha256:51a5ba7c480ae8072ecdb6933df22d2f812dc897d5fe848778116129a681aac7"},
-]
-"prettytable 3.4.1" = [
-    {url = "https://files.pythonhosted.org/packages/5b/c9/4e7dbae5054c5bbaed9e7aa7a78e1ceff003d0b0699318e5d6993a0a10c9/prettytable-3.4.1-py3-none-any.whl", hash = "sha256:0d23ff81e165077d93367e1379d97893c7a51541483d25bad45b9647660ef06f"},
-    {url = "https://files.pythonhosted.org/packages/a5/aa/0852b0ee91587a766fbc872f398ed26366c7bf26373d5feb974bebbde8d2/prettytable-3.4.1.tar.gz", hash = "sha256:7d7dd84d0b206f2daac4471a72f299d6907f34516064feb2838e333a4e2567bd"},
 ]
 "prompt-toolkit 3.0.31" = [
     {url = "https://files.pythonhosted.org/packages/26/ec/2ebddd1f0584fec4a6d4b5dc57627254070c3db310f00981bc5de03dd5ab/prompt_toolkit-3.0.31-py3-none-any.whl", hash = "sha256:9696f386133df0fc8ca5af4895afe5d78f5fcfe5258111c2a79a1c3e41ffa96d"},
