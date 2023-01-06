@@ -117,7 +117,7 @@ async def func(sender: Group, cmd: Arpamar):
         tag = "member_recall"
     if tag:
         await save_config(tag, sender, cmd.query("enable"))
-        return message("开启成功！" if cmd.find("enable") else "关闭成功！").target(sender).send()
+        return message("开启成功！" if cmd.query("enable") else "关闭成功！").target(sender).send()
 
 
 @command.parse("刷屏检测", events=[GroupMessage], permission=Permission.GROUP_ADMIN)
