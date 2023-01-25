@@ -18,4 +18,4 @@ async def online_notice():
 async def offline_notice():
     """下线提醒"""
     if Config.online:
-        message("正在关闭").target(Config.master_qq).send()
+        await message("正在关闭").target(Config.master_qq).immediately_send()
