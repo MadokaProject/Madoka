@@ -24,7 +24,7 @@ command = Commander(
 async def send_to_friend(app: Ariadne, sender: Friend, cmd: Arpamar):
     friend_id = cmd.query("friend_id")
     if friend := await app.get_friend(friend_id):
-        message("\n".join(cmd.query("msg"))).target(friend).send()
+        message(cmd.query("msg")).target(friend).send()
     else:
         message(f"未找到好友: {friend_id}").target(sender).send()
 
@@ -33,14 +33,14 @@ async def send_to_friend(app: Ariadne, sender: Friend, cmd: Arpamar):
 async def send_to_group(app: Ariadne, sender: Friend, cmd: Arpamar):
     group_id = cmd.query("group_id")
     if group := await app.get_group(group_id):
-        message("\n".join(cmd.query("msg"))).target(group).send()
+        message(cmd.query("msg")).target(group).send()
     else:
         message(f"未找到群组: {group_id}").target(sender).send()
 
 
 @command.parse("notice", events=[FriendMessage], permission=Permission.MASTER)
 async def send_notice(app: Ariadne, sender: Friend, cmd: Arpamar):
-    msg = ("来自管理员的通知\n--------------------\n", "\n".join(cmd.query("msg")))
+    msg = ("来自管理员的通知\n--------------------\n", cmd.query("msg"))
     if group_id := cmd.query("group_id"):
         if group := await app.get_group(group_id):
             message(msg).target(group).send()
