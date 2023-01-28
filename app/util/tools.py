@@ -44,6 +44,11 @@ def data_path(*join_paths) -> Path:
     return app_path("data", *join_paths)
 
 
+def extension_data_path(*join_paths) -> Path:
+    """获取 extension data 绝对路径"""
+    return data_path("extension_data", *join_paths)
+
+
 async def to_thread(func, /, *args, **kwargs):
     """3.9后新增的方法"""
     return await asyncio.to_thread(func, *args, **kwargs)
