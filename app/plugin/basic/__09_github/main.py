@@ -13,7 +13,12 @@ from app.util.graia import GraiaScheduler, Group, GroupMessage, Plain, message, 
 from app.util.network import general_request
 from app.util.online_config import save_config
 from app.util.phrases import args_error
-from app.util.tools import app_path
+from app.util.tools import app_path, extension_data_path
+
+if app_path("tmp/github").exists():
+    logger.info("正在迁移Github监听数据")
+    app_path("tmp/github").rename(extension_data_path("github"))
+    logger.success(f"迁移Github监听数据成功: {extension_data_path('github')}")
 
 core: AppCore = AppCore()
 app = core.get_app()
@@ -129,9 +134,9 @@ async def tasker():
         return
     logger.info("github_listener is running...")
 
-    app_path().joinpath("tmp/github").mkdir(parents=True, exist_ok=True)
+    extension_data_path("github").mkdir(parents=True, exist_ok=True)
     for group in REPO.keys():
-        file = app_path().joinpath(f"tmp/github/{group}.dat")
+        file = extension_data_path(f"github/{group}.dat")
         if file.exists():
             with open(file, "rb") as f:
                 obj = pickle.load(f)
