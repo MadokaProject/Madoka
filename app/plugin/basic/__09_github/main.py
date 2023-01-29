@@ -15,9 +15,11 @@ from app.util.online_config import save_config
 from app.util.phrases import args_error
 from app.util.tools import app_path, extension_data_path
 
-if app_path("tmp/github").exists():
+old_path = app_path("tmp/github")
+extension_data_path("github").mkdir(parents=True, exist_ok=True)
+if old_path.is_dir():
     logger.info("正在迁移Github监听数据")
-    app_path("tmp/github").rename(extension_data_path("github"))
+    old_path.replace(extension_data_path("github"))
     logger.success(f"迁移Github监听数据成功: {extension_data_path('github')}")
 
 core: AppCore = AppCore()
@@ -134,7 +136,6 @@ async def tasker():
         return
     logger.info("github_listener is running...")
 
-    extension_data_path("github").mkdir(parents=True, exist_ok=True)
     for group in REPO.keys():
         file = extension_data_path(f"github/{group}.dat")
         if file.exists():
