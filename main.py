@@ -45,9 +45,9 @@ manager = CommandDelegateManager()
 
 
 @bcc.receiver(FriendMessage)
-async def friend_message_handler(app: Ariadne, message: MessageChain, friend: Friend):
+async def friend_message_handler(app: Ariadne, message: MessageChain, friend: Friend, source: Source):
     with contextlib.suppress(DependError):
-        await Controller(app, message, friend, inc, manager).process_event()
+        await Controller(app, message, friend, source, inc, manager).process_event()
 
 
 @bcc.receiver(GroupMessage)

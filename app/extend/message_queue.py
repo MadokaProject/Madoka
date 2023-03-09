@@ -41,8 +41,8 @@ class MQ(metaclass=Singleton):
         while True:
             message = self.__message_queue.get()
             asyncio.run_coroutine_threadsafe(self.send(message), loop)
-            sleep(self.limit)
             self.__message_queue.task_done()
+            sleep(self.limit)
 
     def start(self, loop):
         if not self.__launched:
@@ -52,6 +52,7 @@ class MQ(metaclass=Singleton):
                 self.__process(loop)
             except Exception as e:
                 logger.exception(e)
+                logger.error("消息队列异常停止！")
         else:
             logger.warning("消息队列已启动！")
 
