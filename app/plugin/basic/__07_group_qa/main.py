@@ -17,7 +17,7 @@ from app.util.graia import (
 )
 from app.util.online_config import get_config, save_config
 
-mode = {"startswith": "头匹配", "endswith": "尾匹配", "arbitrary": "任意匹配", "regex": "正则匹配", "fullmatch": "完全匹配"}
+mode = {"startswith": "头匹配", "endswith": "尾匹配", "arbitrary": "任意匹配", "regex": "正则匹配", "full": "完全匹配"}
 command = Commander(
     "qa",
     "群问答",
