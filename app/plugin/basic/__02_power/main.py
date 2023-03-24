@@ -47,7 +47,7 @@ async def update(target: Union[Friend, Member], sender: Union[Friend, Group], cm
 
 @command.parse("r", permission=Permission.MASTER)
 async def restart(target: Union[Friend, Member], sender: Union[Friend, Group]):
-    core.restart(*shell(target, sender))
+    core.restart("-r", *shell(target, sender))
 
 
 @command.parse("k", permission=Permission.MASTER)
