@@ -1,5 +1,28 @@
 # Changelog
 
+## [4.3.0](https://github.com/MadokaProject/Madoka/compare/v4.2.0...v4.3.0) (2023-03-24)
+
+
+### Features
+
+* **app.plugin.github:** 现在支持推送上一次推送更新之后的多个更新，并且您可以在配置文件中限制最大推送数量。另外，首次监听的分支现在不会推送第一条信息。 ([d40523c](https://github.com/MadokaProject/Madoka/commit/d40523c42672a548787777fcc257912ac2b4e754))
+* **app.plugin.group_qa:** 重构群问答，支持更丰富的匹配功能 ([bbb7a96](https://github.com/MadokaProject/Madoka/commit/bbb7a96188132a46116db85e42ac4114f184a294))
+* **plugin.basic.send_msg:** 新增主动发送消息/通知功能 ([28ddb81](https://github.com/MadokaProject/Madoka/commit/28ddb81c0178f88dc62d2bd48efee8c750275913))
+* **plugin.send_msg:** 支持持续对话 ([65df682](https://github.com/MadokaProject/Madoka/commit/65df68259c0a8024b6af4b65dc43066b13c755e6))
+* 好友消息支持直接获取消息ID ([03d293d](https://github.com/MadokaProject/Madoka/commit/03d293d8057631285865e698895b0172125c48fc))
+
+
+### Bug Fixes
+
+* **app.plugin.basic.send_msg:** 支持所有消息类型 ([454eee4](https://github.com/MadokaProject/Madoka/commit/454eee4d1adbb68de3024e501cd2bbcf1ed099ac))
+* **app.plugin.github:** 使用 github token 提升 API 调用频率 ([a05dbd7](https://github.com/MadokaProject/Madoka/commit/a05dbd7c79e5874e7b635479a57995604d5b9b24))
+* **app.plugin.group_qa:** KeyError full ([af92ef2](https://github.com/MadokaProject/Madoka/commit/af92ef2e57c489876b2373cec2eb4cc893553033))
+* **app.plugin.power:** 重启完成后没有通知 ([bbb7a96](https://github.com/MadokaProject/Madoka/commit/bbb7a96188132a46116db85e42ac4114f184a294))
+* **plugin.csm:** 关闭群管反馈内容错误 ([3fdab43](https://github.com/MadokaProject/Madoka/commit/3fdab43f11d171350bc981c2a09057d29ebb63b9))
+* **plugin.github:** 迁移监听数据文件到 data 目录 ([a0daccd](https://github.com/MadokaProject/Madoka/commit/a0daccd77a88be8af7c2071b683ab7a27887e89d))
+* **plugin.github:** 迁移监听数据文件到 data 目录 ([5da6d5c](https://github.com/MadokaProject/Madoka/commit/5da6d5c0168290f1b343539694077558ab1f03f0))
+* **util.other:** 修复下线提醒的异常 ([7cfd586](https://github.com/MadokaProject/Madoka/commit/7cfd5861a0d49a1dc5716fcf4a2b1df2c0181045))
+
 ## [4.2.0](https://github.com/MadokaProject/Madoka/compare/v4.1.0...v4.2.0) (2022-12-27)
 
 
