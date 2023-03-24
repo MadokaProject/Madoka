@@ -23,6 +23,15 @@ if old_path.is_dir():
     old_path.replace(extension_data_path("github"))
     logger.success(f"迁移Github监听数据成功: {extension_data_path('github')}")
 
+headers = (
+    {
+        "Accept": "application/vnd.github+json",
+        "Authorization": f"Bearer {Config.github.token}",
+    }
+    if Config.github.token
+    else None
+)
+
 core: AppCore = AppCore()
 app = core.get_app()
 sche: GraiaScheduler = core.get_scheduler()
@@ -148,7 +157,7 @@ async def tasker():
             if name not in obj:
                 obj.update({name: {}})
             try:
-                branches = await general_request(info["api"], "get", "JSON")
+                branches = await general_request(url=info["api"], method="get", _type="JSON", headers=headers)
                 for branch in branches:
                     if info["branch"][0] != "*" and branch["name"] not in info["branch"]:
                         continue
@@ -175,12 +184,12 @@ async def message_push(group, repo, branch, api, old_sha):
     :param api: 请求 API
     :param old_sha: 上一次提交的 sha
     """
-    commit_info = await general_request(f"{api}/{old_sha}", _type="JSON")
+    commit_info = await general_request(f"{api}/{old_sha}", _type="JSON", headers=headers)
     params = {
         "since": commit_info["commit"]["author"]["date"],
         "sha": branch,
     }
-    commit_infos = await general_request(api, params=params, _type="JSON")
+    commit_infos = await general_request(api, params=params, _type="JSON", headers=headers)
     msg = []
     for index, commit_info in enumerate(commit_infos, 1):
         if Config.github.limit != 0 and index > Config.github.limit:

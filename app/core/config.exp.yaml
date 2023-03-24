@@ -31,6 +31,7 @@ github:
   enable: False                # 监听开关（默认关闭）
   time: "*/10 * * * *"         # 监听时间间隔
   limit: 5                     # 监听到多个提交时，最大推送的数量（设为 0 则不限制）
+  token:                       # GitHub Token(用于提升 API 调用频率)(不使用 token 每小时限制 60 次)
 
 # 命令配置
 command:

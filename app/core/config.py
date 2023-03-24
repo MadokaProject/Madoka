@@ -63,6 +63,7 @@ class _Github(BaseSettings, extra=Extra.ignore):
     enable: bool = False
     time: str = "*/10 * * * *"
     limit: int = 5
+    token: str = None
 
 
 class _Command(BaseSettings, extra=Extra.ignore):
