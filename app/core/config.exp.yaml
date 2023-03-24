@@ -17,10 +17,10 @@ bot:
 database:
   type: sqlite                 # 数据库类型(支持：sqlite, mysql)
   name:                        # 数据库名称
-  host: 127.0.0.1              # MySQL 数据库地址
-  port: 3306                   # MySQL 数据库端口
-  username:                    # MySQL 数据库用户名
-  password:                    # MySQL 数据库密码
+  host: 127.0.0.1              # MySQL 数据库地址（使用 SQLite 时可忽略）
+  port: 3306                   # MySQL 数据库端口（使用 SQLite 时可忽略）
+  username:                    # MySQL 数据库用户名（使用 SQLite 时可忽略）
+  password:                    # MySQL 数据库密码（使用 SQLite 时可忽略）
 
 # 货币配置
 coin_settings:
@@ -30,6 +30,7 @@ coin_settings:
 github:
   enable: False                # 监听开关（默认关闭）
   time: "*/10 * * * *"         # 监听时间间隔
+  limit: 5                     # 监听到多个提交时，最大推送的数量（设为 0 则不限制）
 
 # 命令配置
 command:

@@ -1,4 +1,5 @@
 import pickle
+import re
 from datetime import datetime, timedelta
 
 import aiohttp.client
@@ -124,7 +125,7 @@ async def list_github(sender: Group):
             .target(sender)
             .send()
         )
-    return message("该群组未配置Github监听仓库！").target(sender).send()
+    return message("该群组未配置Github监听仓库! ").target(sender).send()
 
 
 @sche.schedule(timers.crontabify(Config.github.time))
@@ -144,18 +145,19 @@ async def tasker():
         else:
             obj = {}
         for name, info in REPO[group].items():
-            if not obj.__contains__(name):
+            if name not in obj:
                 obj.update({name: {}})
             try:
                 branches = await general_request(info["api"], "get", "JSON")
                 for branch in branches:
                     if info["branch"][0] != "*" and branch["name"] not in info["branch"]:
                         continue
-                    if not obj[name].__contains__(branch["name"]):
-                        obj[name].update({branch["name"]: None})
-                    if branch["commit"]["sha"] != obj[name][branch["name"]]:
+                    if branch["name"] not in obj[name]:
                         obj[name][branch["name"]] = branch["commit"]["sha"]
-                        await message_push(group, name, branch)
+                    elif branch["commit"]["sha"] != obj[name][branch["name"]]:
+                        api = re.search(r"(.*)/", branch["commit"]["url"])[1]
+                        await message_push(group, name, branch["name"], api, obj[name][branch["name"]])
+                        obj[name][branch["name"]] = branch["commit"]["sha"]
             except aiohttp.client.ClientConnectorError:
                 logger.warning(f"获取仓库信息超时 - {info['api']}")
             except Exception as e:
@@ -164,18 +166,38 @@ async def tasker():
             pickle.dump(obj, f)
 
 
-async def message_push(group, repo, branch):
-    commit_info = await general_request(branch["commit"]["url"], _type="JSON")
-    commit_time = datetime.strftime(
-        datetime.strptime(commit_info["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8),
-        "%Y-%m-%d %H:%M:%S",
-    )
-    message(
-        [
-            Plain(f"Recent Commits to {repo}: {branch['name']}"),
-            Plain(f"\nCommit: {commit_info['commit']['message']}"),
-            Plain(f"\nAuthor: {commit_info['commit']['author']['name']}"),
-            Plain(f"\nUpdated: {commit_time}"),
-            Plain(f"\nLink: {commit_info['html_url']}"),
-        ]
-    ).target(int(group)).send()
+async def message_push(group, repo, branch, api, old_sha):
+    """推送消息
+
+    :param group: 群组 ID
+    :param repo: 自定义仓库名
+    :param branch: 分支名
+    :param api: 请求 API
+    :param old_sha: 上一次提交的 sha
+    """
+    commit_info = await general_request(f"{api}/{old_sha}", _type="JSON")
+    params = {
+        "since": commit_info["commit"]["author"]["date"],
+        "sha": branch,
+    }
+    commit_infos = await general_request(api, params=params, _type="JSON")
+    msg = []
+    for index, commit_info in enumerate(commit_infos, 1):
+        if Config.github.limit != 0 and index > Config.github.limit:
+            break
+        if commit_info["sha"] == old_sha:
+            continue
+        commit_time = datetime.strftime(
+            datetime.strptime(commit_info["commit"]["author"]["date"], "%Y-%m-%dT%H:%M:%SZ") + timedelta(hours=8),
+            "%Y-%m-%d %H:%M:%S",
+        )
+        msg.extend(
+            [
+                Plain(f"Recent Commits to {repo}: {branch}"),
+                Plain(f"\nCommit: {commit_info['commit']['message']}"),
+                Plain(f"\nAuthor: {commit_info['commit']['author']['name']}"),
+                Plain(f"\nUpdated: {commit_time}"),
+                Plain(f"\nLink: {commit_info['html_url']}\n"),
+            ]
+        )
+    message(msg).target(int(group)).send()

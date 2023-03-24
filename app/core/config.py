@@ -62,6 +62,7 @@ class _CoinSettings(BaseSettings, extra=Extra.ignore):
 class _Github(BaseSettings, extra=Extra.ignore):
     enable: bool = False
     time: str = "*/10 * * * *"
+    limit: int = 5
 
 
 class _Command(BaseSettings, extra=Extra.ignore):
