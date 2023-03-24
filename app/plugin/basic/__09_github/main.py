@@ -184,6 +184,7 @@ async def message_push(group, repo, branch, api, old_sha):
     msg = []
     for index, commit_info in enumerate(commit_infos, 1):
         if Config.github.limit != 0 and index > Config.github.limit:
+            msg.append(Plain("... ..."))
             break
         if commit_info["sha"] == old_sha:
             continue
@@ -197,7 +198,7 @@ async def message_push(group, repo, branch, api, old_sha):
                 Plain(f"\nCommit: {commit_info['commit']['message']}"),
                 Plain(f"\nAuthor: {commit_info['commit']['author']['name']}"),
                 Plain(f"\nUpdated: {commit_time}"),
-                Plain(f"\nLink: {commit_info['html_url']}\n"),
+                Plain(f"\nLink: {commit_info['html_url']}\n\n"),
             ]
         )
     message(msg).target(int(group)).send()
