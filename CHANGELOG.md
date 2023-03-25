@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.3.1](https://github.com/MadokaProject/Madoka/compare/v4.3.0...v4.3.1) (2023-03-25)
+
+
+### Bug Fixes
+
+* **app.trigger/group_qa:** 正则匹配的问题 ([e5c66d2](https://github.com/MadokaProject/Madoka/commit/e5c66d200b727901d78df86c0032733c755c60ff))
+
 ## [4.3.0](https://github.com/MadokaProject/Madoka/compare/v4.2.0...v4.3.0) (2023-03-24)
 
 
