@@ -26,9 +26,7 @@ class GroupQA(Trigger):
                 return item["message"]
             elif item["pattern"] == "full" and self.full_matcher(message, item["keyword"]):
                 return item["message"]
-            elif item["pattern"] == "arbitrary" and self.arbitrary_matcher(message, item["keyword"]):
-                return item["message"]
-            elif item["pattern"] == "regex" and self.regex_matcher(message, item["keyword"]):
+            elif item["pattern"] in ("arbitrary", "regex") and self.regex_matcher(message, item["keyword"]):
                 return item["message"]
         return False
 
@@ -48,11 +46,6 @@ class GroupQA(Trigger):
         return context == keyword
 
     @staticmethod
-    def arbitrary_matcher(context: str, keyword):
-        """任意匹配"""
-        return bool(re.search(keyword, context))
-
-    @staticmethod
     def regex_matcher(context: str, keyword):
         """正则匹配"""
-        return bool(re.match(keyword, context))
+        return bool(re.search(keyword, context))

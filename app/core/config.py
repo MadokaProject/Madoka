@@ -13,7 +13,7 @@ from app.util.tools import app_path, data_path
 
 class MadokaInfo:
     NAME = "Madoka"
-    VERSION = "4.3.0"
+    VERSION = "4.3.1"
     DOCS = "https://madoka.colsrch.cn"
     REPO = "https://github.com/MadokaProject/Madoka"
     REMOTE_REPO_VERSION = "v4.3"
