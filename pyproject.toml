@@ -84,7 +84,7 @@ ignore = [
 line-length = 120
 
 select = ["E", "F", "I", "UP", "C", "T", "Q"]
-ignore = ["C901"]
+ignore = ["C901", "E501"]
 
 # Exclude a variety of commonly ignored directories.
 extend-exclude = [
