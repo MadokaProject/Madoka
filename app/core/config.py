@@ -16,7 +16,7 @@ class MadokaInfo:
     VERSION = "4.3.1"
     DOCS = "https://madoka.colsrch.cn"
     REPO = "https://github.com/MadokaProject/Madoka"
-    REMOTE_REPO_VERSION = "v4.3"
+    REMOTE_REPO_VERSION = "release"
     REMOTE_VERSION_URL = "https://raw.fastgit.org/MadokaProject/Madoka/master/app/util/version.json"
 
 

@@ -56,8 +56,7 @@ lint.help = "检查代码"
 dev = [
     "pre-commit>=2.20.0",
     "black>=22.12.0",
-    "flake8>=5.0.4",
-    "isort>=5.11.4",
+    "ruff>=0.0.260",
 ]
 
 [tool.isort]
@@ -81,5 +80,46 @@ ignore = [
     "app/trigger/__init__.py",
 ]
 
-[tool.pydocstyle]
-match-dir = "(?!\\.)(?!test).*"
+[tool.ruff]
+line-length = 120
+
+select = ["E", "F", "I", "UP", "C", "T", "Q"]
+ignore = ["C901"]
+
+# Exclude a variety of commonly ignored directories.
+extend-exclude = [
+    ".bzr",
+    ".direnv",
+    ".eggs",
+    ".git",
+    ".hg",
+    ".mypy_cache",
+    ".nox",
+    ".pants.d",
+    ".ruff_cache",
+    ".svn",
+    ".tox",
+    ".venv",
+    "__pypackages__",
+    "_build",
+    "buck-out",
+    "build",
+    "dist",
+    "node_modules",
+    "venv",
+    "docs/**",
+    "**/test*/**/*.py",
+    "**/tmp/**",
+    "**/temp/**/*.py",
+    "app/util/network.py",
+    "app/trigger/__init__.py"
+]
+per-file-ignores = {}
+
+target-version = "py39"
+
+[tool.ruff.isort]
+extra-standard-library = ["typing_extensions"]
+
+[tool.ruff.pyupgrade]
+keep-runtime-typing = true
