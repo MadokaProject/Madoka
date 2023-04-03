@@ -10,6 +10,9 @@ venv/
 # pdm
 .pdm.toml
 
+# ruff
+.ruff_cache/
+
 # Prevent generated and test files from being committed
 app/data/
 app/tmp/
