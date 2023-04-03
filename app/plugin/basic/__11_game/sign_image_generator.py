@@ -2,7 +2,7 @@ import asyncio
 import time
 from io import BytesIO
 from pathlib import Path
-from typing import Tuple, Union
+from typing import Union
 
 from loguru import logger
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
@@ -18,7 +18,7 @@ mahojin_size_offset = 55
 avatar_xy = int(bg_size[1] * 0.15)
 stroke_width = 5
 
-_Ink = Union[str, int, Tuple[int, int, int], Tuple[int, int, int, int]]
+_Ink = Union[str, int, tuple[int, int, int], tuple[int, int, int, int]]
 
 
 def get_qlogo(id: int) -> bytes:

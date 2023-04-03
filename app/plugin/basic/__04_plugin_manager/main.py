@@ -1,6 +1,6 @@
 import asyncio
 from textwrap import fill
-from typing import Dict, Optional, Union
+from typing import Optional, Union
 
 from loguru import logger
 from prettytable import PrettyTable
@@ -115,7 +115,7 @@ command = Commander(
 
 async def choose_plugin(
     target: Union[Friend, Member], sender: Union[Friend, Group], inc: InterruptControl, plugin: str
-) -> Optional[Dict[str, str]]:
+) -> Optional[dict[str, str]]:
     """选择插件"""
     plugins = await plugin_mgr.get_info(plugin)
     if len(plugins) == 1:
@@ -319,8 +319,9 @@ async def reload(target: Union[Friend, Member], sender: Union[Friend, Group], in
                 return message(f"未在本地找到{plugin}插件").target(sender).send()
             message(f"正在尝试重载插件: {reload_plugin['name']} - {reload_plugin['author']}").target(sender).send()
             if plugin_mgr.reload(reload_plugin["root_dir"]):
-                return message(f"插件重载成功: {reload_plugin['name']} - {reload_plugin['author']}").target(sender).send()
-            return message(f"插件重载失败，请重试: {reload_plugin['name']} - {reload_plugin['author']}").target(sender).send()
+                message(f"插件重载成功: {reload_plugin['name']} - {reload_plugin['author']}").target(sender).send()
+                return
+            message(f"插件重载失败，请重试: {reload_plugin['name']} - {reload_plugin['author']}").target(sender).send()
     except IndexError:
         return args_error(sender)
     except asyncio.TimeoutError:

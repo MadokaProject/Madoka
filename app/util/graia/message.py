@@ -1,4 +1,5 @@
 from typing import Optional, Union
+from typing_extensions import Self
 
 from graia.ariadne.app import Ariadne
 from graia.ariadne.event.message import ActiveMessage
@@ -6,7 +7,6 @@ from graia.ariadne.message.chain import MessageChain, MessageContainer
 from graia.ariadne.message.element import At, Element, Source
 from graia.ariadne.model import Friend, Group, Member
 from loguru import logger
-from typing_extensions import Self
 
 from app.core.app import AppCore
 from app.extend.message_queue import mq

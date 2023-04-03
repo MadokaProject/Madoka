@@ -96,7 +96,9 @@ async def join_group(app: Ariadne, event: BotJoinGroupEvent):
         ]
     ).target(Config.master_qq).send()
     if event.group.id not in ACTIVE_GROUP:
-        await message(f"该群未在白名单中，正在退出，如有需要请联系{Config.master_qq}申请白名单").target(event.group).immediately_send()
+        await message(f"该群未在白名单中，正在退出，如有需要请联系{Config.master_qq}申请白名单").target(
+            event.group
+        ).immediately_send()  # noqa: E501
         message("该群未在白名单中，正在退出").target(Config.master_qq).send()
         return await app.quit_group(event.group.id)
 
@@ -121,7 +123,12 @@ async def leave_kick(event: BotLeaveEventKick):
     except Exception as e:
         logger.warning(e)
     for qq in ADMIN_USER:
-        message("收到被踢出群聊事件" f"\r\n群号: {event.group.id}" f"\r\n群名: {event.group.name}" "\r\n已移出白名单").target(qq).send()
+        message(
+            "收到被踢出群聊事件",
+            f"\n群号: {event.group.id}",
+            f"\n群名: {event.group.name}",
+            "\n已移出白名单",
+        ).target(qq).send()
 
 
 @bcc.receiver(BotLeaveEventActive)
@@ -133,7 +140,12 @@ async def leave_active(event: BotLeaveEventActive):
     except Exception as e:
         logger.warning(e)
     for qq in ADMIN_USER:
-        message("收到主动退出群聊事件" f"\r\n群号: {event.group.id}" f"\r\n群名: {event.group.name}" "\r\n已移出白名单").target(qq).send()
+        message(
+            "收到主动退出群聊事件",
+            f"\n群号: {event.group.id}",
+            f"\r\n群名: {event.group.name}",
+            "\r\n已移出白名单",
+        ).target(qq).send()
 
 
 @bcc.receiver(BotGroupPermissionChangeEvent)

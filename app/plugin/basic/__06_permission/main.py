@@ -49,7 +49,11 @@ command = Commander(
             Option("--list|-l", help_text="查看群组白名单"),
         ],
     ),
-    Option("grant", help_text="调整用户权限等级(该功能操作者权限高于操作对象即可", args=Args["qq", [At, int]]["level", int]),
+    Option(
+        "grant",
+        help_text="调整用户权限等级(该功能操作者权限高于操作对象即可",
+        args=Args["qq", [At, int]]["level", int],
+    ),
     help_text="授权, 仅管理可用!",
 )
 
@@ -150,7 +154,7 @@ async def grant(target: Union[Friend, Member], sender: Union[Friend, Group], cmd
                     return message("master level 不可更改！若想进行修改请直接修改配置文件！").target(sender).send()
             elif result == 3:
                 if not Permission.manual(target, 4):
-                    return message("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！").target(sender).send()
+                    return message("权限不足，你必须达到等级4(master level)才可修改超级管理员权限！").target(sender).send()  # noqa: E501
                 ADMIN_USER.remove(target)
                 if level == 2:
                     GROUP_ADMIN_USER.append(target)

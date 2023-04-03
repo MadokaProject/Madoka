@@ -1,7 +1,7 @@
 import time
 import traceback
 from functools import wraps
-from typing import Callable, Optional, Type, Union
+from typing import Callable, Optional, Union
 
 from arclet.alconna import Alconna, Args, Arpamar, CommandMeta, Option, Subcommand
 from loguru import logger
@@ -31,7 +31,7 @@ from app.util.graia import (
 )
 from app.util.phrases import print_help, unknown_error
 
-_K_T = Type[Union[FriendMessage, GroupMessage, TempMessage, StrangerMessage]]
+_K_T = type[Union[FriendMessage, GroupMessage, TempMessage, StrangerMessage]]
 
 
 class Commander:

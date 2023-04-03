@@ -42,7 +42,13 @@ command = Commander(
         "add",
         help_text="添加监听仓库",
         args=Args["repo", str]["api", str, "project/repo"],
-        options=[Option("--branch|-b", args=Args["branch", str, "*"], help_text="指定监听的分支,使用 , 分隔, 默认监听全部分支")],
+        options=[
+            Option(
+                "--branch|-b",
+                args=Args["branch", str, "*"],
+                help_text="指定监听的分支,使用 , 分隔, 默认监听全部分支",
+            )
+        ],
     ),
     Subcommand(
         "modify",
@@ -51,7 +57,11 @@ command = Commander(
         options=[
             Option("--name|-n", args=Args["name", str], help_text="修改仓库名"),
             Option("--api|-a", args=Args["api", str, "project/repo"], help_text="修改监听API"),
-            Option("--branch|-b", args=Args["branch", str, "*"], help_text="修改监听的分支, 使用 , 分隔, *: 监听所有分支"),
+            Option(
+                "--branch|-b",
+                args=Args["branch", str, "*"],
+                help_text="修改监听的分支, 使用 , 分隔, *: 监听所有分支",
+            ),
         ],
     ),
     Option("remove", help_text="删除监听仓库", args=Args["repo", str]),

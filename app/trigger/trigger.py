@@ -1,4 +1,4 @@
-from typing import List, Union
+from typing import Union
 
 from app.util.graia import Ariadne, Friend, Group, Member, MessageChain, Source, message
 from app.util.tools import parse_args
@@ -23,7 +23,7 @@ class Trigger:
         self.sender = sender
         self.source = source
         self.message = message
-        self.msg: List[str] = parse_args(message.display, keep_head=True)
+        self.msg: list[str] = parse_args(message.display, keep_head=True)
 
     async def process(self):
         raise NotImplementedError

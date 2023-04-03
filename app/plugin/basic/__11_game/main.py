@@ -170,7 +170,7 @@ async def rank(target: Union[Friend, Member], sender: Union[Friend, Group]):
 @command.parse("auto")
 async def auto(target: Union[Friend, Member], sender: Union[Friend, Group], cmd: Arpamar):
     await BotGame(target.id).auto_signin(cmd.query("status"))
-    return message("开启成功，将于每日 8 点为您自动签到！" if cmd.query("status") else "关闭成功！").target(sender).send()
+    return message("开启成功，将于每日 8 点为您自动签到！" if cmd.query("status") else "关闭成功！").target(sender).send()  # noqa: E501
 
 
 @sche.schedule(timers.crontabify("0 7 * * * 0"))
@@ -195,7 +195,7 @@ async def tasks():
     message(
         [
             Plain(f"签到统计成功，昨日共有 {sign_info[0]} / {sign_info[1]} 人完成了签到，"),
-            Plain(f"签到率为 {'{:.2%}'.format(sign_info[0] / sign_info[1])}\n"),
+            Plain(f"签到率为 {f'{sign_info[0] / sign_info[1]:.2%}'}\n"),
             Plain(f"今日收取了 {total_rent} {Config.coin_settings.name}"),
         ]
     ).target(Config.master_qq).send()

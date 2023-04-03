@@ -53,7 +53,11 @@ command = Commander(
     "mc",
     "MC状态",
     Args["host;O|H", str]["port;O|H", int],
-    Subcommand("default", help_text="设置默认MC服务器(仅主人可用)", args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565]),
+    Subcommand(
+        "default",
+        help_text="设置默认MC服务器(仅主人可用)",
+        args=Args["host;H", str, "127.0.0.1"]["port;H", int, 25565],
+    ),
     Subcommand(
         "set",
         help_text="设置监听服务器(仅主人可用)",
@@ -147,7 +151,7 @@ async def mc_server(sender: Union[Friend, Group], cmd: Arpamar):
         )
     try:
         return message(StatusPing(*default).get_status(str_format=True)).target(sender).send()
-    except EnvironmentError as e:
+    except OSError as e:
         logger.warning(e)
         return message([Plain("由于目标计算机积极拒绝，无法连接。服务器可能已关闭。")]).target(sender).send()
 
@@ -319,7 +323,7 @@ class McServer:
                     players.update({names[index]})
             else:
                 players.clear()
-        except (EnvironmentError, Exception):
+        except (OSError, Exception):
             status = False
             players.clear()
 

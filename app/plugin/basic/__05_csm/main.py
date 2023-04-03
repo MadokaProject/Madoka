@@ -17,7 +17,10 @@ command = Commander(
         ],
     ),
     Subcommand(
-        "unmute", args=Args["at;O", At], help_text="取消禁言指定群成员", options=[Option("--all|-a", help_text="关闭全员禁言")]
+        "unmute",
+        args=Args["at;O", At],
+        help_text="取消禁言指定群成员",
+        options=[Option("--all|-a", help_text="关闭全员禁言")],
     ),
     Subcommand(
         "func",

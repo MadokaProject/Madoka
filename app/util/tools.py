@@ -2,7 +2,7 @@ import asyncio
 import os
 import sys
 from pathlib import Path
-from typing import List, Union
+from typing import Union
 
 
 def parse_args(args, keep_head=False) -> list:
@@ -10,7 +10,7 @@ def parse_args(args, keep_head=False) -> list:
     :param args: str 字符串
     :param keep_head: bool 保留头部
     """
-    args: List[str] = args.strip().split()
+    args: list[str] = args.strip().split()
     for arg in args:
         arg.strip()
     if not keep_head:

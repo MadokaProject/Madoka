@@ -91,7 +91,10 @@ class Controller:
         # 判断是否为主菜单帮助
         if isstartswith(msg[1:], ["help", "帮助"]):
             send_help = True
-            _info = ("群菜单", self.sender.name) if isinstance(self.sender, Group) else ("好友菜单", self.sender.nickname)
+            if isinstance(self.sender, Group):
+                _info = ("群菜单", self.sender.name)
+            else:
+                _info = ("好友菜单", self.sender.nickname)
             resp = [
                 f"{Config.name} {_info[0]} / {self.sender.id}\n{_info[1]}\n",
                 "========================================================",

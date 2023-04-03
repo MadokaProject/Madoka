@@ -7,7 +7,7 @@ import sys
 from enum import Enum
 from pathlib import Path
 from types import ModuleType
-from typing import Dict, List, Union
+from typing import Union
 
 from graia.scheduler import GraiaScheduler
 from loguru import logger
@@ -26,7 +26,7 @@ from app.util.text2image import create_image
 from app.util.tools import app_path, data_path, to_thread
 from app.util.version import compare_version
 
-TypePluginInfo = Dict[str, str]
+TypePluginInfo = dict[str, str]
 """插件信息类型"""
 
 
@@ -42,7 +42,7 @@ class PluginType(Enum):
         return self.value
 
     def __repr__(self) -> str:
-        type_map: Dict[str, str] = {"basic": "<基础插件>", "extension": "<扩展插件>"}
+        type_map: dict[str, str] = {"basic": "<基础插件>", "extension": "<扩展插件>"}
         return type_map[self.value]
 
 
@@ -51,7 +51,7 @@ class PluginManager(metaclass=Singleton):
     Madoka 插件管理器
     """
 
-    __plugins: Dict[str, ModuleType]
+    __plugins: dict[str, ModuleType]
     __ignore = ["__init__.py", "__pycache__"]
     __base_path = app_path("plugin")
     __base_url = f"https://raw.fastgit.org/MadokaProject/Plugins/{MadokaInfo.REMOTE_REPO_VERSION}/"
@@ -69,7 +69,7 @@ class PluginManager(metaclass=Singleton):
 
     async def load(
         self,
-        plugin_info: Union[str, Dict[str, str]],
+        plugin_info: Union[str, dict[str, str]],
         plugin_type: PluginType = PluginType.Extension,
     ) -> bool:
         """加载插件
@@ -108,7 +108,7 @@ class PluginManager(metaclass=Singleton):
             logger.exception(e)
             return False
 
-    async def loads(self, plugins: Dict[str, PluginType]) -> Dict[str, bool]:
+    async def loads(self, plugins: dict[str, PluginType]) -> dict[str, bool]:
         """批量加载插件
 
         :param plugins: 插件名称与插件类型的字典
@@ -117,7 +117,7 @@ class PluginManager(metaclass=Singleton):
 
     async def loads_basic(self) -> None:
         """加载基础插件"""
-        plugins: Dict[str, PluginType] = {
+        plugins: dict[str, PluginType] = {
             f"{plugin.parent.name}.{plugin.name.split('.')[0]}": PluginType.Basic
             for plugin in sorted(self.__base_path.joinpath("basic").glob(pattern="*/*.py"))
             if plugin.name not in self.__ignore and plugin.is_file()
@@ -127,7 +127,7 @@ class PluginManager(metaclass=Singleton):
     async def loads_extension(self) -> None:
         """加载扩展插件"""
         self.__folder_path.mkdir(exist_ok=True)
-        plugins: Dict[str, PluginType] = {
+        plugins: dict[str, PluginType] = {
             f"{plugin.parent.name}.{plugin.name.split('.')[0]}": PluginType.Extension
             for plugin in sorted(self.__folder_path.glob(pattern="*/*.py"))
             if plugin.name not in self.__ignore and plugin.is_file()
@@ -226,13 +226,13 @@ class PluginManager(metaclass=Singleton):
         """
         return bool(await self.get_info(plugin_info))
 
-    async def get_info(self, plugins: Union[str, TypePluginInfo]) -> List[TypePluginInfo]:
+    async def get_info(self, plugins: Union[str, TypePluginInfo]) -> list[TypePluginInfo]:
         """获取插件信息
 
         :param plugins: 插件名称或插件信息字典
         """
         try:
-            with open(self.__info_path, "r", encoding="UTF-8") as f:
+            with open(self.__info_path, encoding="UTF-8") as f:
                 plugin_infos = json.load(f)
             if isinstance(plugins, str):
                 if plugins == "*":
@@ -250,9 +250,9 @@ class PluginManager(metaclass=Singleton):
 
         :param plugin_info: 插件信息
         """
-        plugin_infos: List[Dict] = []
+        plugin_infos: list[dict] = []
         with contextlib.suppress(FileNotFoundError):
-            with open(self.__info_path, "r", encoding="UTF-8") as f:
+            with open(self.__info_path, encoding="UTF-8") as f:
                 plugin_infos = json.load(f)
             if local_plugin_info := await self.get_info(plugin_info):
                 plugin_infos.remove(local_plugin_info[0])
@@ -265,9 +265,9 @@ class PluginManager(metaclass=Singleton):
 
         :param plugin_info: 插件信息
         """
-        plugin_infos: List[Dict] = []
+        plugin_infos: list[dict] = []
         with contextlib.suppress(FileNotFoundError):
-            with open(self.__info_path, "r", encoding="UTF-8") as f:
+            with open(self.__info_path, encoding="UTF-8") as f:
                 plugin_infos = json.load(f)
             if local_plugin_info := await self.get_info(plugin_info):
                 plugin_infos.remove(local_plugin_info[0])
@@ -275,7 +275,7 @@ class PluginManager(metaclass=Singleton):
             json.dump(plugin_infos, f, indent=4, ensure_ascii=False)
 
     @retry(stop_max_attempt_number=5, wait_fixed=1000)
-    async def get_remote_info(self, info: str = "list.json") -> List:
+    async def get_remote_info(self, info: str = "list.json") -> list:
         """获取远程插件信息
 
         :param info: 插件信息文件名
@@ -283,7 +283,7 @@ class PluginManager(metaclass=Singleton):
         await asyncio.sleep(1)
         return json.loads(await general_request(self.__base_url + info, method="get"))
 
-    async def download(self, root_dir: str, url_lists: List[str]) -> bool:
+    async def download(self, root_dir: str, url_lists: list[str]) -> bool:
         """通过远程插件地址获取插件
 
         :param root_dir: 插件所在目录

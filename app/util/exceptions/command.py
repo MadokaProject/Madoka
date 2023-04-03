@@ -25,7 +25,7 @@ class FrequencyLimitExceededError(FrequencyLimitError):
     """群组请求超出负载权重限制"""
 
     def __init__(self, target, time: float):
-        Error.__init__(self, "Frequency limit exceeded: %r, Remaining disable time: %.2f" % (target, time))
+        Error.__init__(self, f"Frequency limit exceeded: {target!r}, Remaining disable time: {time:.2f}")
         self.target = target
         self.time = time
         self.args = (target, time)
@@ -35,9 +35,7 @@ class FrequencyLimitExceededDoNothingError(FrequencyLimitError):
     """请求者在黑名单中不作回应"""
 
     def __init__(self, target, time: float):
-        Error.__init__(
-            self, "Frequency limit exceeded and do nothing: %r, Remaining disable time: %.2f" % (target, time)
-        )
+        Error.__init__(self, f"Frequency limit exceeded and do nothing: {target!r}, Remaining disable time: {time:.2f}")
         self.target = target
         self.limit = time
         self.args = (target, time)

@@ -1,7 +1,7 @@
 import contextlib
 import functools
 from types import ModuleType
-from typing import Callable, Dict, Optional, Union
+from typing import Callable, Optional, Union
 
 from arclet.alconna import Alconna
 from arclet.alconna import command_manager as _cmd_mgr
@@ -27,7 +27,7 @@ class PluginInfo:
 class CommandDelegateManager(metaclass=Singleton):
     """Alconna 命令委托管理器"""
 
-    __delegates: Dict[str, Dict[str, PluginInfo]]
+    __delegates: dict[str, dict[str, PluginInfo]]
 
     def __init__(self):
         self.__delegates = {}
@@ -49,10 +49,10 @@ class CommandDelegateManager(metaclass=Singleton):
     def get_delegate(self, path: str, cmd_type: str = "plugin") -> Optional[PluginInfo]:
         return self.__delegates[cmd_type].get(path)
 
-    def get_delegates(self, cmd_type: str = "plugin") -> Dict[str, PluginInfo]:
+    def get_delegates(self, cmd_type: str = "plugin") -> dict[str, PluginInfo]:
         return self.__delegates.get(cmd_type)
 
-    def get_all_delegates(self) -> Dict[str, PluginInfo]:
+    def get_all_delegates(self) -> dict[str, PluginInfo]:
         return {k: v for i in self.__delegates.values() for k, v in i.items()}
 
     def register(
