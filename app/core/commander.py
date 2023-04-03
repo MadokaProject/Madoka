@@ -25,9 +25,7 @@ class PluginInfo:
 
 
 class CommandDelegateManager(metaclass=Singleton):
-    """
-    Alconna 命令委托管理器
-    """
+    """Alconna 命令委托管理器"""
 
     __delegates: Dict[str, Dict[str, PluginInfo]]
 

@@ -41,8 +41,7 @@ class Message:
         *elements: MessageContainer,
         inline: bool = False,
     ) -> None:
-        """
-        创建消息链.
+        """创建消息链.
 
         Args:
             *elements (Union[Iterable[Element], Element, str]): \
