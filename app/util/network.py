@@ -11,9 +11,7 @@ from retrying import retry
 
 
 class RandomUserAgentMiddleware(object):
-    """
-    自定义随机UA中间件
-    """
+    """自定义随机UA中间件"""
 
     def __init__(self):
         self.user_agents = [
@@ -54,8 +52,7 @@ class RandomUserAgentMiddleware(object):
         ]
 
     def roll_ua(self):
-        """
-        从UA列表中随机选择一个UA来发送请求
+        """从UA列表中随机选择一个UA来发送请求
         :return: str, user_agents
         """
         return random.choice(self.user_agents)
