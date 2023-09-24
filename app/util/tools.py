@@ -24,7 +24,7 @@ def isstartswith(prefix: str, args: Union[str, list], full_match=False) -> bool:
     :param args: 匹配元素
     :param full_match: 完全匹配
     """
-    if type(args) == str:
+    if isinstance(args, str):
         args = [args]
     return any(full_match and prefix == arg or not full_match and prefix.startswith(arg) for arg in args)
 

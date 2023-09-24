@@ -44,7 +44,7 @@ async def image_moderation_async(image: Union[str, bytes]) -> dict:
     if not Config.baidu_ai.moderation.enable:
         logger.warning("百度内容审核未启用")
         return {"status": False, "message": "百度内容审核未启用"}
-    if type(image) == str:
+    if isinstance(image, str):
         try:
             image = await general_request(image, _type="bytes")
         except InvalidURL as e:

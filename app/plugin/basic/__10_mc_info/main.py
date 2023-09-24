@@ -209,12 +209,12 @@ class StatusPing:
 
     def _pack_data(self, data):
         """Page the data"""
-        if type(data) is str:
+        if isinstance(data, str):
             data = data.encode("utf8")
             return self._pack_varint(len(data)) + data
-        elif type(data) is int:
+        elif isinstance(data, int):
             return struct.pack("H", data)
-        elif type(data) is float:
+        elif isinstance(data, float):
             return struct.pack("Q", int(data))
         else:
             return data

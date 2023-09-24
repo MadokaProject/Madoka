@@ -55,8 +55,8 @@ lint.help = "检查代码"
 [tool.pdm.dev-dependencies]
 dev = [
     "pre-commit>=2.20.0",
-    "black>=22.12.0",
-    "ruff>=0.0.260",
+    "black>=23.9.1",
+    "ruff>=0.0.290",
 ]
 
 [tool.isort]

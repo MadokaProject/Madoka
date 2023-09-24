@@ -13,7 +13,7 @@ repos:
     rev: 'v0.0.290'
     hooks:
       - id: ruff
-        args: [--fix, --exit-non-zero-on-fix]
+        args: [--fix]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v4.4.0
