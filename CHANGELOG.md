@@ -1,5 +1,12 @@
 # Changelog
 
+## [4.4.0](https://github.com/MadokaProject/Madoka/compare/v4.3.1...v4.4.0) (2023-09-24)
+
+
+### Features
+
+* **app.plugin.group_qa:** 支持取消添加/修改 Q&A ([b7393e8](https://github.com/MadokaProject/Madoka/commit/b7393e87ab7afd169f875a196344da182758e2fb))
+
 ## [4.3.1](https://github.com/MadokaProject/Madoka/compare/v4.3.0...v4.3.1) (2023-03-25)
 
 
