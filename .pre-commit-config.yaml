@@ -1,6 +1,6 @@
 repos:
-  - repo: https://github.com/psf/black
-    rev: '25.1.0'
+  - repo: https://github.com/psf/black-pre-commit-mirror
+    rev: '26.5.1'
     hooks:
       - id: black
         # It is recommended to specify the latest version of Python
@@ -10,13 +10,13 @@ repos:
         language_version: python3.9
 
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: 'v0.11.6'
+    rev: 'v0.16.6'
     hooks:
       - id: ruff
         args: [--fix]
 
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
